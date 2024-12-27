@@ -65,6 +65,7 @@ client.on('interactionCreate', async interaction => {
       guildData.set(player, playerData);
       data.set(guildId, guildData);
       await saveData(data);
+      await interaction.reply(`Set ${player}'s ${key} to ${amount}`);
   }
 
   switch (interaction.commandName) {
@@ -75,7 +76,6 @@ client.on('interactionCreate', async interaction => {
       const amount = interaction.options.getInteger('amount');
       const displayName = interaction.member.displayName.toLowerCase();
       await setData(key, displayName, amount);
-      await interaction.reply(`Set your ${key} to ${amount}`);
       break;
 
     case 'set-player-essence':
@@ -83,7 +83,6 @@ client.on('interactionCreate', async interaction => {
       const player = interaction.options.getString('player').toLowerCase();
       const playerAmount = interaction.options.getInteger('amount');
       await setData(key, player, playerAmount);
-      await interaction.reply(`Set ${player}'s ${key} to ${playerAmount}`);
       break;
 
     case 'show-essence':
