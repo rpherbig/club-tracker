@@ -4,7 +4,7 @@ Club resource tracking bot for the game Super Snail.
 
 * `/set-essence [amount]`: Set essence count for yourself
 * `/set-player-essence [player] [amount]`: Set essence count for a specific player
-* `/show-essence [player]`: Show essence count for a player
+* `/show-essence`: Show essence count for yourself
 * `/total-essence`: Show total essence for all club members
 
 # Getting started

@@ -34,15 +34,7 @@ const commands = [
   },
   {
     name: 'show-essence',
-    description: 'Show essence count for a player',
-    options: [
-      {
-        name: 'player',
-        type: 3,
-        description: 'Player name',
-        required: false
-      }
-    ]
+    description: 'Show essence count for yourself'
   },
   {
     name: 'total-essence',

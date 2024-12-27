@@ -58,7 +58,7 @@ client.on('interactionCreate', async interaction => {
       break;
 
     case 'show-essence':
-      const targetPlayer = interaction.options.getString('player')?.toLowerCase() || interaction.member.displayName.toLowerCase();
+      const targetPlayer = interaction.member.displayName.toLowerCase();
       const essence = clubEssence.get(targetPlayer) || 0;
       await interaction.reply(`${targetPlayer} has ${essence} essence`);
       break;
