@@ -39,6 +39,44 @@ const commands = [
   {
     name: 'total-essence',
     description: 'Show total essence for all club members'
+  },
+  {
+    name: 'set-gold',
+    description: 'Set gold count for yourself',
+    options: [
+      {
+        name: 'amount',
+        type: 4,
+        description: 'Amount of gold',
+        required: true
+      }
+    ]
+  },
+  {
+    name: 'set-player-gold',
+    description: 'Set gold count for a specific player',
+    options: [
+      {
+        name: 'player',
+        type: 3,
+        description: 'Player name',
+        required: true
+      },
+      {
+        name: 'amount',
+        type: 4,
+        description: 'Amount of gold',
+        required: true
+      }
+    ]
+  },
+  {
+    name: 'show-gold',
+    description: 'Show gold count for yourself'
+  },
+  {
+    name: 'total-gold',
+    description: 'Show total gold for all club members'
   }
 ];
 
