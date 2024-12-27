@@ -12,60 +12,79 @@ const client = new Client({
   ]
 });
 
-async function loadEssence() {
+function objectToMap(obj) {
+    if (typeof obj !== "object" || obj === null) return obj; // Base case: not an object
+    return new Map(
+        Object.entries(obj).map(([key, value]) => [key, objectToMap(value)])
+    );
+}
+
+async function loadData() {
   try {
-    const data = await fs.readFile(DATA_FILE, 'utf8');
-    return new Map(Object.entries(JSON.parse(data)));
+    const jsonString = await fs.readFile(DATA_FILE, 'utf8');
+    const parsedData = JSON.parse(jsonString);
+    return objectToMap(parsedData);
   } catch {
     console.log(`No data file found at: ${DATA_FILE}`);
     return new Map();
   }
 }
 
-async function saveEssence(essence) {
+function mapToObject(map) {
+    if (!(map instanceof Map)) return map; // Base case: not a Map
+    return Object.fromEntries(
+        Array.from(map.entries(), ([key, value]) => [key, mapToObject(value)])
+    );
+}
+
+async function saveData(data) {
+  const jsonReadyData = mapToObject(data);
   await fs.writeFile(
     DATA_FILE,
-    JSON.stringify(Object.fromEntries(essence)),
+    JSON.stringify(jsonReadyData),
     'utf8'
   );
 }
 
-let clubEssence;
+let data;
 
 client.once('ready', async () => {
   console.log(`Logged in as ${client.user.tag}`);
-  clubEssence = await loadEssence();
+  data = await loadData();
 });
 
 client.on('interactionCreate', async interaction => {
   if (!interaction.isChatInputCommand()) return;
+  let guildId = interaction.guildId;
+  let guildData = data.get(guildId) || new Map();
 
   switch (interaction.commandName) {
     case 'set-essence':
       const amount = interaction.options.getInteger('amount');
       const displayName = interaction.member.displayName.toLowerCase();
-      clubEssence.set(displayName, amount);
-      await saveEssence(clubEssence);
+      guildData.set(displayName, amount);
+      data.set(guildId, guildData);
+      await saveData(data);
       await interaction.reply(`Set your essence to ${amount}`);
       break;
 
     case 'set-player-essence':
-      const player = interaction.options.getString('player');
+      const player = interaction.options.getString('player').toLowerCase();
       const playerAmount = interaction.options.getInteger('amount');
-      clubEssence.set(player.toLowerCase(), playerAmount);
-      await saveEssence(clubEssence);
+      guildData.set(player, playerAmount);
+      await saveData(data);
       await interaction.reply(`Set ${player}'s essence to ${playerAmount}`);
       break;
 
     case 'show-essence':
       const targetPlayer = interaction.member.displayName.toLowerCase();
-      const essence = clubEssence.get(targetPlayer) || 0;
+      const essence = guildData.get(targetPlayer) || 0;
       await interaction.reply(`${targetPlayer} has ${essence} essence`);
       break;
 
     case 'total-essence':
-      const total = Array.from(clubEssence.values()).reduce((sum, val) => sum + val, 0);
-      const breakdown = Array.from(clubEssence.entries())
+      const total = Array.from(guildData.values()).reduce((sum, val) => sum + val, 0);
+      const breakdown = Array.from(guildData.entries())
         .sort((a, b) => b[1] - a[1]) // [0] is name; [1] is amount
         .map(([name, amount]) => `${name}: ${amount}`)
         .join('\n');
