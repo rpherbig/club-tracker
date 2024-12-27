@@ -58,33 +58,41 @@ client.on('interactionCreate', async interaction => {
   let guildId = interaction.guildId;
   let guildData = data.get(guildId) || new Map();
 
+  async function setEssence(player, amount) {
+      const playerData = guildData.get(player) || new Map();
+      playerData.set('essence', amount);
+      guildData.set(player, playerData);
+      data.set(guildId, guildData);
+      await saveData(data);
+  }
+
   switch (interaction.commandName) {
     case 'set-essence':
       const amount = interaction.options.getInteger('amount');
       const displayName = interaction.member.displayName.toLowerCase();
-      guildData.set(displayName, amount);
-      data.set(guildId, guildData);
-      await saveData(data);
+      await setEssence(displayName, amount);
       await interaction.reply(`Set your essence to ${amount}`);
       break;
 
     case 'set-player-essence':
       const player = interaction.options.getString('player').toLowerCase();
       const playerAmount = interaction.options.getInteger('amount');
-      guildData.set(player, playerAmount);
-      await saveData(data);
+      await setEssence(player, playerAmount);
       await interaction.reply(`Set ${player}'s essence to ${playerAmount}`);
       break;
 
     case 'show-essence':
       const targetPlayer = interaction.member.displayName.toLowerCase();
-      const essence = guildData.get(targetPlayer) || 0;
+      const targetPlayerData = guildData.get(targetPlayer) || new Map();
+      const essence = targetPlayerData.get('essence') || 0;
       await interaction.reply(`${targetPlayer} has ${essence} essence`);
       break;
 
     case 'total-essence':
-      const total = Array.from(guildData.values()).reduce((sum, val) => sum + val, 0);
-      const breakdown = Array.from(guildData.entries())
+      const playersData = Array.from(guildData.entries())
+        .map(([name, pData]) => [name, pData.get('essence') || 0])
+      const total = playersData.reduce((sum, [_name, amount]) => sum + amount, 0);
+      const breakdown = playersData
         .sort((a, b) => b[1] - a[1]) // [0] is name; [1] is amount
         .map(([name, amount]) => `${name}: ${amount}`)
         .join('\n');
