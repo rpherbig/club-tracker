@@ -67,6 +67,7 @@ client.on('interactionCreate', async interaction => {
     case 'total-essence':
       const total = Array.from(clubEssence.values()).reduce((sum, val) => sum + val, 0);
       const breakdown = Array.from(clubEssence.entries())
+        .sort((a, b) => b[1] - a[1]) // [0] is name; [1] is amount
         .map(([name, amount]) => `${name}: ${amount}`)
         .join('\n');
       await interaction.reply(`Total Club Essence: ${total}\n\nBreakdown:\n${breakdown}`);
