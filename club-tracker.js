@@ -43,8 +43,8 @@ client.on('interactionCreate', async interaction => {
   switch (interaction.commandName) {
     case 'set-essence':
       const amount = interaction.options.getInteger('amount');
-      const username = interaction.user.username.toLowerCase();
-      clubEssence.set(username, amount);
+      const displayName = interaction.member.displayName.toLowerCase();
+      clubEssence.set(displayName, amount);
       await saveEssence(clubEssence);
       await interaction.reply(`Set your essence to ${amount}`);
       break;
@@ -58,8 +58,7 @@ client.on('interactionCreate', async interaction => {
       break;
 
     case 'show-essence':
-      //console.log(`interaction: ${Object.keys(interaction)}`)
-      const targetPlayer = interaction.options.getString('player')?.toLowerCase() || interaction.user.username.toLowerCase();
+      const targetPlayer = interaction.options.getString('player')?.toLowerCase() || interaction.member.displayName.toLowerCase();
       const essence = clubEssence.get(targetPlayer) || 0;
       await interaction.reply(`${targetPlayer} has ${essence} essence`);
       break;
