@@ -15,6 +15,18 @@ const commands = [
     ]
   },
   {
+    name: 'se',
+    description: 'Set essence count for yourself',
+    options: [
+      {
+        name: 'amount',
+        type: 4,
+        description: 'Amount of essence',
+        required: true
+      }
+    ]
+  },
+  {
     name: 'set-player-essence',
     description: 'Set essence count for a specific player',
     options: [
@@ -42,6 +54,18 @@ const commands = [
   },
   {
     name: 'set-gold',
+    description: 'Set gold count for yourself',
+    options: [
+      {
+        name: 'amount',
+        type: 4,
+        description: 'Amount of gold',
+        required: true
+      }
+    ]
+  },
+  {
+    name: 'sg',
     description: 'Set gold count for yourself',
     options: [
       {

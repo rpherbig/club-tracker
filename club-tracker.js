@@ -57,7 +57,7 @@ client.on('interactionCreate', async interaction => {
   if (!interaction.isChatInputCommand()) return;
   let guildId = interaction.guildId;
   let guildData = data.get(guildId) || new Map();
-  let key = interaction.commandName.includes("essence") ? 'essence' : 'gold';
+  let key = interaction.commandName.includes("essence") || interaction.commandName === "se" ? 'essence' : 'gold';
 
   async function setData(key, player, amount) {
       const playerData = guildData.get(player) || new Map();
@@ -69,7 +69,9 @@ client.on('interactionCreate', async interaction => {
 
   switch (interaction.commandName) {
     case 'set-essence':
+    case 'se':
     case 'set-gold':
+    case 'sg':
       const amount = interaction.options.getInteger('amount');
       const displayName = interaction.member.displayName.toLowerCase();
       await setData(key, displayName, amount);
