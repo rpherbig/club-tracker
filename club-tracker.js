@@ -55,6 +55,14 @@ client.once('ready', async () => {
 
 client.on('interactionCreate', async interaction => {
   if (!interaction.isChatInputCommand()) return;
+  if (!interaction.guild) {
+    await interaction.reply({
+        content: "This bot does not support direct messages. Please use commands in a server.",
+        ephemeral: true,
+    });
+    return;
+  }
+
   let guildId = interaction.guildId;
   let guildData = data.get(guildId) || new Map();
   let key = interaction.commandName.includes("essence") || interaction.commandName === "se" ? 'essence' : 'gold';
