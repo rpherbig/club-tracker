@@ -1,5 +1,6 @@
 const { Client, GatewayIntentBits } = require('discord.js');
 const fs = require('fs').promises;
+const moment = require('moment');
 require('dotenv').config();
 
 const DATA_FILE = 'data.json';
@@ -66,14 +67,24 @@ client.on('interactionCreate', async interaction => {
   let guildId = interaction.guildId;
   let guildData = data.get(guildId) || new Map();
   let key = interaction.commandName.includes("essence") || interaction.commandName === "se" ? 'essence' : 'gold';
+  let dateKey =`${key}-date`;
 
   async function setData(key, player, amount) {
       const playerData = guildData.get(player) || new Map();
       playerData.set(key, amount);
+      playerData.set(dateKey, moment());
       guildData.set(player, playerData);
       data.set(guildId, guildData);
       await saveData(data);
       await interaction.reply(`Set ${player}'s ${key} to ${amount}`);
+  }
+
+  function getLastUpdated(playerData, dateKey) {
+    const lastUpdated = playerData.get(dateKey);
+    if(lastUpdated === undefined) {
+      return "unknown";
+    }
+    return moment(new Date()).to(new Date(lastUpdated));
   }
 
   switch (interaction.commandName) {
@@ -98,17 +109,18 @@ client.on('interactionCreate', async interaction => {
       const targetPlayer = interaction.member.displayName.toLowerCase();
       const targetPlayerData = guildData.get(targetPlayer) || new Map();
       const val = targetPlayerData.get(key) || 0;
-      await interaction.reply(`${targetPlayer} has ${val} ${key}`);
+      const lastUpdated = getLastUpdated(targetPlayerData, dateKey);
+      await interaction.reply(`${targetPlayer} has ${val} ${key} (last updated ${lastUpdated})`);
       break;
 
     case 'total-essence':
     case 'total-gold':
       const playersData = Array.from(guildData.entries())
-        .map(([name, pData]) => [name, pData.get(key) || 0])
+        .map(([name, pData]) => [name, pData.get(key) || 0, getLastUpdated(pData, dateKey)])
       const total = playersData.reduce((sum, [_name, amount]) => sum + amount, 0);
       const breakdown = playersData
-        .sort((a, b) => b[1] - a[1]) // [0] is name; [1] is amount
-        .map(([name, amount]) => `${name}: ${amount}`)
+        .sort((a, b) => b[1] - a[1]) // [0] is name; [1] is amount; [2] is lastUpdated
+        .map(([name, amount, lastUpdated]) => `${name}: ${amount} (last updated ${lastUpdated})`)
         .join('\n');
       await interaction.reply(`Total Club ${key}: ${total}\n\nBreakdown:\n${breakdown}`);
       break;
