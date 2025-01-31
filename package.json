@@ -1,6 +1,6 @@
 {
   "name": "club-tracker",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "Tracks club essence and gold for the game Super Snail",
   "main": "club-tracker.js",
   "scripts": {
