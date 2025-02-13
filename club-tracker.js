@@ -113,6 +113,21 @@ client.on('interactionCreate', async interaction => {
       await interaction.reply(`${targetPlayer} has ${val} ${key} (last updated ${lastUpdated})`);
       break;
 
+    case 'overdue-essence':
+    case 'overdue-gold':
+      // Two weeks for essence, six weeks for gold
+      const days = key == "essence" ? 14 : 42;
+      const cutoffDate = moment().subtract(days, 'days');
+
+      const overduePlayers = Array.from(guildData.entries())
+        .map(([name, pData]) => [name, pData.get(key) || 0, pData.get(dateKey)])
+        .filter(player => !player[2] || moment(player[2]).isBefore(cutoffDate))
+        .sort((a, b) => new Date(a[2]) - new Date(b[2])) // Sort ascending
+        .map(([name, amount, lastUpdated]) => `${name}: ${amount} (last updated ${lastUpdated})`)
+        .join('\n');
+      await interaction.reply(`Overdue Members for ${key}:\n${overduePlayers}`);
+      break;
+
     case 'total-essence':
     case 'total-gold':
       const playersData = Array.from(guildData.entries())

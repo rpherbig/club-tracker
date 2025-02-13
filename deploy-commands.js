@@ -53,6 +53,10 @@ const commands = [
     description: 'Show total essence for all club members'
   },
   {
+    name: 'overdue-essence',
+    description: 'Show players who are overdue updating their essence value'
+  },
+  {
     name: 'set-gold',
     description: 'Set gold count for yourself',
     options: [
@@ -101,6 +105,10 @@ const commands = [
   {
     name: 'total-gold',
     description: 'Show total gold for all club members'
+  },
+  {
+    name: 'overdue-gold',
+    description: 'Show players who are overdue updating their gold value'
   }
 ];
 
