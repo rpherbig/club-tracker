@@ -120,9 +120,33 @@ client.on('interactionCreate', async interaction => {
       const total = playersData.reduce((sum, [_name, amount]) => sum + amount, 0);
       const breakdown = playersData
         .sort((a, b) => b[1] - a[1]) // [0] is name; [1] is amount; [2] is lastUpdated
-        .map(([name, amount, lastUpdated]) => `${name}: ${amount} (last updated ${lastUpdated})`)
-        .join('\n');
-      await interaction.reply(`Total Club ${key}: ${total}\n\nBreakdown:\n${breakdown}`);
+        .map(([name, amount, lastUpdated]) => `${name}: ${amount} (last updated ${lastUpdated})`);
+      const chunks = [];
+      // Start with the preamble/boilerplate
+      let currentChunk = `Total Club ${key}: ${total}\n\nBreakdown:\n`;
+
+      // Discord bots have a 2000 character limit
+      // Break on a player's data, not at an arbitrary character
+      for(const part of breakdown) {
+        if ((currentChunk + part).length > 1800) {
+          chunks.push(currentChunk);
+          currentChunk = "";
+        }
+        currentChunk += part + '\n';
+      }
+
+      // Take care of any leftover text
+      if(currentChunk) {
+        chunks.push(currentChunk);
+      }
+
+      // First chunk needs to use reply
+      await interaction.reply(chunks[0]);
+      // Subsequent chunks use followUp
+      for (let i = 1; i < chunks.length; i++) {
+          await interaction.followUp(chunks[i]);
+      }
+
       break;
   }
 });
