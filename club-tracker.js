@@ -79,12 +79,16 @@ client.on('interactionCreate', async interaction => {
       await interaction.reply(`Set ${player}'s ${key} to ${amount}`);
   }
 
-  function getLastUpdated(playerData, dateKey) {
-    const lastUpdated = playerData.get(dateKey);
+  function toRelativeDate(lastUpdated) {
     if(lastUpdated === undefined) {
       return "unknown";
     }
     return moment(new Date()).to(new Date(lastUpdated));
+  }
+
+  function getLastUpdated(playerData, dateKey) {
+    const lastUpdated = playerData.get(dateKey);
+    return toRelativeDate(lastUpdated);
   }
 
   switch (interaction.commandName) {
@@ -123,6 +127,7 @@ client.on('interactionCreate', async interaction => {
         .map(([name, pData]) => [name, pData.get(key) || 0, pData.get(dateKey)])
         .filter(([_name, _amount, lastUpdated]) => !lastUpdated || moment(lastUpdated).isBefore(cutoffDate))
         .sort(([_name1, _amount1, lastUpdated1], [_name2, _amount2, lastUpdated2]) => new Date(lastUpdated1) - new Date(lastUpdated2)) // Sort ascending
+        .map(([name, amount, lastUpdated]) => [name, amount, toRelativeDate(lastUpdated)])
         .map(([name, amount, lastUpdated]) => `${name}: ${amount} (last updated ${lastUpdated})`)
         .join('\n');
       await interaction.reply(`Overdue Members for ${key}:\n${overduePlayers}`);
