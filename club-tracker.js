@@ -121,8 +121,8 @@ client.on('interactionCreate', async interaction => {
 
       const overduePlayers = Array.from(guildData.entries())
         .map(([name, pData]) => [name, pData.get(key) || 0, pData.get(dateKey)])
-        .filter(player => !player[2] || moment(player[2]).isBefore(cutoffDate))
-        .sort((a, b) => new Date(a[2]) - new Date(b[2])) // Sort ascending
+        .filter(([_name, _amount, lastUpdated]) => !lastUpdated || moment(lastUpdated).isBefore(cutoffDate))
+        .sort(([_name1, _amount1, lastUpdated1], [_name2, _amount2, lastUpdated2]) => new Date(lastUpdated1) - new Date(lastUpdated2)) // Sort ascending
         .map(([name, amount, lastUpdated]) => `${name}: ${amount} (last updated ${lastUpdated})`)
         .join('\n');
       await interaction.reply(`Overdue Members for ${key}:\n${overduePlayers}`);
@@ -134,7 +134,7 @@ client.on('interactionCreate', async interaction => {
         .map(([name, pData]) => [name, pData.get(key) || 0, getLastUpdated(pData, dateKey)])
       const total = playersData.reduce((sum, [_name, amount]) => sum + amount, 0);
       const breakdown = playersData
-        .sort((a, b) => b[1] - a[1]) // [0] is name; [1] is amount; [2] is lastUpdated
+        .sort(([_name1, amount1, _lastUpdated1], [_name2, amount2, _lastUpdated2]) => amount2 - amount1) // Sort descending
         .map(([name, amount, lastUpdated]) => `${name}: ${amount} (last updated ${lastUpdated})`);
       const chunks = [];
       // Start with the preamble/boilerplate
