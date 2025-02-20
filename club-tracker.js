@@ -47,6 +47,18 @@ async function saveData(data) {
   );
 }
 
+function toRelativeDate(lastUpdated) {
+  if(lastUpdated === undefined) {
+    return "unknown";
+  }
+  return moment(new Date()).to(new Date(lastUpdated));
+}
+
+function getLastUpdated(playerData, dateKey) {
+  const lastUpdated = playerData.get(dateKey);
+  return toRelativeDate(lastUpdated);
+}
+
 let data;
 
 client.once('ready', async () => {
@@ -77,18 +89,6 @@ client.on('interactionCreate', async interaction => {
       data.set(guildId, guildData);
       await saveData(data);
       await interaction.reply(`Set ${player}'s ${key} to ${amount}`);
-  }
-
-  function toRelativeDate(lastUpdated) {
-    if(lastUpdated === undefined) {
-      return "unknown";
-    }
-    return moment(new Date()).to(new Date(lastUpdated));
-  }
-
-  function getLastUpdated(playerData, dateKey) {
-    const lastUpdated = playerData.get(dateKey);
-    return toRelativeDate(lastUpdated);
   }
 
   switch (interaction.commandName) {
