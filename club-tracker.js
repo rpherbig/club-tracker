@@ -4,6 +4,9 @@ const moment = require('moment');
 require('dotenv').config();
 
 const DATA_FILE = 'data.json';
+const ESSENCE_OVERDUE_DAYS = 14;
+const GOLD_OVERDUE_DAYS = 42;
+const DISCORD_CHAR_LIMIT = 1800;
 
 const client = new Client({
   intents: [
@@ -120,7 +123,7 @@ client.on('interactionCreate', async interaction => {
     case 'overdue-essence':
     case 'overdue-gold':
       // Two weeks for essence, six weeks for gold
-      const days = key == "essence" ? 14 : 42;
+      const days = key == "essence" ? ESSENCE_OVERDUE_DAYS : GOLD_OVERDUE_DAYS;
       const cutoffDate = moment().subtract(days, 'days');
 
       const overduePlayers = Array.from(guildData.entries())
@@ -148,7 +151,7 @@ client.on('interactionCreate', async interaction => {
       // Discord bots have a 2000 character limit
       // Break on a player's data, not at an arbitrary character
       for(const part of breakdown) {
-        if ((currentChunk + part).length > 1800) {
+        if ((currentChunk + part).length > DISCORD_CHAR_LIMIT) {
           chunks.push(currentChunk);
           currentChunk = "";
         }
