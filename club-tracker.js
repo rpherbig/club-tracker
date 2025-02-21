@@ -139,14 +139,15 @@ client.on('interactionCreate', async interaction => {
     case 'total-essence':
     case 'total-gold':
       const playersData = Array.from(guildData.entries())
-        .map(([name, pData]) => [name, pData.get(key) || 0, getLastUpdated(pData, dateKey)])
+        .map(([name, pData]) => [name, pData.get(key) || 0, getLastUpdated(pData, dateKey)]);
+      const memberCount = playersData.length;
       const total = playersData.reduce((sum, [_name, amount]) => sum + amount, 0);
       const breakdown = playersData
         .sort(([_name1, amount1, _lastUpdated1], [_name2, amount2, _lastUpdated2]) => amount2 - amount1) // Sort descending
         .map(([name, amount, lastUpdated]) => `${name}: ${amount} (last updated ${lastUpdated})`);
       const chunks = [];
       // Start with the preamble/boilerplate
-      let currentChunk = `Total Club ${key}: ${total}\n\nBreakdown:\n`;
+      let currentChunk = `Total Club ${key}: ${total}\nMembers: ${memberCount}\n\nBreakdown:\n`;
 
       // Discord bots have a 2000 character limit
       // Break on a player's data, not at an arbitrary character
