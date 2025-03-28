@@ -1,6 +1,7 @@
 const { Client, GatewayIntentBits } = require('discord.js');
 const fs = require('fs').promises;
 const moment = require('moment');
+const { handleFind } = require('./commands/war-commands');
 require('dotenv').config();
 
 const DATA_FILE = 'data.json';
@@ -171,6 +172,10 @@ client.on('interactionCreate', async interaction => {
           await interaction.followUp(chunks[i]);
       }
 
+      break;
+
+    case 'find':
+      await handleFind(interaction);
       break;
   }
 });

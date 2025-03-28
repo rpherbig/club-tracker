@@ -109,6 +109,20 @@ const commands = [
   {
     name: 'overdue-gold',
     description: 'Show players who are overdue updating their gold value'
+  },
+  {
+    name: 'find',
+    description: 'Send a message telling club members to dig to a specific floor',
+    options: [
+      {
+        name: 'floor',
+        type: 4,
+        description: 'Floor number to dig to (11-20)',
+        required: true,
+        min_value: 11,
+        max_value: 20
+      }
+    ]
   }
 ];
 
