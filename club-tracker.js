@@ -1,8 +1,10 @@
-const { Client, GatewayIntentBits } = require('discord.js');
-const fs = require('fs').promises;
-const moment = require('moment');
-const { handleFind, handleKill } = require('./commands/war-commands');
-require('dotenv').config();
+import { Client, GatewayIntentBits } from 'discord.js';
+import { promises as fs } from 'fs';
+import moment from 'moment';
+import { handleFind, handleKill } from './commands/war-commands.js';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const DATA_FILE = 'data.json';
 const ESSENCE_OVERDUE_DAYS = 14;
