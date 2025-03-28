@@ -20,6 +20,7 @@ async function getWarOrdersChannel(interaction) {
 // 'Find' command implementation
 async function handleFind(interaction) {
     const floor = interaction.options.getInteger('floor');
+    const additionalMessage = interaction.options.getString('message') || '';
     const channel = await getWarOrdersChannel(interaction);
     
     if (!channel) return;
@@ -37,7 +38,8 @@ async function handleFind(interaction) {
         return;
     }
 
-    await channel.send(`<@&${shellShockRole.id}> find floor ${floor}!`);
+    const message = `<@&${shellShockRole.id}> find floor ${floor}! ${additionalMessage}`;
+    await channel.send(message);
     await interaction.reply({
         content: `Sent find command for floor ${floor}!`,
         flags: MessageFlags.Ephemeral

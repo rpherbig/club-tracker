@@ -121,6 +121,12 @@ const commands = [
         required: true,
         min_value: 11,
         max_value: 20
+      },
+      {
+        name: 'message',
+        type: 3,
+        description: 'Additional message to append',
+        required: false
       }
     ]
   }
