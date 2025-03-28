@@ -19,6 +19,15 @@ async function getWarOrdersChannel(interaction) {
 
 // 'Find' command implementation
 async function handleFind(interaction) {
+    // Check if the command is being used in the species-war channel
+    if (interaction.channel.name !== 'species-war') {
+        await interaction.reply({
+            content: 'This command can only be used in the species-war channel!',
+            flags: MessageFlags.Ephemeral
+        });
+        return;
+    }
+
     const floor = interaction.options.getInteger('floor');
     const additionalMessage = interaction.options.getString('message') || '';
     const channel = await getWarOrdersChannel(interaction);
