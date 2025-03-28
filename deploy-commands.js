@@ -129,6 +129,26 @@ const commands = [
         required: false
       }
     ]
+  },
+  {
+    name: 'kill',
+    description: 'Send a message telling club members to kill a specific floor',
+    options: [
+      {
+        name: 'floor',
+        type: 4,
+        description: 'Floor number to kill (11-20)',
+        required: true,
+        min_value: 11,
+        max_value: 20
+      },
+      {
+        name: 'message',
+        type: 3,
+        description: 'Additional message to append',
+        required: false
+      }
+    ]
   }
 ];
 
