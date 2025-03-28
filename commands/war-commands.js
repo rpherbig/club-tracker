@@ -17,6 +17,13 @@ async function getWarOrdersChannel(interaction) {
     return channel;
 }
 
+// Helper function to find a role by name
+function findRole(interaction, roleName) {
+    return interaction.guild.roles.cache.find(role => 
+        role.name.toLowerCase() === roleName.toLowerCase()
+    );
+}
+
 // 'Find' command implementation
 async function handleFind(interaction) {
     // Check if the command is being used in the species-war channel
@@ -35,9 +42,7 @@ async function handleFind(interaction) {
     if (!channel) return;
 
     // Find the ShellShock role
-    const shellShockRole = interaction.guild.roles.cache.find(role => 
-        role.name.toLowerCase().includes('shellshock')
-    );
+    const shellShockRole = findRole(interaction, 'shellshock');
 
     if (!shellShockRole) {
         await interaction.reply({
@@ -50,7 +55,7 @@ async function handleFind(interaction) {
     const message = `<@&${shellShockRole.id}> find floor ${floor}! ${additionalMessage}`;
     await channel.send(message);
     await interaction.reply({
-        content: `Sent find command for floor ${floor}!`,
+        content: `Sent the 'find' message in #species-war channel to find floor ${floor}!`,
         flags: MessageFlags.Ephemeral
     });
 }
