@@ -1,15 +1,12 @@
 import { Client, GatewayIntentBits } from 'discord.js';
 import { promises as fs } from 'fs';
-import moment from 'moment';
 import { handleFind, handleKill } from './commands/war-commands.js';
+import { handleSetResource, handleShowResource, handleOverdueResource, handleTotalResource } from './commands/resource-commands.js';
 import dotenv from 'dotenv';
 
 dotenv.config();
 
 const DATA_FILE = 'data.json';
-const ESSENCE_OVERDUE_DAYS = 14;
-const GOLD_OVERDUE_DAYS = 42;
-const DISCORD_CHAR_LIMIT = 1800;
 
 const client = new Client({
   intents: [
@@ -53,18 +50,6 @@ async function saveData(data) {
   );
 }
 
-function toRelativeDate(lastUpdated) {
-  if(lastUpdated === undefined) {
-    return "unknown";
-  }
-  return moment(new Date()).to(new Date(lastUpdated));
-}
-
-function getLastUpdated(playerData, dateKey) {
-  const lastUpdated = playerData.get(dateKey);
-  return toRelativeDate(lastUpdated);
-}
-
 let data;
 
 client.once('ready', async () => {
@@ -84,96 +69,32 @@ client.on('interactionCreate', async interaction => {
 
   let guildId = interaction.guildId;
   let guildData = data.get(guildId) || new Map();
-  let key = interaction.commandName.includes("essence") || interaction.commandName === "se" ? 'essence' : 'gold';
-  let dateKey =`${key}-date`;
-
-  async function setData(key, player, amount) {
-      const playerData = guildData.get(player) || new Map();
-      playerData.set(key, amount);
-      playerData.set(dateKey, moment());
-      guildData.set(player, playerData);
-      data.set(guildId, guildData);
-      await saveData(data);
-      await interaction.reply(`Set ${player}'s ${key} to ${amount}`);
-  }
 
   switch (interaction.commandName) {
     case 'set-essence':
     case 'se':
     case 'set-gold':
     case 'sg':
-      const amount = interaction.options.getInteger('amount');
-      const displayName = interaction.member.displayName.toLowerCase();
-      await setData(key, displayName, amount);
-      break;
-
     case 'set-player-essence':
     case 'set-player-gold':
-      const player = interaction.options.getString('player').toLowerCase();
-      const playerAmount = interaction.options.getInteger('amount');
-      await setData(key, player, playerAmount);
+      guildData = await handleSetResource(interaction, guildData);
+      data.set(guildId, guildData);
+      await saveData(data);
       break;
 
     case 'show-essence':
     case 'show-gold':
-      const targetPlayer = interaction.member.displayName.toLowerCase();
-      const targetPlayerData = guildData.get(targetPlayer) || new Map();
-      const val = targetPlayerData.get(key) || 0;
-      const lastUpdated = getLastUpdated(targetPlayerData, dateKey);
-      await interaction.reply(`${targetPlayer} has ${val} ${key} (last updated ${lastUpdated})`);
+      await handleShowResource(interaction, guildData);
       break;
 
     case 'overdue-essence':
     case 'overdue-gold':
-      // Two weeks for essence, six weeks for gold
-      const days = key == "essence" ? ESSENCE_OVERDUE_DAYS : GOLD_OVERDUE_DAYS;
-      const cutoffDate = moment().subtract(days, 'days');
-
-      const overduePlayers = Array.from(guildData.entries())
-        .map(([name, pData]) => [name, pData.get(key) || 0, pData.get(dateKey)])
-        .filter(([_name, _amount, lastUpdated]) => !lastUpdated || moment(lastUpdated).isBefore(cutoffDate))
-        .sort(([_name1, _amount1, lastUpdated1], [_name2, _amount2, lastUpdated2]) => new Date(lastUpdated1) - new Date(lastUpdated2)) // Sort ascending
-        .map(([name, amount, lastUpdated]) => [name, amount, toRelativeDate(lastUpdated)])
-        .map(([name, amount, lastUpdated]) => `${name}: ${amount} (last updated ${lastUpdated})`)
-        .join('\n');
-      await interaction.reply(`Overdue Members for ${key}:\n${overduePlayers}`);
+      await handleOverdueResource(interaction, guildData);
       break;
 
     case 'total-essence':
     case 'total-gold':
-      const playersData = Array.from(guildData.entries())
-        .map(([name, pData]) => [name, pData.get(key) || 0, getLastUpdated(pData, dateKey)]);
-      const memberCount = playersData.length;
-      const total = playersData.reduce((sum, [_name, amount]) => sum + amount, 0);
-      const breakdown = playersData
-        .sort(([_name1, amount1, _lastUpdated1], [_name2, amount2, _lastUpdated2]) => amount2 - amount1) // Sort descending
-        .map(([name, amount, lastUpdated]) => `${name}: ${amount} (last updated ${lastUpdated})`);
-      const chunks = [];
-      // Start with the preamble/boilerplate
-      let currentChunk = `Total Club ${key}: ${total}\nMembers: ${memberCount}\n\nBreakdown:\n`;
-
-      // Discord bots have a 2000 character limit
-      // Break on a player's data, not at an arbitrary character
-      for(const part of breakdown) {
-        if ((currentChunk + part).length > DISCORD_CHAR_LIMIT) {
-          chunks.push(currentChunk);
-          currentChunk = "";
-        }
-        currentChunk += part + '\n';
-      }
-
-      // Take care of any leftover text
-      if(currentChunk) {
-        chunks.push(currentChunk);
-      }
-
-      // First chunk needs to use reply
-      await interaction.reply(chunks[0]);
-      // Subsequent chunks use followUp
-      for (let i = 1; i < chunks.length; i++) {
-          await interaction.followUp(chunks[i]);
-      }
-
+      await handleTotalResource(interaction, guildData);
       break;
 
     case 'find':
