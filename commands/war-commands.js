@@ -1,4 +1,4 @@
-const { MessageFlags } = require('discord.js');
+import { MessageFlags } from 'discord.js';
 
 // Helper function to get the war-orders channel
 async function getWarOrdersChannel(interaction) {
@@ -133,7 +133,4 @@ async function handleKill(interaction) {
     });
 }
 
-module.exports = {
-    handleFind,
-    handleKill
-}; 
+export { handleFind, handleKill }; 
