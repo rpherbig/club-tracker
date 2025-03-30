@@ -98,10 +98,12 @@ client.on('interactionCreate', async interaction => {
       break;
 
     case 'find':
+      console.log(`[${new Date().toISOString()}] User ${interaction.user.tag} used /find command in #${interaction.channel.name} (${interaction.guild.name})`);
       await handleFind(interaction);
       break;
 
     case 'kill':
+      console.log(`[${new Date().toISOString()}] User ${interaction.user.tag} used /kill command in #${interaction.channel.name} (${interaction.guild.name})`);
       await handleKill(interaction);
       break;
   }
