@@ -84,6 +84,7 @@ async function handleKill(interaction) {
     const prospectorEpsilon = findRole(interaction, 'prospector epsilon');
     const vanguardBeta = findRole(interaction, 'vanguard beta');
     const vanguard = findRole(interaction, 'vanguard');
+    const shellShock = findRole(interaction, 'shellshock');
 
     // Format message based on floor
     let message;
@@ -106,6 +107,8 @@ async function handleKill(interaction) {
             message = `<@&${prospector.id}> <@&${vanguard.id}> F${floor} has been found!`;
             break;
         case 18:
+            message = `<@&${shellShock.id}> F${floor} has been found!`;
+            break;
         case 19:
         case 20:
             await interaction.reply({
