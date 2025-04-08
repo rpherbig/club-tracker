@@ -52,7 +52,7 @@ async function handleFind(interaction) {
         return;
     }
 
-    const message = `<@&${shellShockRole.id}> find floor ${floor}! ${additionalMessage}`;
+    const message = `Good news, <@&${shellShockRole.id}>! It's time to find F${floor}! ${additionalMessage}`;
     await channel.send(message);
     await interaction.reply({
         content: `Sent the 'find' message in #species-war to find floor ${floor}!`,
@@ -86,28 +86,28 @@ async function handleKill(interaction) {
     const vanguard = findRole(interaction, 'vanguard');
     const shellShock = findRole(interaction, 'shellshock');
 
-    // Format message based on floor
-    let message;
+    // Get roles for this floor
+    let roles;
     switch (floor) {
         case 11:
         case 12:
         case 13:
-            message = `<@&${laborer.id}> <@&${prospectorEpsilon.id}> F${floor} has been found!`;
+            roles = [laborer, prospectorEpsilon];
             break;
         case 14:
-            message = `<@&${laborer.id}> <@&${prospectorEpsilon.id}> <@&${prospectorDelta.id}> F${floor} has been found!`;
+            roles = [laborer, prospectorEpsilon, prospectorDelta];
             break;
         case 15:
-            message = `<@&${laborer.id}> <@&${prospector.id}> F${floor} has been found!`;
+            roles = [laborer, prospector];
             break;
         case 16:
-            message = `<@&${prospector.id}> <@&${vanguardBeta.id}> F${floor} has been found!`;
+            roles = [prospector, vanguardBeta];
             break;
         case 17:
-            message = `<@&${prospector.id}> <@&${vanguard.id}> F${floor} has been found!`;
+            roles = [prospector, vanguard];
             break;
         case 18:
-            message = `<@&${shellShock.id}> F${floor} has been found!`;
+            roles = [shellShock];
             break;
         case 19:
         case 20:
@@ -124,10 +124,9 @@ async function handleKill(interaction) {
             return;
     }
 
-    // Add additional message if provided
-    if (additionalMessage) {
-        message += ` ${additionalMessage}`;
-    }
+    // Format the message with the roles
+    const roleMentions = roles.map(role => `<@&${role.id}>`).join(' ');
+    const message = `Good news, ${roleMentions}! F${floor} has been found! ${additionalMessage}`;
 
     await channel.send(message);
     await interaction.reply({
