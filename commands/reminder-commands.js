@@ -3,7 +3,7 @@
 import { MessageFlags, PermissionsBitField } from 'discord.js';
 
 const TARGET_CHANNEL_NAME = 'friends-of-ss-chat';
-const ALLOWED_COMMAND_CHANNEL_NAME = 'bot-commands';
+const ALLOWED_COMMAND_CHANNEL_NAME = '🤖┃bot-commands';
 
 async function handlePostForgetfulMessage(interaction, forgetfulMessageStore) {
   try {
