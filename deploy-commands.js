@@ -151,6 +151,10 @@ const commands = [
         required: false
       }
     ]
+  },
+  {
+    name: 'post-forgetful-message',
+    description: 'Posts the message for users to react to for the Forgetful role.'
   }
 ];
 
