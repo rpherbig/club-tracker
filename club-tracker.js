@@ -3,6 +3,7 @@ import { promises as fs } from 'fs';
 import cron from 'node-cron'; // Added for scheduled tasks
 import { handleFind, handleKill } from './commands/war-commands.js';
 import { handleSetResource, handleShowResource, handleOverdueResource, handleTotalResource } from './commands/resource-commands.js';
+import { handlePostForgetfulMessage } from './commands/reminder-commands.js'; // Added import
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -166,6 +167,11 @@ client.on('interactionCreate', async interaction => {
     case 'kill':
       console.log(`[${new Date().toISOString()}] User ${interaction.user.tag} used /kill command in #${interaction.channel.name} (${interaction.guild.name})`);
       await handleKill(interaction);
+      break;
+
+    case 'post-forgetful-message':
+      console.log(`[${new Date().toISOString()}] User ${interaction.user.tag} used /post-forgetful-message command in #${interaction.channel.name} (${interaction.guild.name})`);
+      await handlePostForgetfulMessage(interaction, forgetfulMessageStore);
       break;
   }
 });
