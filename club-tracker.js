@@ -27,13 +27,14 @@ function objectToMap(obj) {
     );
 }
 
-async function loadData() {
+async function loadData(filePath) {
   try {
-    const jsonString = await fs.readFile(DATA_FILE, 'utf8');
+    const jsonString = await fs.readFile(filePath, 'utf8');
     const parsedData = JSON.parse(jsonString);
+    console.log(`Loaded data from ${filePath}`);
     return objectToMap(parsedData);
   } catch {
-    console.log(`No data file found at: ${DATA_FILE}`);
+    console.error(`Error loading data from ${filePath}:`, error);
     return new Map();
   }
 }
@@ -45,20 +46,25 @@ function mapToObject(map) {
     );
 }
 
-async function saveData(data) {
-  const jsonReadyData = mapToObject(data);
+async function saveData(dataToSave, filePath) {
+  try {
+    const jsonReadyData = mapToObject(dataToSave);
   await fs.writeFile(
-    DATA_FILE,
+      filePath,
     JSON.stringify(jsonReadyData),
     'utf8'
   );
+    console.log(`Saved data to ${filePath}`);
+  } catch (error) {
+    console.error(`Error saving data to ${filePath}:`, error);
+  }
 }
 
 let data;
 
 client.once('ready', async () => {
   console.log(`Logged in as ${client.user.tag}`);
-  data = await loadData();
+  data = await loadData(DATA_FILE);
 
   // Schedule the daily check-in message
   const dailyCheckinChannelName = 'daily-discord-checkin';
@@ -141,7 +147,7 @@ client.on('interactionCreate', async interaction => {
     case 'set-player-gold':
       guildData = await handleSetResource(interaction, guildData);
       data.set(guildId, guildData);
-      await saveData(data);
+      await saveData(data, DATA_FILE);
       break;
 
     case 'show-essence':
