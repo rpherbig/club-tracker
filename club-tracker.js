@@ -9,6 +9,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const DATA_FILE = 'data.json';
+const FORGETFUL_MESSAGES_FILE = 'forgetful_messages.json';
 let forgetfulMessageStore = new Map(); // Stores { guildId: messageId } for reaction listener
 
 const client = new Client({
@@ -49,11 +50,11 @@ function mapToObject(map) {
 async function saveData(dataToSave, filePath) {
   try {
     const jsonReadyData = mapToObject(dataToSave);
-  await fs.writeFile(
+    await fs.writeFile(
       filePath,
-    JSON.stringify(jsonReadyData),
-    'utf8'
-  );
+      JSON.stringify(jsonReadyData),
+      'utf8'
+    );
     console.log(`Saved data to ${filePath}`);
   } catch (error) {
     console.error(`Error saving data to ${filePath}:`, error);
@@ -65,6 +66,7 @@ let data;
 client.once('ready', async () => {
   console.log(`Logged in as ${client.user.tag}`);
   data = await loadData(DATA_FILE);
+  forgetfulMessageStore = await loadData(FORGETFUL_MESSAGES_FILE);
 
   // Schedule the daily check-in message
   const dailyCheckinChannelName = 'daily-discord-checkin';
@@ -177,7 +179,15 @@ client.on('interactionCreate', async interaction => {
 
     case 'post-forgetful-message':
       console.log(`[${new Date().toISOString()}] User ${interaction.user.tag} used /post-forgetful-message command in #${interaction.channel.name} (${interaction.guild.name})`);
-      await handlePostForgetfulMessage(interaction, forgetfulMessageStore);
+      // Call the handler, it returns the message ID or null
+      const newMessageId = await handlePostForgetfulMessage(interaction);
+
+      if (newMessageId) {
+          const currentList = forgetfulMessageStore.get(guildId) || [];
+          const updatedList = [...currentList, newMessageId];
+          forgetfulMessageStore.set(guildId, updatedList);
+          await saveData(forgetfulMessageStore, FORGETFUL_MESSAGES_FILE);
+      }
       break;
   }
 });
@@ -187,18 +197,13 @@ client.on('messageReactionAdd', async (reaction, user) => {
     // Ignore reactions from bots
     if (user.bot) return;
 
-    // Ensure reaction is in a guild
     if (!reaction.message.guild) return;
-
     const guildId = reaction.message.guildId;
-    const forgetfulMessageId = forgetfulMessageStore.get(guildId);
+    const forgetfulMessageIdList = forgetfulMessageStore.get(guildId);
 
-    // Check if the reaction is on the designated message
-    if (!forgetfulMessageId || reaction.message.id !== forgetfulMessageId) {
-        return;
-    }
+    if (!forgetfulMessageIdList || !forgetfulMessageIdList.includes(reaction.message.id)) return;
 
-    console.log(`Reaction detected on forgetful message ${forgetfulMessageId} in guild ${guildId} by user ${user.tag}`);
+    console.log(`Reaction detected on a tracked forgetful message (${reaction.message.id}) in guild ${guildId} by user ${user.tag}`);
 
     try {
         // Fetch the member who reacted

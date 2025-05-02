@@ -5,7 +5,8 @@ import { MessageFlags, PermissionsBitField } from 'discord.js';
 const TARGET_CHANNEL_NAME = 'friends-of-ss-chat';
 const ALLOWED_COMMAND_CHANNEL_NAME = '🤖┃bot-commands';
 
-async function handlePostForgetfulMessage(interaction, forgetfulMessageStore) {
+// Returns the new message ID (string) on success, or null on failure.
+async function handlePostForgetfulMessage(interaction) {
   try {
     // 1. Check if the command is used in the allowed channel
     if (interaction.channel.name !== ALLOWED_COMMAND_CHANNEL_NAME) {
@@ -13,7 +14,7 @@ async function handlePostForgetfulMessage(interaction, forgetfulMessageStore) {
         content: `This command can only be used in #${ALLOWED_COMMAND_CHANNEL_NAME}.`,
         flags: MessageFlags.Ephemeral
       });
-      return;
+      return null;
     }
 
     // 2. Find the target channel
@@ -26,7 +27,7 @@ async function handlePostForgetfulMessage(interaction, forgetfulMessageStore) {
         content: `Could not find the #${TARGET_CHANNEL_NAME} channel. Please ensure it exists and the bot can see it.`,
         flags: MessageFlags.Ephemeral
       });
-      return;
+      return null;
     }
 
     // Check bot permissions in the target channel
@@ -36,15 +37,15 @@ async function handlePostForgetfulMessage(interaction, forgetfulMessageStore) {
             content: `I don't have permission to send messages in #${TARGET_CHANNEL_NAME}.`,
             flags: MessageFlags.Ephemeral
         });
-        return;
+        return null;
     }
 
-    // 3a. Post the message
+    // 3. Post the message
     const message = await targetChannel.send(
       'React to this message with any emoji to get the \'Forgetful\' role and receive daily check-in reminders!'
     );
 
-    // 3b. Seed the message with a reaction for easy clicking
+    // 4. Seed the message with a reaction for easy clicking
     try {
         await message.react('✅'); 
     } catch (reactError) {
@@ -52,16 +53,13 @@ async function handlePostForgetfulMessage(interaction, forgetfulMessageStore) {
         // Continue anyway, main functionality is posting
     }
 
-    // 4. Store the message ID in memory
-    forgetfulMessageStore.set(interaction.guildId, message.id);
-    console.log(`Stored forgetful message ID ${message.id} for guild ${interaction.guildId}`);
-
     // 5. Confirm to the user
     await interaction.reply({
       content: `Successfully posted the role assignment message in #${TARGET_CHANNEL_NAME}. Its ID is ${message.id}. I will listen for reactions on this message.`,
       flags: MessageFlags.Ephemeral
     });
 
+    return message.id;
   } catch (error) {
     console.error('Error in handlePostForgetfulMessage:', error);
     // Attempt to reply if interaction is still available
@@ -70,6 +68,7 @@ async function handlePostForgetfulMessage(interaction, forgetfulMessageStore) {
     } else {
         await interaction.reply({ content: 'An error occurred while processing your command.', flags: MessageFlags.Ephemeral });
     }
+    return null;
   }
 }
 
