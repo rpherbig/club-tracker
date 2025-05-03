@@ -155,6 +155,10 @@ const commands = [
   {
     name: 'post-forgetful-message',
     description: 'Posts the message for users to react to for the Forgetful role.'
+  },
+  {
+    name: 'trigger-daily-checkin',
+    description: 'Manually trigger the daily check-in message.'
   }
 ];
 

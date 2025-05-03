@@ -3,7 +3,7 @@ import { promises as fs } from 'fs';
 import cron from 'node-cron'; // Added for scheduled tasks
 import { handleFind, handleKill } from './commands/war-commands.js';
 import { handleSetResource, handleShowResource, handleOverdueResource, handleTotalResource } from './commands/resource-commands.js';
-import { handlePostForgetfulMessage } from './commands/reminder-commands.js'; // Added import
+import { handlePostForgetfulMessage, handleTriggerDailyCheckin, sendDailyReminder } from './commands/reminder-commands.js'; // Added imports
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -70,53 +70,11 @@ client.once('ready', async () => {
   forgetfulMessageStore = await loadData(FORGETFUL_MESSAGES_FILE);
 
   // Schedule the daily check-in message
-  const dailyCheckinChannelName = 'daily-discord-checkin';
-  const forgetfulRoleName = 'Forgetful';
-  const messageLink = 'https://discord.com/channels/1036712913727143998/1364121623283896360/1364129089572700190';
-
   if (cron.validate('0 10 * * *')) {
       cron.schedule('0 10 * * *', async () => {
           console.log('[Cron Job] Running daily check-in task...');
           client.guilds.cache.forEach(async (guild) => {
-              console.log(`[Cron Job] Processing guild: ${guild.name} (${guild.id})`);
-              try {
-                  // Find the target channel
-                  const channel = guild.channels.cache.find(ch => ch.name === dailyCheckinChannelName);
-                  if (!channel) {
-                      console.log(`[Cron Job] Channel #${dailyCheckinChannelName} not found in guild ${guild.name}. Skipping.`);
-                      return;
-                  }
-
-                  // Find the Forgetful role
-                  const role = guild.roles.cache.find(r => r.name.toLowerCase() === forgetfulRoleName.toLowerCase());
-                  if (!role) {
-                      console.log(`[Cron Job] Role '${forgetfulRoleName}' not found in guild ${guild.name}. Skipping.`);
-                      return;
-                  }
-
-                  // Check permissions
-                  const botPermissions = channel.permissionsFor(guild.members.me);
-                  if (!botPermissions || !botPermissions.has(PermissionsBitField.Flags.SendMessages)) {
-                      console.log(`[Cron Job] Missing Send Messages permission in #${dailyCheckinChannelName} for guild ${guild.name}. Skipping.`);
-                      return;
-                  }
-                  if (!botPermissions.has(PermissionsBitField.Flags.MentionEveryone)) {
-                     console.warn(`[Cron Job] Missing Mention @everyone, @here, and All Roles permission in #${dailyCheckinChannelName} for guild ${guild.name}. The role mention might not work.`);
-                     // Continue anyway, maybe the mention still works for specific roles?
-                  }
-
-                  // Construct and send the message
-                  const messageContent = `<@&${role.id}> Check the daily post: ${messageLink}`;
-                  await channel.send(messageContent);
-                  console.log(`[Cron Job] Successfully sent daily check-in message to #${dailyCheckinChannelName} in guild ${guild.name}.`);
-
-              } catch (error) {
-                  console.error(`[Cron Job] Failed to send daily check-in for guild ${guild.name}:`, error);
-                  // Check for specific permission errors
-                   if (error.code === 50013) { // DiscordAPIError: Missing Permissions
-                       console.error(`[Cron Job] Might be missing Send Messages or Mention permissions in #${dailyCheckinChannelName} for guild ${guild.name}.`);
-                   }
-              }
+              await sendDailyReminder(guild);
           });
       }, {
           scheduled: true,
@@ -189,6 +147,11 @@ client.on('interactionCreate', async interaction => {
           forgetfulMessageStore.set(guildId, updatedList);
           await saveData(forgetfulMessageStore, FORGETFUL_MESSAGES_FILE);
       }
+      break;
+
+    case 'trigger-daily-checkin':
+      console.log(`[${new Date().toISOString()}] User ${interaction.user.tag} manually triggered daily check-in`);
+      await handleTriggerDailyCheckin(interaction);
       break;
   }
 });
