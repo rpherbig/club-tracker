@@ -23,6 +23,7 @@ const client = new Client({
 
 function objectToMap(obj) {
     if (typeof obj !== "object" || obj === null) return obj; // Base case: not an object
+    if (Array.isArray(obj)) return obj; // Keep arrays as arrays
     return new Map(
         Object.entries(obj).map(([key, value]) => [key, objectToMap(value)])
     );
