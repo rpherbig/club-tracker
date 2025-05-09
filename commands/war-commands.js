@@ -138,11 +138,21 @@ async function handleKill(interaction) {
     const roleMentions = roles.map(role => `<@&${role.id}>`).join(' ');
     const message = `Good news, ${roleMentions}! F${floor} has been found! ${additionalMessage}`;
 
-    await channel.send(message);
-    await interaction.reply({
-        content: `Sent the 'kill' message in #species-war to kill floor ${floor}!`,
-        flags: MessageFlags.Ephemeral
-    });
+    try {
+        await channel.send(message);
+        await interaction.reply({
+            content: `Sent the 'kill' message in #species-war to kill floor ${floor}!`,
+            flags: MessageFlags.Ephemeral
+        });
+    } catch (error) {
+        console.error('Error sending message:', error);
+        if (!interaction.replied && !interaction.deferred) {
+            await interaction.reply({
+                content: 'There was an error sending the message. Please try again.',
+                flags: MessageFlags.Ephemeral
+            });
+        }
+    }
 }
 
 export { handleFind, handleKill }; 
