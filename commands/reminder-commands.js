@@ -60,13 +60,13 @@ export async function handleTriggerDailyCheckin(interaction) {
       await sendDailyReminder(interaction.guild);
       await interaction.reply({
           content: 'Daily check-in message sent successfully!',
-          ephemeral: true
+          flags: MessageFlags.Ephemeral
       });
     } catch (error) {
       console.error(`[Cron Job] Failed to send daily check-in for guild ${interaction.guild.name}:`, error);
       await interaction.reply({
           content: 'Failed to send daily check-in message. Check the logs for details.',
-          ephemeral: true
+          flags: MessageFlags.Ephemeral
       });
     }
 }

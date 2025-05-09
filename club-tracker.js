@@ -1,4 +1,4 @@
-import { Client, GatewayIntentBits, PermissionsBitField } from 'discord.js';
+import { Client, GatewayIntentBits, PermissionsBitField, MessageFlags } from 'discord.js';
 import { promises as fs } from 'fs';
 import cron from 'node-cron'; // Added for scheduled tasks
 import { handleFind, handleKill } from './commands/war-commands.js';
@@ -91,7 +91,7 @@ client.on('interactionCreate', async interaction => {
   if (!interaction.guild) {
     await interaction.reply({
         content: "This bot does not support direct messages. Please use commands in a server.",
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral
     });
     return;
   }
