@@ -77,7 +77,7 @@ async function handleKill(interaction) {
     
     if (!channel) return;
 
-    // Find all possible roles
+    // Find all possible roles. Will return null if the role is not found.
     const laborer = findRole(interaction, 'laborer');
     const prospector = findRole(interaction, 'prospector');
     const prospectorDelta = findRole(interaction, 'prospector delta');
@@ -122,6 +122,16 @@ async function handleKill(interaction) {
                 flags: MessageFlags.Ephemeral
             });
             return;
+    }
+
+    // Check if all required roles exist
+    const missingRoles = roles.filter(role => !role);
+    if (missingRoles.length > 0) {
+        await interaction.reply({
+            content: 'One or more required roles are missing! Please check that all roles exist.',
+            flags: MessageFlags.Ephemeral
+        });
+        return;
     }
 
     // Format the message with the roles
