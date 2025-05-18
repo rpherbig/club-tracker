@@ -159,6 +159,10 @@ const commands = [
   {
     name: 'trigger-daily-checkin',
     description: 'Manually trigger the daily check-in message.'
+  },
+  {
+    name: 'check-sheet-roles',
+    description: 'Checks Google Sheet for team assignments and suggests role updates.'
   }
 ];
 
