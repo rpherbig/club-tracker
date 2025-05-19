@@ -6,6 +6,18 @@ dotenv.config();
 // Configuration:
 const SPREADSHEET_ID = '1JQ3Atkgv1APC6kXawTIR2HjeWVCvBYepQqtZnygWSUU';
 
+// Name mapping configuration - maps sheet names to Discord usernames/IDs
+const NAME_MAPPING = {
+  'amarin': '158622934271918081',
+  'snailybob': '233793523269238785',
+  'itisl': '558481091191767041',
+  'mike': '757384703501271200',
+  'leecchh': '482008530572804116',
+  'hines': '230431329072840706',
+  'jwfw': '663562170507984928',
+  'melonking': '197115561359048705'
+};
+
 // Simplified mapping from team prefix to base category role
 const TEAM_PREFIX_TO_CATEGORY_ROLE = {
   'van': 'Vanguard',
@@ -135,6 +147,21 @@ function getAllTeamRoles() {
 }
 
 function findMemberByName(guild, name) {
+  // First check if we have a mapping for this name
+  const mappedName = NAME_MAPPING[name];
+  if (mappedName) {
+    // If the mapped name is a Discord ID (18 digits)
+    if (/^\d{17,19}$/.test(mappedName)) {
+      return guild.members.cache.get(mappedName);
+    }
+    // Otherwise treat it as a username
+    return guild.members.cache.find(
+      m => m.user.username.toLowerCase() === mappedName.toLowerCase() ||
+           m.displayName.toLowerCase() === mappedName.toLowerCase()
+    );
+  }
+
+  // If no mapping exists, try the original name
   return guild.members.cache.find(
     m => m.user.username.toLowerCase() === name.toLowerCase() ||
          m.displayName.toLowerCase() === name.toLowerCase()
