@@ -34,6 +34,12 @@ function getRolesForTeam(sheetTeamName) {
     return null; // Prefix not found in our map
   }
 
+  // Special case for Laborer teams - only return the category role
+  if (prefix === 'lab') {
+    return [categoryRole];
+  }
+
+  // For other teams, return both category and specific team role
   // Capitalize the first letter of the suffix (e.g., "alpha" -> "Alpha")
   const capitalizedSuffix = suffix.charAt(0).toUpperCase() + suffix.slice(1);
   const specificTeamRole = `${categoryRole} ${capitalizedSuffix}`;
