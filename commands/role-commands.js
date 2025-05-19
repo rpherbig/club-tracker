@@ -48,34 +48,57 @@ async function getSheetData() {
     });
     const sheets = google.sheets({ version: 'v4', auth });
 
-    // 1. Get spreadsheet metadata to find the title of the third sheet (index 2)
+    // 1. Get spreadsheet metadata to list all available sheets
     const spreadsheetMeta = await sheets.spreadsheets.get({
       spreadsheetId: SPREADSHEET_ID,
     });
-    const thirdSheet = spreadsheetMeta.data.sheets[2];
-    if (!thirdSheet || !thirdSheet.properties || !thirdSheet.properties.title) {
-      throw new Error('Could not find the third tab or its title in the spreadsheet.');
+    
+    if (!spreadsheetMeta.data.sheets || spreadsheetMeta.data.sheets.length === 0) {
+      throw new Error('No sheets found in the spreadsheet.');
     }
-    const thirdSheetTitle = thirdSheet.properties.title;
-    console.log(`Identified third sheet title: ${thirdSheetTitle}`);
 
-    // 2. Validate headers in row 1 (A1 should be "Name", B1 should be "Team")
-    const headerRange = `'${thirdSheetTitle}'!A1:B1`;
-    const headerResponse = await sheets.spreadsheets.values.get({
-      spreadsheetId: SPREADSHEET_ID,
-      range: headerRange,
+    // Log all available sheets for debugging
+    console.log('Available sheets in the spreadsheet:');
+    spreadsheetMeta.data.sheets.forEach((sheet, index) => {
+      console.log(`${index + 1}. ${sheet.properties.title}`);
     });
-    const headers = headerResponse.data.values ? headerResponse.data.values[0] : null;
-    if (!headers || headers.length < 2 || 
-        headers[0].toLowerCase() !== 'name' || 
-        headers[1].toLowerCase() !== 'team') {
-      console.error(`Sheet "${thirdSheetTitle}" has incorrect headers. Expected "Name" in A1 and "Team" in B1. Found: "${headers ? headers.join(", ") : 'empty'}"`);
-      return null; 
-    }
-    console.log(`Headers validated successfully for sheet: ${thirdSheetTitle}`);
 
-    // 3. Read data from columns A (Name) and B (Team) of this third sheet, starting from row 2.
-    const dataRange = `'${thirdSheetTitle}'!A2:B`; // Read columns A and B starting from row 2
+    // Try to find a sheet with the expected headers
+    let targetSheet = null;
+    let targetSheetTitle = null;
+
+    for (const sheet of spreadsheetMeta.data.sheets) {
+      const sheetTitle = sheet.properties.title;
+      console.log(`Checking sheet: ${sheetTitle}`);
+      
+      try {
+        const headerRange = `'${sheetTitle}'!A1:B1`;
+        const headerResponse = await sheets.spreadsheets.values.get({
+          spreadsheetId: SPREADSHEET_ID,
+          range: headerRange,
+        });
+        
+        const headers = headerResponse.data.values ? headerResponse.data.values[0] : null;
+        if (headers && headers.length >= 2 && 
+            headers[0].toLowerCase() === 'name' && 
+            headers[1].toLowerCase() === 'team') {
+          targetSheet = sheet;
+          targetSheetTitle = sheetTitle;
+          console.log(`Found matching sheet: ${sheetTitle}`);
+          break;
+        }
+      } catch (error) {
+        console.log(`Error checking headers in sheet ${sheetTitle}:`, error.message);
+        continue;
+      }
+    }
+
+    if (!targetSheet) {
+      throw new Error('Could not find a sheet with the required "Name" and "Team" headers.');
+    }
+
+    // Read data from the found sheet
+    const dataRange = `'${targetSheetTitle}'!A2:B`;
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId: SPREADSHEET_ID,
       range: dataRange,
@@ -85,10 +108,10 @@ async function getSheetData() {
   } catch (error) {
     console.error('Error accessing Google Sheet:', error);
     if (error.code === 403) {
-        console.error('Ensure the Google Sheets API is enabled for your project and the service account has permissions to view the sheet.');
+      console.error('Ensure the Google Sheets API is enabled for your project and the service account has permissions to view the sheet.');
     }
     if (error.message.includes('file not found')) {
-        console.error('Ensure the GOOGLE_APPLICATION_CREDENTIALS environment variable is set correctly and the JSON key file exists.');
+      console.error('Ensure the GOOGLE_APPLICATION_CREDENTIALS environment variable is set correctly and the JSON key file exists.');
     }
     return null;
   }
