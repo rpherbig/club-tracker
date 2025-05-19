@@ -18,6 +18,9 @@ const NAME_MAPPING = {
   'melonking': '197115561359048705'
 };
 
+// Names to ignore in role checks (e.g., people not in Discord)
+const IGNORED_NAMES = new Set(['grantg']);
+
 // Simplified mapping from team prefix to base category role
 const TEAM_PREFIX_TO_CATEGORY_ROLE = {
   'van': 'Vanguard',
@@ -242,6 +245,7 @@ export async function handleShowRoleChanges(interaction) {
 
   const updatesNeeded = [];
   let membersProcessed = 0;
+  let membersSkipped = 0;
 
   // Fetch all members to avoid multiple fetches if sheet has many users
   await guild.members.fetch();
@@ -255,6 +259,14 @@ export async function handleShowRoleChanges(interaction) {
       console.log('Skipping row with missing name or team:', row);
       continue;
     }
+
+    // Skip ignored names
+    if (IGNORED_NAMES.has(sheetName.toLowerCase())) {
+      console.log(`Skipping ignored name: ${sheetName}`);
+      membersSkipped++;
+      continue;
+    }
+
     membersProcessed++;
 
     const targetRoleNames = getRolesForTeam(sheetTeam);
@@ -281,12 +293,12 @@ export async function handleShowRoleChanges(interaction) {
   }
 
   if (updatesNeeded.length === 0 && membersProcessed > 0) {
-    await interaction.editReply('All processed members from the sheet appear to have their correct roles based on the current mapping.');
+    await interaction.editReply(`All processed members from the sheet appear to have their correct roles based on the current mapping.\n(Processed ${membersProcessed} entries, skipped ${membersSkipped} ignored names)`);
   } else if (updatesNeeded.length === 0 && membersProcessed === 0) {
-    await interaction.editReply('No valid user data found in the sheet to process.');
+    await interaction.editReply(`No valid user data found in the sheet to process.\n(Skipped ${membersSkipped} ignored names)`);
   } 
   else {
-    let replyMessage = `**Prospective Role Changes based on Google Sheet:**\n(Processed ${membersProcessed} entries from sheet)\n`;
+    let replyMessage = `**Prospective Role Changes based on Google Sheet:**\n(Processed ${membersProcessed} entries, skipped ${membersSkipped} ignored names)\n`;
     replyMessage += updatesNeeded.join('\n');
     if (replyMessage.length > 2000) {
       replyMessage = replyMessage.substring(0, 1990) + '...\n(Message truncated)';
