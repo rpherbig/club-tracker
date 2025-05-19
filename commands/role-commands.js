@@ -45,7 +45,6 @@ async function getSheetData() {
   try {
     const auth = new google.auth.GoogleAuth({
       scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
-      // Ensure GOOGLE_APPLICATION_CREDENTIALS environment variable is set to the path of your JSON key file
     });
     const sheets = google.sheets({ version: 'v4', auth });
 
@@ -95,10 +94,72 @@ async function getSheetData() {
   }
 }
 
+function getAllTeamRoles() {
+  const allTeamRoles = new Set();
+  Object.values(TEAM_PREFIX_TO_CATEGORY_ROLE).forEach(categoryRole => {
+    allTeamRoles.add(categoryRole);
+    ['Alpha', 'Beta', 'Delta', 'Epsilon'].forEach(suffix => {
+      allTeamRoles.add(`${categoryRole} ${suffix}`);
+    });
+  });
+  return allTeamRoles;
+}
+
+function findMemberByName(guild, name) {
+  return guild.members.cache.find(
+    m => m.user.username.toLowerCase() === name.toLowerCase() ||
+         m.displayName.toLowerCase() === name.toLowerCase()
+  );
+}
+
+function checkMemberRoles(member, targetRoleNames, allTeamRoles) {
+  const missingRoles = [];
+  const rolesToRemove = [];
+
+  // Check for roles that should be added
+  for (const targetRoleName of targetRoleNames) {
+    const targetRole = member.guild.roles.cache.find(
+      role => role.name.toLowerCase() === targetRoleName.toLowerCase()
+    );
+
+    if (!targetRole) {
+      return {
+        error: `Target role "${targetRoleName}" not found on this server.`,
+        missingRoles: [],
+        rolesToRemove: []
+      };
+    }
+
+    if (!member.roles.cache.has(targetRole.id)) {
+      missingRoles.push(targetRole.name);
+    }
+  }
+
+  // Check for roles that should be removed
+  for (const role of member.roles.cache.values()) {
+    if (allTeamRoles.has(role.name) && !targetRoleNames.includes(role.name)) {
+      rolesToRemove.push(role.name);
+    }
+  }
+
+  return { missingRoles, rolesToRemove };
+}
+
+function formatRoleUpdateMessage(member, sheetName, sheetTeam, missingRoles, rolesToRemove) {
+  let message = `- ${member.user.tag} (Sheet Name: ${sheetName}, Team: ${sheetTeam}):`;
+  if (missingRoles.length > 0) {
+    message += `\n  Needs role(s): "${missingRoles.join(', ')}"`;
+  }
+  if (rolesToRemove.length > 0) {
+    message += `\n  Should remove role(s): "${rolesToRemove.join(', ')}"`;
+  }
+  return message;
+}
+
 export async function handleShowRoleChanges(interaction) {
   await interaction.deferReply({ ephemeral: true });
 
-  // Channel check
+  // Only accept the command from the bot-commands channel
   if (interaction.channel.name !== '🤖┃bot-commands') {
     await interaction.editReply(
       { content: 'This command can only be used in the #🤖┃bot-commands channel.', ephemeral: true }
@@ -113,7 +174,6 @@ export async function handleShowRoleChanges(interaction) {
   }
 
   const sheetData = await getSheetData();
-
   if (!sheetData) {
     await interaction.editReply('Could not retrieve data from the Google Sheet. Check bot logs for details.');
     return;
@@ -128,7 +188,8 @@ export async function handleShowRoleChanges(interaction) {
   let membersProcessed = 0;
 
   // Fetch all members to avoid multiple fetches if sheet has many users
-  await guild.members.fetch(); 
+  await guild.members.fetch();
+  const allTeamRoles = getAllTeamRoles();
 
   for (const row of sheetData) {
     const sheetName = row[0] ? row[0].trim() : null;
@@ -146,35 +207,20 @@ export async function handleShowRoleChanges(interaction) {
       continue;
     }
 
-    const member = guild.members.cache.find(
-      m => m.user.username.toLowerCase() === sheetName.toLowerCase() ||
-           m.displayName.toLowerCase() === sheetName.toLowerCase()
-    );
-
+    const member = findMemberByName(guild, sheetName);
     if (!member) {
       updatesNeeded.push(`- ${sheetName} (Team: ${row[1]}): User not found in this server.`);
       continue;
     }
 
-    const missingRolesForMember = [];
-    for (const targetRoleName of targetRoleNames) {
-      const targetRole = guild.roles.cache.find(
-        role => role.name.toLowerCase() === targetRoleName.toLowerCase()
-      );
-
-      if (!targetRole) {
-        updatesNeeded.push(`- ${member.user.tag} (Sheet Name: ${sheetName}, Team: ${row[1]}): Target role "${targetRoleName}" not found on this server.`);
-        // Continue checking other roles for this member, but flag this one as missing
-        continue; 
-      }
-
-      if (!member.roles.cache.has(targetRole.id)) {
-        missingRolesForMember.push(targetRole.name);
-      }
+    const { error, missingRoles, rolesToRemove } = checkMemberRoles(member, targetRoleNames, allTeamRoles);
+    if (error) {
+      updatesNeeded.push(`- ${member.user.tag} (Sheet Name: ${sheetName}, Team: ${row[1]}): ${error}`);
+      continue;
     }
 
-    if (missingRolesForMember.length > 0) {
-      updatesNeeded.push(`- ${member.user.tag} (Sheet Name: ${sheetName}, Team: ${row[1]}): Needs role(s): "${missingRolesForMember.join(', ')}".`);
+    if (missingRoles.length > 0 || rolesToRemove.length > 0) {
+      updatesNeeded.push(formatRoleUpdateMessage(member, sheetName, row[1], missingRoles, rolesToRemove));
     }
   }
 
