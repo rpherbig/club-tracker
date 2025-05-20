@@ -232,6 +232,16 @@ export async function handleShowRoleChanges(interaction) {
     return;
   }
 
+  // Find the war-planning channel
+  const warPlanningChannel = guild.channels.cache.find(
+    channel => channel.name === '🦹┃war-planning'
+  );
+
+  if (!warPlanningChannel) {
+    await interaction.editReply('Could not find the war-planning channel.');
+    return;
+  }
+
   const sheetData = await getSheetData();
   if (!sheetData) {
     await interaction.editReply('Could not retrieve data from the Google Sheet. Check bot logs for details.');
@@ -292,10 +302,14 @@ export async function handleShowRoleChanges(interaction) {
     }
   }
 
+  // Acknowledge the command was received
+  await interaction.editReply('Processing complete. Check the war-planning channel for results.');
+
+  // Send the results to the war-planning channel
   if (updatesNeeded.length === 0 && membersProcessed > 0) {
-    await interaction.editReply(`All processed members from the sheet appear to have their correct roles based on the current mapping.\n(Processed ${membersProcessed} entries, skipped ${membersSkipped} ignored names)`);
+    await warPlanningChannel.send(`All processed members from the sheet appear to have their correct roles based on the current mapping.\n(Processed ${membersProcessed} entries, skipped ${membersSkipped} ignored names)`);
   } else if (updatesNeeded.length === 0 && membersProcessed === 0) {
-    await interaction.editReply(`No valid user data found in the sheet to process.\n(Skipped ${membersSkipped} ignored names)`);
+    await warPlanningChannel.send(`No valid user data found in the sheet to process.\n(Skipped ${membersSkipped} ignored names)`);
   } 
   else {
     let replyMessage = `**Prospective Role Changes based on Google Sheet:**\n(Processed ${membersProcessed} entries, skipped ${membersSkipped} ignored names)\n`;
@@ -303,6 +317,6 @@ export async function handleShowRoleChanges(interaction) {
     if (replyMessage.length > 2000) {
       replyMessage = replyMessage.substring(0, 1990) + '...\n(Message truncated)';
     }
-    await interaction.editReply(replyMessage);
+    await warPlanningChannel.send(replyMessage);
   }
 } 
