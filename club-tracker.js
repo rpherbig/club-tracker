@@ -154,11 +154,6 @@ client.on('interactionCreate', async interaction => {
       console.log(`[${new Date().toISOString()}] User ${interaction.user.tag} manually triggered daily check-in`);
       await handleTriggerDailyCheckin(interaction);
       break;
-
-    case 'check-sheet-roles':
-      console.log(`[${new Date().toISOString()}] User ${interaction.user.tag} used /check-sheet-roles command in #${interaction.channel.name} (${interaction.guild.name})`);
-      await handleShowRoleChanges(interaction);
-      break;
   }
 });
 
