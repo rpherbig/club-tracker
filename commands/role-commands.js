@@ -6,6 +6,17 @@ dotenv.config();
 // Configuration:
 const SPREADSHEET_ID = '1JQ3Atkgv1APC6kXawTIR2HjeWVCvBYepQqtZnygWSUU';
 
+// Channel mapping for role announcements
+// Missing entries will be skipped
+const ROLE_CHANNEL_MAPPING = {
+  'Vanguard Alpha': 'van-alpha',
+  'Vanguard Beta': 'van-beta',
+  'Prospector Gamma': 'pro-gamma',
+  'Prospector Delta': 'pro-delta',
+  'Prospector Epsilon': 'pro-epsilon',
+  'Laborer': 'laborers'
+};
+
 // Name mapping configuration - maps sheet names to Discord usernames/IDs
 const NAME_MAPPING = {
   'amarin': '158622934271918081',
@@ -317,11 +328,13 @@ export async function handleShowRoleChanges(interaction) {
   const updateResults = [];
   let membersProcessed = 0;
   let membersSkipped = 0;
+  const uniqueTeamRoles = new Set();
 
   // Fetch all members to avoid multiple fetches if sheet has many users
   await guild.members.fetch();
   const allTeamRoles = getAllTeamRoles();
 
+  // First pass: Process role changes and collect roles
   for (const row of sheetData) {
     const sheetName = row[0] ? row[0].trim() : null;
     const sheetTeam = row[1] ? row[1].trim().toLowerCase() : null;
@@ -346,6 +359,9 @@ export async function handleShowRoleChanges(interaction) {
       continue;
     }
 
+    // Add roles to the set for later announcement
+    targetRoleNames.forEach(role => uniqueTeamRoles.add(role));
+
     const member = findMemberByName(guild, sheetName);
     if (!member) {
       updateResults.push(`- ${sheetName} (Team: ${row[1]}): User not found in this server.`);
@@ -355,6 +371,36 @@ export async function handleShowRoleChanges(interaction) {
     const { changes, errors } = await applyRoleChanges(member, targetRoleNames, allTeamRoles);
     if (changes.length > 0 || errors.length > 0) {
       updateResults.push(formatRoleUpdateResult(member, sheetName, row[1], changes, errors));
+    }
+  }
+
+  // Send one announcement per role
+  for (const roleName of uniqueTeamRoles) {
+    const channelName = ROLE_CHANNEL_MAPPING[roleName];
+    if (!channelName) continue;
+
+    const channel = guild.channels.cache.find(
+      ch => ch.name === channelName
+    );
+    
+    if (!channel) {
+      console.warn(`Could not find channel #${channelName} for role ${roleName}`);
+      continue;
+    }
+
+    const role = guild.roles.cache.find(
+      r => r.name === roleName
+    );
+
+    if (!role) {
+      console.warn(`Could not find role ${roleName}`);
+      continue;
+    }
+
+    try {
+      await channel.send(`${role} you are ${roleName} for this week's species war!`);
+    } catch (error) {
+      console.error(`Failed to post announcement in #${channelName}:`, error);
     }
   }
 
