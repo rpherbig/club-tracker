@@ -204,13 +204,74 @@ function checkMemberRoles(member, targetRoleNames, allTeamRoles) {
   return { missingRoles, rolesToRemove };
 }
 
-function formatRoleUpdateMessage(member, sheetName, sheetTeam, missingRoles, rolesToRemove) {
-  let message = `- ${member.user.tag} (Sheet Name: ${sheetName}, Team: ${sheetTeam}):`;
-  if (missingRoles.length > 0) {
-    message += `\n  Needs role(s): "${missingRoles.join(', ')}"`;
+async function applyRoleChange(member, role, isRemoving) {
+  try {
+    if (isRemoving) {
+      await member.roles.remove(role);
+      return { success: true, message: `Removed role: ${role.name}` };
+    } else {
+      await member.roles.add(role);
+      return { success: true, message: `Added role: ${role.name}` };
+    }
+  } catch (error) {
+    return { 
+      success: false, 
+      message: `Failed to ${isRemoving ? 'remove' : 'add'} role ${role.name}: ${error.message}` 
+    };
   }
-  if (rolesToRemove.length > 0) {
-    message += `\n  Should remove role(s): "${rolesToRemove.join(', ')}"`;
+}
+
+async function applyRoleChanges(member, targetRoleNames, allTeamRoles) {
+  const changes = [];
+  const errors = [];
+
+  // Get all current team roles
+  const currentTeamRoles = Array.from(member.roles.cache.values())
+    .filter(role => allTeamRoles.has(role.name));
+
+  // Get target role objects
+  const targetRoles = targetRoleNames.map(roleName => 
+    member.guild.roles.cache.find(role => role.name.toLowerCase() === roleName.toLowerCase())
+  ).filter(role => role); // Filter out any undefined roles
+
+  // Check if we found all target roles
+  if (targetRoles.length !== targetRoleNames.length) {
+    const missingRoles = targetRoleNames.filter(roleName => 
+      !targetRoles.some(role => role.name.toLowerCase() === roleName.toLowerCase())
+    );
+    errors.push(`Could not find role(s): ${missingRoles.join(', ')}`);
+    return { changes, errors };
+  }
+
+  // Calculate role changes
+  const rolesToRemove = currentTeamRoles.filter(role => !targetRoleNames.includes(role.name));
+  const rolesToAdd = targetRoles.filter(role => !member.roles.cache.has(role.id));
+
+  // Apply all role changes
+  const roleChanges = [
+    ...rolesToRemove.map(role => ({ role, isRemoving: true })),
+    ...rolesToAdd.map(role => ({ role, isRemoving: false }))
+  ];
+
+  for (const { role, isRemoving } of roleChanges) {
+    const result = await applyRoleChange(member, role, isRemoving);
+    if (result.success) {
+      changes.push(result.message);
+    } else {
+      errors.push(result.message);
+    }
+  }
+
+  return { changes, errors };
+}
+
+function formatRoleUpdateResult(member, sheetName, sheetTeam, changes, errors) {
+  let message = `- ${member.user.tag} (Sheet Name: ${sheetName}, Team: ${sheetTeam}):`;
+  if (changes.length > 0) {
+    message += `\n  Changes: ${changes.join(', ')}`;
+  }
+  if (errors.length > 0) {
+    message += `\n  Errors: ${errors.join(', ')}`;
   }
   return message;
 }
@@ -253,7 +314,7 @@ export async function handleShowRoleChanges(interaction) {
     return;
   }
 
-  const updatesNeeded = [];
+  const updateResults = [];
   let membersProcessed = 0;
   let membersSkipped = 0;
 
@@ -281,24 +342,19 @@ export async function handleShowRoleChanges(interaction) {
 
     const targetRoleNames = getRolesForTeam(sheetTeam);
     if (!targetRoleNames || targetRoleNames.length === 0) {
-      updatesNeeded.push(`- ${sheetName} (Team: ${row[1]}): Could not determine roles for this team (e.g., pattern mismatch, unmapped prefix, or malformed team name "${sheetTeam}").`);
+      updateResults.push(`- ${sheetName} (Team: ${row[1]}): Could not determine roles for this team (e.g., pattern mismatch, unmapped prefix, or malformed team name "${sheetTeam}").`);
       continue;
     }
 
     const member = findMemberByName(guild, sheetName);
     if (!member) {
-      updatesNeeded.push(`- ${sheetName} (Team: ${row[1]}): User not found in this server.`);
+      updateResults.push(`- ${sheetName} (Team: ${row[1]}): User not found in this server.`);
       continue;
     }
 
-    const { error, missingRoles, rolesToRemove } = checkMemberRoles(member, targetRoleNames, allTeamRoles);
-    if (error) {
-      updatesNeeded.push(`- ${member.user.tag} (Sheet Name: ${sheetName}, Team: ${row[1]}): ${error}`);
-      continue;
-    }
-
-    if (missingRoles.length > 0 || rolesToRemove.length > 0) {
-      updatesNeeded.push(formatRoleUpdateMessage(member, sheetName, row[1], missingRoles, rolesToRemove));
+    const { changes, errors } = await applyRoleChanges(member, targetRoleNames, allTeamRoles);
+    if (changes.length > 0 || errors.length > 0) {
+      updateResults.push(formatRoleUpdateResult(member, sheetName, row[1], changes, errors));
     }
   }
 
@@ -306,14 +362,14 @@ export async function handleShowRoleChanges(interaction) {
   await interaction.editReply('Processing complete. Check the war-planning channel for results.');
 
   // Send the results to the war-planning channel
-  if (updatesNeeded.length === 0 && membersProcessed > 0) {
-    await warPlanningChannel.send(`All processed members from the sheet appear to have their correct roles based on the current mapping.\n(Processed ${membersProcessed} entries, skipped ${membersSkipped} ignored names)`);
-  } else if (updatesNeeded.length === 0 && membersProcessed === 0) {
+  if (updateResults.length === 0 && membersProcessed > 0) {
+    await warPlanningChannel.send(`All processed members from the sheet have been updated to their correct roles.\n(Processed ${membersProcessed} entries, skipped ${membersSkipped} ignored names)`);
+  } else if (updateResults.length === 0 && membersProcessed === 0) {
     await warPlanningChannel.send(`No valid user data found in the sheet to process.\n(Skipped ${membersSkipped} ignored names)`);
   } 
   else {
-    let replyMessage = `**Prospective Role Changes based on Google Sheet:**\n(Processed ${membersProcessed} entries, skipped ${membersSkipped} ignored names)\n`;
-    replyMessage += updatesNeeded.join('\n');
+    let replyMessage = `**Role Update Results:**\n(Processed ${membersProcessed} entries, skipped ${membersSkipped} ignored names)\n`;
+    replyMessage += updateResults.join('\n');
     if (replyMessage.length > 2000) {
       replyMessage = replyMessage.substring(0, 1990) + '...\n(Message truncated)';
     }
