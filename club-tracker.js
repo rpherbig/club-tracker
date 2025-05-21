@@ -73,8 +73,8 @@ client.once('ready', async () => {
   // Schedule the daily check-in message
   if (cron.validate('0 10 * * *')) {
       cron.schedule('0 10 * * *', async () => {
-          console.log('[Cron Job] Running daily check-in task...');
           client.guilds.cache.forEach(async (guild) => {
+              console.log(`[Cron Job] Processing daily check-in for guild: ${guild.name}`);
               await sendDailyReminder(guild);
           });
       }, {
@@ -84,6 +84,22 @@ client.once('ready', async () => {
       console.log('Scheduled daily check-in message for 10:00 AM America/New_York.');
   } else {
       console.error('Invalid cron pattern for daily check-in.');
+  }
+
+  // Schedule the weekly role check for Friday at 9am
+  if (cron.validate('0 9 * * 5')) {
+      cron.schedule('0 9 * * 5', async () => {
+          client.guilds.cache.forEach(async (guild) => {
+              console.log(`[Cron Job] Processing weekly role check for guild: ${guild.name}`);
+              await handleShowRoleChanges(guild);
+          });
+      }, {
+          scheduled: true,
+          timezone: "America/New_York"
+      });
+      console.log('Scheduled weekly role check for Friday 9:00 AM America/New_York.');
+  } else {
+      console.error('Invalid cron pattern for weekly role check.');
   }
 });
 

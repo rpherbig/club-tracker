@@ -287,20 +287,9 @@ function formatRoleUpdateResult(member, sheetName, sheetTeam, changes, errors) {
   return message;
 }
 
-export async function handleShowRoleChanges(interaction) {
-  await interaction.deferReply({ ephemeral: true });
-
-  // Only accept the command from the bot-commands channel
-  if (interaction.channel.name !== '🤖┃bot-commands') {
-    await interaction.editReply(
-      { content: 'This command can only be used in the #🤖┃bot-commands channel.', ephemeral: true }
-    );
-    return;
-  }
-
-  const guild = interaction.guild;
+export async function handleShowRoleChanges(guild) {
   if (!guild) {
-    await interaction.editReply('This command can only be used in a server.');
+    console.error('No guild provided for role check');
     return;
   }
 
@@ -310,18 +299,7 @@ export async function handleShowRoleChanges(interaction) {
   );
 
   if (!warPlanningChannel) {
-    await interaction.editReply('Could not find the war-planning channel.');
-    return;
-  }
-
-  const sheetData = await getSheetData();
-  if (!sheetData) {
-    await interaction.editReply('Could not retrieve data from the Google Sheet. Check bot logs for details.');
-    return;
-  }
-
-  if (sheetData.length === 0) {
-    await interaction.editReply('No data found in the specified Google Sheet tab or columns.');
+    console.error(`Could not find the war-planning channel in guild ${guild.name}`);
     return;
   }
 
@@ -334,7 +312,18 @@ export async function handleShowRoleChanges(interaction) {
   await guild.members.fetch();
   const allTeamRoles = getAllTeamRoles();
 
-  // First pass: Process role changes and collect roles
+  const sheetData = await getSheetData();
+  if (!sheetData) {
+    await warPlanningChannel.send('Could not retrieve data from the Google Sheet. Check bot logs for details.');
+    return;
+  }
+
+  if (sheetData.length === 0) {
+    await warPlanningChannel.send('No data found in the specified Google Sheet tab or columns.');
+    return;
+  }
+
+  // Process role changes and collect roles
   for (const row of sheetData) {
     const sheetName = row[0] ? row[0].trim() : null;
     const sheetTeam = row[1] ? row[1].trim().toLowerCase() : null;
@@ -384,7 +373,7 @@ export async function handleShowRoleChanges(interaction) {
     );
     
     if (!channel) {
-      console.warn(`Could not find channel #${channelName} for role ${roleName}`);
+      console.warn(`Could not find channel #${channelName} for role ${roleName} in guild ${guild.name}`);
       continue;
     }
 
@@ -393,19 +382,16 @@ export async function handleShowRoleChanges(interaction) {
     );
 
     if (!role) {
-      console.warn(`Could not find role ${roleName}`);
+      console.warn(`Could not find role ${roleName} in guild ${guild.name}`);
       continue;
     }
 
     try {
       await channel.send(`${role} you are ${roleName} for this week's species war!`);
     } catch (error) {
-      console.error(`Failed to post announcement in #${channelName}:`, error);
+      console.error(`Failed to post announcement in #${channelName} for guild ${guild.name}:`, error);
     }
   }
-
-  // Acknowledge the command was received
-  await interaction.editReply('Processing complete. Check the war-planning channel for results.');
 
   // Send the results to the war-planning channel
   if (updateResults.length === 0 && membersProcessed > 0) {
