@@ -1,9 +1,9 @@
-import { Client, GatewayIntentBits, PermissionsBitField, MessageFlags } from 'discord.js';
+import { Client, GatewayIntentBits, MessageFlags } from 'discord.js';
 import { promises as fs } from 'fs';
-import cron from 'node-cron'; // Added for scheduled tasks
+import cron from 'node-cron';
 import { handleFind, handleKill } from './commands/war-commands.js';
 import { handleSetResource, handleShowResource, handleOverdueResource, handleTotalResource } from './commands/resource-commands.js';
-import { handlePostForgetfulMessage, handleTriggerDailyCheckin, sendDailyReminder } from './commands/reminder-commands.js'; // Added imports
+import { handlePostForgetfulMessage, handleTriggerDailyCheckin, sendDailyReminder } from './commands/reminder-commands.js';
 import { handleShowRoleChanges } from './commands/role-commands.js';
 import dotenv from 'dotenv';
 

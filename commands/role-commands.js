@@ -37,7 +37,6 @@ const TEAM_PREFIX_TO_CATEGORY_ROLE = {
   'van': 'Vanguard',
   'pro': 'Prospector',
   'lab': 'Laborer',
-  // Add other prefixes if needed
 };
 
 // Helper function to derive roles from a team name

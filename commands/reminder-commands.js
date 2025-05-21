@@ -1,5 +1,3 @@
-// Commands related to the Forgetful role reminder feature
-
 import { MessageFlags, PermissionsBitField } from 'discord.js';
 
 const TARGET_CHANNEL_NAME = 'friends-of-ss-chat';
