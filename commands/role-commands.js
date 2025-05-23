@@ -26,7 +26,8 @@ const NAME_MAPPING = {
   'leecchh': '482008530572804116',
   'hines': '230431329072840706',
   'jwfw': '663562170507984928',
-  'melonking': '197115561359048705'
+  'melonking': '197115561359048705',
+  'snoooowman': '97785134845009920'
 };
 
 // Names to ignore in role checks (e.g., people not in Discord)
