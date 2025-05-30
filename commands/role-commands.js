@@ -161,39 +161,6 @@ function getAllTeamRoles() {
   return allTeamRoles;
 }
 
-function checkMemberRoles(member, targetRoleNames, allTeamRoles) {
-  const missingRoles = [];
-  const rolesToRemove = [];
-
-  // Check for roles that should be added
-  for (const targetRoleName of targetRoleNames) {
-    const targetRole = member.guild.roles.cache.find(
-      role => role.name.toLowerCase() === targetRoleName.toLowerCase()
-    );
-
-    if (!targetRole) {
-      return {
-        error: `Target role "${targetRoleName}" not found on this server.`,
-        missingRoles: [],
-        rolesToRemove: []
-      };
-    }
-
-    if (!member.roles.cache.has(targetRole.id)) {
-      missingRoles.push(targetRole.name);
-    }
-  }
-
-  // Check for roles that should be removed
-  for (const role of member.roles.cache.values()) {
-    if (allTeamRoles.has(role.name) && !targetRoleNames.includes(role.name)) {
-      rolesToRemove.push(role.name);
-    }
-  }
-
-  return { missingRoles, rolesToRemove };
-}
-
 async function applyRoleChange(member, role, isRemoving) {
   try {
     if (isRemoving) {

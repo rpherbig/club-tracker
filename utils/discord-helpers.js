@@ -1,4 +1,4 @@
-import { MessageFlags, PermissionsBitField } from 'discord.js';
+import { MessageFlags } from 'discord.js';
 
 /**
  * Finds a channel in a guild by name

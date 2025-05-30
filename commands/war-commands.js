@@ -1,4 +1,3 @@
-import { MessageFlags } from 'discord.js';
 import { findChannel, findRole, validateCommandChannel, sendEphemeralReply } from '../utils/discord-helpers.js';
 
 // Helper function to get the war-orders channel
