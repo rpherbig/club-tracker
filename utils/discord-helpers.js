@@ -66,10 +66,17 @@ export async function validateCommandChannel(interaction, allowedChannelName) {
  * @returns {Promise<void>}
  */
 export async function sendEphemeralReply(interaction, content) {
-    await interaction.reply({
-        content,
-        flags: MessageFlags.Ephemeral
-    });
+    if (interaction.replied) {
+        await interaction.followUp({
+            content,
+            flags: MessageFlags.Ephemeral
+        });
+    } else {
+        await interaction.reply({
+            content,
+            flags: MessageFlags.Ephemeral
+        });
+    }
 }
 
 /**
