@@ -4,7 +4,7 @@ import cron from 'node-cron';
 import { handleFind, handleKill } from './commands/war-commands.js';
 import { handleSetResource, handleShowResource, handleOverdueResource, handleTotalResource } from './commands/resource-commands.js';
 import { handlePostForgetfulMessage, handleTriggerDailyCheckin, sendDailyReminder } from './commands/reminder-commands.js';
-import { handleShowRoleChanges } from './commands/role-commands.js';
+import { handleShowRoleChanges, handleSyncRoles } from './commands/role-commands.js';
 import { findRole, sendEphemeralReply, logCommandUsage } from './utils/discord-helpers.js';
 import dotenv from 'dotenv';
 
@@ -165,6 +165,10 @@ client.on('interactionCreate', async interaction => {
 
     case 'trigger-daily-checkin':
       await handleTriggerDailyCheckin(interaction);
+      break;
+
+    case 'sync-sheet-roles':
+      await handleSyncRoles(interaction);
       break;
   }
 });

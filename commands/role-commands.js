@@ -1,6 +1,6 @@
 import { google } from 'googleapis';
 import dotenv from 'dotenv';
-import { findChannel, findRole, findMemberByName, sendTruncatedMessage } from '../utils/discord-helpers.js';
+import { findChannel, findRole, findMemberByName, sendTruncatedMessage, sendEphemeralReply, validateCommandChannel } from '../utils/discord-helpers.js';
 
 dotenv.config();
 
@@ -242,23 +242,20 @@ function formatRoleUpdateResult(member, sheetName, sheetTeam, changes, errors) {
   return message;
 }
 
-export async function handleShowRoleChanges(guild) {
+/**
+ * Syncs roles based on Google Sheet data without sending announcements
+ * @param {Guild} guild - The Discord guild to sync roles in
+ * @param {TextChannel} outputChannel - Channel to send results to
+ */
+export async function syncRoles(guild, outputChannel) {
   if (!guild) {
     console.error('No guild provided for role check');
-    return;
-  }
-
-  // Find the war-planning channel
-  const warPlanningChannel = findChannel(guild, '🦹┃war-planning');
-  if (!warPlanningChannel) {
-    console.error(`Could not find the war-planning channel in guild ${guild.name}`);
     return;
   }
 
   const updateResults = [];
   let membersProcessed = 0;
   let membersSkipped = 0;
-  const uniqueTeamRoles = new Set();
 
   // Fetch all members to avoid multiple fetches if sheet has many users
   await guild.members.fetch();
@@ -266,16 +263,16 @@ export async function handleShowRoleChanges(guild) {
 
   const sheetData = await getSheetData();
   if (!sheetData) {
-    await warPlanningChannel.send('Could not retrieve data from the Google Sheet. Check bot logs for details.');
+    await outputChannel.send('Could not retrieve data from the Google Sheet. Check bot logs for details.');
     return;
   }
 
   if (sheetData.length === 0) {
-    await warPlanningChannel.send('No data found in the specified Google Sheet tab or columns.');
+    await outputChannel.send('No data found in the specified Google Sheet tab or columns.');
     return;
   }
 
-  // Process role changes and collect roles
+  // Process role changes
   for (const row of sheetData) {
     const sheetName = row[0] ? row[0].trim() : null;
     const sheetTeam = row[1] ? row[1].trim().toLowerCase() : null;
@@ -300,9 +297,6 @@ export async function handleShowRoleChanges(guild) {
       continue;
     }
 
-    // Add roles to the set for later announcement
-    targetRoleNames.forEach(role => uniqueTeamRoles.add(role));
-
     const member = findMemberByName(guild, sheetName, { nameMapping: NAME_MAPPING });
     if (!member) {
       updateResults.push(`- ${sheetName} (Team: ${row[1]}): User not found in this server.`);
@@ -315,7 +309,24 @@ export async function handleShowRoleChanges(guild) {
     }
   }
 
-  // Send one announcement per role
+  // Send results to output channel
+  if (updateResults.length === 0 && membersProcessed > 0) {
+    await outputChannel.send(`All processed members from the sheet have been updated to their correct roles.\n(Processed ${membersProcessed} entries, skipped ${membersSkipped} ignored names)`);
+  } else if (updateResults.length === 0 && membersProcessed === 0) {
+    await outputChannel.send(`No valid user data found in the sheet to process.\n(Skipped ${membersSkipped} ignored names)`);
+  } else {
+    let replyMessage = `**Role Update Results:**\n(Processed ${membersProcessed} entries, skipped ${membersSkipped} ignored names)\n`;
+    replyMessage += updateResults.join('\n');
+    await sendTruncatedMessage(outputChannel, replyMessage);
+  }
+}
+
+/**
+ * Sends role announcements to appropriate channels
+ * @param {Guild} guild - The Discord guild to send announcements in
+ * @param {Set<string>} uniqueTeamRoles - Set of role names to announce
+ */
+async function sendRoleAnnouncements(guild, uniqueTeamRoles) {
   for (const roleName of uniqueTeamRoles) {
     const channelName = ROLE_CHANNEL_MAPPING[roleName];
     if (!channelName) continue;
@@ -338,16 +349,47 @@ export async function handleShowRoleChanges(guild) {
       console.error(`Failed to post announcement in #${channelName} for guild ${guild.name}:`, error);
     }
   }
+}
 
-  // Send the results to the war-planning channel
-  if (updateResults.length === 0 && membersProcessed > 0) {
-    await warPlanningChannel.send(`All processed members from the sheet have been updated to their correct roles.\n(Processed ${membersProcessed} entries, skipped ${membersSkipped} ignored names)`);
-  } else if (updateResults.length === 0 && membersProcessed === 0) {
-    await warPlanningChannel.send(`No valid user data found in the sheet to process.\n(Skipped ${membersSkipped} ignored names)`);
-  } 
-  else {
-    let replyMessage = `**Role Update Results:**\n(Processed ${membersProcessed} entries, skipped ${membersSkipped} ignored names)\n`;
-    replyMessage += updateResults.join('\n');
-    await sendTruncatedMessage(warPlanningChannel, replyMessage);
+export async function handleShowRoleChanges(guild) {
+  // Find the war-planning channel
+  const warPlanningChannel = findChannel(guild, '🦹┃war-planning');
+  if (!warPlanningChannel) {
+    console.error(`Could not find the war-planning channel in guild ${guild.name}`);
+    return;
+  }
+
+  // Use the keys from ROLE_CHANNEL_MAPPING as our unique team roles
+  const uniqueTeamRoles = new Set(Object.keys(ROLE_CHANNEL_MAPPING));
+  
+  // Sync roles first
+  await syncRoles(guild, warPlanningChannel);
+
+  // Send announcements
+  await sendRoleAnnouncements(guild, uniqueTeamRoles);
+}
+
+const ALLOWED_COMMAND_CHANNEL_NAME = '🤖┃bot-commands';
+
+export async function handleSyncRoles(interaction) {
+  try {
+    // Check if the command is used in the allowed channel
+    if (!await validateCommandChannel(interaction, ALLOWED_COMMAND_CHANNEL_NAME)) {
+      return;
+    }
+
+    // Find the war-planning channel
+    const warPlanningChannel = findChannel(interaction.guild, '🦹┃war-planning');
+    if (!warPlanningChannel) {
+      await sendEphemeralReply(interaction, 'Could not find the war-planning channel. Please ensure it exists and the bot can see it.');
+      return;
+    }
+
+    await sendEphemeralReply(interaction, 'Starting role sync...');
+    await syncRoles(interaction.guild, warPlanningChannel);
+    await sendEphemeralReply(interaction, 'Role sync complete! Check the war-planning channel for details.');
+  } catch (error) {
+    console.error('Error in handleSyncRoles:', error);
+    await sendEphemeralReply(interaction, 'An error occurred while syncing roles. Check the logs for details.');
   }
 } 

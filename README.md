@@ -16,7 +16,7 @@ Club resource tracking bot for the game Super Snail.
 * `/kill [floor] [message]`: Send a message telling club members to kill a specific floor boss (11-20)
 * `/post-forgetful-message`: Posts the message for users to react to, to get automatically assigned the Forgetful role
 * `/trigger-daily-checkin`: Manually trigger the daily check-in reminder message
-* `/check-sheet-roles`: Check and update roles based on team assignments from the Google Sheet
+* `/sync-sheet-roles`: Manually sync roles based on the Google Sheet data without sending announcements (useful for fixing role issues)
 
 # Getting started
 
