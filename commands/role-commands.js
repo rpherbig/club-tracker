@@ -201,7 +201,16 @@ async function applyRoleChanges(member, targetRoleNames, allTeamRoles) {
   }
 
   // Calculate role changes
-  const rolesToRemove = currentTeamRoles.filter(role => !targetRoleNames.includes(role.name));
+  // For removal, we need to check both the category role and specific team role
+  const rolesToRemove = currentTeamRoles.filter(role => {
+    // If this is a category role (e.g., "Prospector"), check if any target role starts with it
+    if (!role.name.includes(' ')) {
+      return !targetRoleNames.some(targetName => targetName.startsWith(role.name));
+    }
+    // If this is a specific team role (e.g., "Prospector Gamma"), check if it's in target roles
+    return !targetRoleNames.includes(role.name);
+  });
+
   const rolesToAdd = targetRoles.filter(role => !member.roles.cache.has(role.id));
 
   // Apply all role changes
