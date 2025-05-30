@@ -324,7 +324,7 @@ export async function handleShowRoleChanges(guild) {
     }
 
     try {
-      await channel.send(`${role} you are ${roleName} for this week's species war!`);
+      await channel.send(`Good news, ${role}! You are ${roleName} for this week's species war!`);
     } catch (error) {
       console.error(`Failed to post announcement in #${channelName} for guild ${guild.name}:`, error);
     }
