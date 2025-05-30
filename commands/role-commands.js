@@ -152,11 +152,9 @@ async function getSheetData() {
 
 function getAllTeamRoles() {
   const allTeamRoles = new Set();
-  Object.values(TEAM_PREFIX_TO_CATEGORY_ROLE).forEach(categoryRole => {
-    allTeamRoles.add(categoryRole);
-    ['Alpha', 'Beta', 'Delta', 'Epsilon'].forEach(suffix => {
-      allTeamRoles.add(`${categoryRole} ${suffix}`);
-    });
+  // Add all roles from ROLE_CHANNEL_MAPPING
+  Object.keys(ROLE_CHANNEL_MAPPING).forEach(roleName => {
+    allTeamRoles.add(roleName);
   });
   return allTeamRoles;
 }
