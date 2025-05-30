@@ -1,11 +1,11 @@
-import { Client, GatewayIntentBits, MessageFlags } from 'discord.js';
+import { Client, GatewayIntentBits } from 'discord.js';
 import { promises as fs } from 'fs';
 import cron from 'node-cron';
 import { handleFind, handleKill } from './commands/war-commands.js';
 import { handleSetResource, handleShowResource, handleOverdueResource, handleTotalResource } from './commands/resource-commands.js';
 import { handlePostForgetfulMessage, handleTriggerDailyCheckin, sendDailyReminder } from './commands/reminder-commands.js';
 import { handleShowRoleChanges } from './commands/role-commands.js';
-import { findRole, sendEphemeralReply, findMemberByName, logCommandUsage } from './utils/discord-helpers.js';
+import { findRole, sendEphemeralReply, logCommandUsage } from './utils/discord-helpers.js';
 import dotenv from 'dotenv';
 
 dotenv.config();
