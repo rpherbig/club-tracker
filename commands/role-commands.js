@@ -1,5 +1,6 @@
 import { google } from 'googleapis';
 import dotenv from 'dotenv';
+import { findChannel, findRole, findMemberByName, sendTruncatedMessage } from '../utils/discord-helpers.js';
 
 dotenv.config();
 
@@ -160,28 +161,6 @@ function getAllTeamRoles() {
   return allTeamRoles;
 }
 
-function findMemberByName(guild, name) {
-  // First check if we have a mapping for this name
-  const mappedName = NAME_MAPPING[name];
-  if (mappedName) {
-    // If the mapped name is a Discord ID (18 digits)
-    if (/^\d{17,19}$/.test(mappedName)) {
-      return guild.members.cache.get(mappedName);
-    }
-    // Otherwise treat it as a username
-    return guild.members.cache.find(
-      m => m.user.username.toLowerCase() === mappedName.toLowerCase() ||
-           m.displayName.toLowerCase() === mappedName.toLowerCase()
-    );
-  }
-
-  // If no mapping exists, try the original name
-  return guild.members.cache.find(
-    m => m.user.username.toLowerCase() === name.toLowerCase() ||
-         m.displayName.toLowerCase() === name.toLowerCase()
-  );
-}
-
 function checkMemberRoles(member, targetRoleNames, allTeamRoles) {
   const missingRoles = [];
   const rolesToRemove = [];
@@ -294,10 +273,7 @@ export async function handleShowRoleChanges(guild) {
   }
 
   // Find the war-planning channel
-  const warPlanningChannel = guild.channels.cache.find(
-    channel => channel.name === '🦹┃war-planning'
-  );
-
+  const warPlanningChannel = findChannel(guild, '🦹┃war-planning');
   if (!warPlanningChannel) {
     console.error(`Could not find the war-planning channel in guild ${guild.name}`);
     return;
@@ -351,7 +327,7 @@ export async function handleShowRoleChanges(guild) {
     // Add roles to the set for later announcement
     targetRoleNames.forEach(role => uniqueTeamRoles.add(role));
 
-    const member = findMemberByName(guild, sheetName);
+    const member = findMemberByName(guild, sheetName, { nameMapping: NAME_MAPPING });
     if (!member) {
       updateResults.push(`- ${sheetName} (Team: ${row[1]}): User not found in this server.`);
       continue;
@@ -368,19 +344,13 @@ export async function handleShowRoleChanges(guild) {
     const channelName = ROLE_CHANNEL_MAPPING[roleName];
     if (!channelName) continue;
 
-    const channel = guild.channels.cache.find(
-      ch => ch.name === channelName
-    );
-    
+    const channel = findChannel(guild, channelName);
     if (!channel) {
       console.warn(`Could not find channel #${channelName} for role ${roleName} in guild ${guild.name}`);
       continue;
     }
 
-    const role = guild.roles.cache.find(
-      r => r.name === roleName
-    );
-
+    const role = findRole(guild, roleName);
     if (!role) {
       console.warn(`Could not find role ${roleName} in guild ${guild.name}`);
       continue;
@@ -402,9 +372,6 @@ export async function handleShowRoleChanges(guild) {
   else {
     let replyMessage = `**Role Update Results:**\n(Processed ${membersProcessed} entries, skipped ${membersSkipped} ignored names)\n`;
     replyMessage += updateResults.join('\n');
-    if (replyMessage.length > 2000) {
-      replyMessage = replyMessage.substring(0, 1990) + '...\n(Message truncated)';
-    }
-    await warPlanningChannel.send(replyMessage);
+    await sendTruncatedMessage(warPlanningChannel, replyMessage);
   }
 } 

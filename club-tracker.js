@@ -5,6 +5,7 @@ import { handleFind, handleKill } from './commands/war-commands.js';
 import { handleSetResource, handleShowResource, handleOverdueResource, handleTotalResource } from './commands/resource-commands.js';
 import { handlePostForgetfulMessage, handleTriggerDailyCheckin, sendDailyReminder } from './commands/reminder-commands.js';
 import { handleShowRoleChanges } from './commands/role-commands.js';
+import { findRole, sendEphemeralReply, findMemberByName, logCommandUsage } from './utils/discord-helpers.js';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -106,12 +107,11 @@ client.once('ready', async () => {
 client.on('interactionCreate', async interaction => {
   if (!interaction.isChatInputCommand()) return;
   if (!interaction.guild) {
-    await interaction.reply({
-        content: "This bot does not support direct messages. Please use commands in a server.",
-        flags: MessageFlags.Ephemeral
-    });
+    await sendEphemeralReply(interaction, "This bot does not support direct messages. Please use commands in a server.");
     return;
   }
+
+  logCommandUsage(interaction, interaction.commandName);
 
   let guildId = interaction.guildId;
   let guildData = data.get(guildId) || new Map();
@@ -144,17 +144,14 @@ client.on('interactionCreate', async interaction => {
       break;
 
     case 'find':
-      console.log(`[${new Date().toISOString()}] User ${interaction.user.tag} used /find command in #${interaction.channel.name} (${interaction.guild.name})`);
       await handleFind(interaction);
       break;
 
     case 'kill':
-      console.log(`[${new Date().toISOString()}] User ${interaction.user.tag} used /kill command in #${interaction.channel.name} (${interaction.guild.name})`);
       await handleKill(interaction);
       break;
 
     case 'post-forgetful-message':
-      console.log(`[${new Date().toISOString()}] User ${interaction.user.tag} used /post-forgetful-message command in #${interaction.channel.name} (${interaction.guild.name})`);
       // Call the handler, it returns the message ID or null
       const newMessageId = await handlePostForgetfulMessage(interaction);
 
@@ -167,7 +164,6 @@ client.on('interactionCreate', async interaction => {
       break;
 
     case 'trigger-daily-checkin':
-      console.log(`[${new Date().toISOString()}] User ${interaction.user.tag} manually triggered daily check-in`);
       await handleTriggerDailyCheckin(interaction);
       break;
   }
@@ -195,13 +191,9 @@ client.on('messageReactionAdd', async (reaction, user) => {
         }
 
         // Find the 'Forgetful' role
-        const roleName = 'Forgetful'; // Make sure this matches the exact role name
-        const role = reaction.message.guild.roles.cache.find(
-            r => r.name.toLowerCase() === roleName.toLowerCase()
-        );
-
+        const role = findRole(reaction.message.guild, 'Forgetful');
         if (!role) {
-            console.error(`Could not find the role named '${roleName}' in guild ${guildId}.`);
+            console.error(`Could not find the role named 'Forgetful' in guild ${guildId}.`);
             // Maybe notify an admin or log persistently?
             return;
         }

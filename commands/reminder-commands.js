@@ -1,4 +1,5 @@
 import { MessageFlags, PermissionsBitField } from 'discord.js';
+import { findChannel, findRole, validateCommandChannel, checkBotPermissions, sendEphemeralReply } from '../utils/discord-helpers.js';
 
 const TARGET_CHANNEL_NAME = 'friends-of-ss-chat';
 const ALLOWED_COMMAND_CHANNEL_NAME = '🤖┃bot-commands';
@@ -6,30 +7,22 @@ const DAILY_CHECKIN_CHANNEL_NAME = 'daily-discord-checkin';
 const FORGETFUL_ROLE_NAME = 'Forgetful';
 const MESSAGE_LINK = 'https://discord.com/channels/1036712913727143998/1364121623283896360/1364129089572700190';
 
-async function isInAllowedChannel(interaction) {
-  return interaction.channel.name === ALLOWED_COMMAND_CHANNEL_NAME;
-}
-
 export async function sendDailyReminder(guild) {
     console.log(`[Cron Job] Processing daily reminder for guild: ${guild.name} (${guild.id})`);
     try {
         // Find the target channel
-        const channel = guild.channels.cache.find(ch => ch.name === DAILY_CHECKIN_CHANNEL_NAME);
-        if (!channel) {
-            console.log(`[Cron Job] Channel #${DAILY_CHECKIN_CHANNEL_NAME} not found in guild ${guild.name}. Skipping.`);
-            return;
-        }
+        const channel = findChannel(guild, DAILY_CHECKIN_CHANNEL_NAME, 'Skipping daily reminder.');
+        if (!channel) return;
 
         // Find the Forgetful role
-        const role = guild.roles.cache.find(r => r.name.toLowerCase() === FORGETFUL_ROLE_NAME.toLowerCase());
+        const role = findRole(guild, FORGETFUL_ROLE_NAME);
         if (!role) {
             console.log(`[Cron Job] Role '${FORGETFUL_ROLE_NAME}' not found in guild ${guild.name}. Skipping.`);
             return;
         }
 
         // Check permissions
-        const botPermissions = channel.permissionsFor(guild.members.me);
-        if (!botPermissions || !botPermissions.has(PermissionsBitField.Flags.SendMessages)) {
+        if (!checkBotPermissions(channel, PermissionsBitField.Flags.SendMessages)) {
             console.log(`[Cron Job] Missing Send Messages permission in #${DAILY_CHECKIN_CHANNEL_NAME} for guild ${guild.name}. Skipping.`);
             return;
         }
@@ -47,25 +40,15 @@ export async function sendDailyReminder(guild) {
 export async function handleTriggerDailyCheckin(interaction) {
     try {
       // 1. Check if the command is used in the allowed channel
-      if (!isInAllowedChannel(interaction)) {
-        await interaction.reply({
-          content: `This command can only be used in #${ALLOWED_COMMAND_CHANNEL_NAME}.`,
-          flags: MessageFlags.Ephemeral
-        });
+      if (!await validateCommandChannel(interaction, ALLOWED_COMMAND_CHANNEL_NAME)) {
         return;
       }
 
       await sendDailyReminder(interaction.guild);
-      await interaction.reply({
-          content: 'Daily check-in message sent successfully!',
-          flags: MessageFlags.Ephemeral
-      });
+      await sendEphemeralReply(interaction, 'Daily check-in message sent successfully!');
     } catch (error) {
       console.error(`[Cron Job] Failed to send daily check-in for guild ${interaction.guild.name}:`, error);
-      await interaction.reply({
-          content: 'Failed to send daily check-in message. Check the logs for details.',
-          flags: MessageFlags.Ephemeral
-      });
+      await sendEphemeralReply(interaction, 'Failed to send daily check-in message. Check the logs for details.');
     }
 }
 
@@ -73,34 +56,20 @@ export async function handleTriggerDailyCheckin(interaction) {
 async function handlePostForgetfulMessage(interaction) {
   try {
     // 1. Check if the command is used in the allowed channel
-    if (!isInAllowedChannel(interaction)) {
-      await interaction.reply({
-        content: `This command can only be used in #${ALLOWED_COMMAND_CHANNEL_NAME}.`,
-        flags: MessageFlags.Ephemeral
-      });
+    if (!await validateCommandChannel(interaction, ALLOWED_COMMAND_CHANNEL_NAME)) {
       return null;
     }
 
     // 2. Find the target channel
-    const targetChannel = interaction.guild.channels.cache.find(
-      channel => channel.name === TARGET_CHANNEL_NAME
-    );
-
+    const targetChannel = findChannel(interaction.guild, TARGET_CHANNEL_NAME);
     if (!targetChannel) {
-      await interaction.reply({
-        content: `Could not find the #${TARGET_CHANNEL_NAME} channel. Please ensure it exists and the bot can see it.`,
-        flags: MessageFlags.Ephemeral
-      });
+      await sendEphemeralReply(interaction, `Could not find the #${TARGET_CHANNEL_NAME} channel. Please ensure it exists and the bot can see it.`);
       return null;
     }
 
     // Check bot permissions in the target channel
-    const botPermissions = targetChannel.permissionsFor(interaction.guild.members.me);
-    if (!botPermissions.has(PermissionsBitField.Flags.SendMessages)) {
-        await interaction.reply({
-            content: `I don't have permission to send messages in #${TARGET_CHANNEL_NAME}.`,
-            flags: MessageFlags.Ephemeral
-        });
+    if (!checkBotPermissions(targetChannel, PermissionsBitField.Flags.SendMessages)) {
+        await sendEphemeralReply(interaction, `I don't have permission to send messages in #${TARGET_CHANNEL_NAME}.`);
         return null;
     }
 
@@ -118,10 +87,7 @@ async function handlePostForgetfulMessage(interaction) {
     }
 
     // 5. Confirm to the user
-    await interaction.reply({
-      content: `Successfully posted the role assignment message in #${TARGET_CHANNEL_NAME}. Its ID is ${message.id}. I will listen for reactions on this message.`,
-      flags: MessageFlags.Ephemeral
-    });
+    await sendEphemeralReply(interaction, `Successfully posted the role assignment message in #${TARGET_CHANNEL_NAME}. Its ID is ${message.id}. I will listen for reactions on this message.`);
 
     return message.id;
   } catch (error) {
@@ -130,7 +96,7 @@ async function handlePostForgetfulMessage(interaction) {
     if (interaction.replied || interaction.deferred) {
         await interaction.followUp({ content: 'An error occurred while processing your command.', flags: MessageFlags.Ephemeral });
     } else {
-        await interaction.reply({ content: 'An error occurred while processing your command.', flags: MessageFlags.Ephemeral });
+        await sendEphemeralReply(interaction, 'An error occurred while processing your command.');
     }
     return null;
   }

@@ -1,37 +1,20 @@
 import { MessageFlags } from 'discord.js';
+import { findChannel, findRole, validateCommandChannel, sendEphemeralReply } from '../utils/discord-helpers.js';
 
 // Helper function to get the war-orders channel
 async function getWarOrdersChannel(interaction) {
-    const channel = interaction.guild.channels.cache.find(
-        channel => channel.name === 'war-orders'
-    );
-
+    const channel = findChannel(interaction.guild, 'war-orders');
     if (!channel) {
-        await interaction.reply({
-            content: 'Could not find #war-orders! Please check the channel name and bot permissions.',
-            flags: MessageFlags.Ephemeral
-        });
+        await sendEphemeralReply(interaction, 'Could not find #war-orders! Please check the channel name and bot permissions.');
         return null;
     }
-
     return channel;
-}
-
-// Helper function to find a role by name
-function findRole(interaction, roleName) {
-    return interaction.guild.roles.cache.find(role => 
-        role.name.toLowerCase() === roleName.toLowerCase()
-    );
 }
 
 // 'Find' command implementation
 async function handleFind(interaction) {
     // Check if the command is being used in #species-war
-    if (interaction.channel.name !== 'species-war') {
-        await interaction.reply({
-            content: 'This command can only be used in #species-war!',
-            flags: MessageFlags.Ephemeral
-        });
+    if (!await validateCommandChannel(interaction, 'species-war')) {
         return;
     }
 
@@ -42,32 +25,22 @@ async function handleFind(interaction) {
     if (!channel) return;
 
     // Find the ShellShock role
-    const shellShockRole = findRole(interaction, 'shellshock');
+    const shellShockRole = findRole(interaction.guild, 'shellshock');
 
     if (!shellShockRole) {
-        await interaction.reply({
-            content: 'Could not find the ShellShock role!',
-            flags: MessageFlags.Ephemeral
-        });
+        await sendEphemeralReply(interaction, 'Could not find the ShellShock role!');
         return;
     }
 
     const message = `Good news, <@&${shellShockRole.id}>! It's time to find F${floor}! ${additionalMessage}`;
     await channel.send(message);
-    await interaction.reply({
-        content: `Sent the 'find' message in #species-war to find floor ${floor}!`,
-        flags: MessageFlags.Ephemeral
-    });
+    await sendEphemeralReply(interaction, `Sent the 'find' message in #species-war to find floor ${floor}!`);
 }
 
 // 'Kill' command implementation
 async function handleKill(interaction) {
     // Check if the command is being used in #species-war
-    if (interaction.channel.name !== 'species-war') {
-        await interaction.reply({
-            content: 'This command can only be used in #species-war!',
-            flags: MessageFlags.Ephemeral
-        });
+    if (!await validateCommandChannel(interaction, 'species-war')) {
         return;
     }
 
@@ -78,13 +51,13 @@ async function handleKill(interaction) {
     if (!channel) return;
 
     // Find all possible roles. Will return null if the role is not found.
-    const laborer = findRole(interaction, 'laborer');
-    const prospector = findRole(interaction, 'prospector');
-    const prospectorDelta = findRole(interaction, 'prospector delta');
-    const prospectorEpsilon = findRole(interaction, 'prospector epsilon');
-    const vanguardBeta = findRole(interaction, 'vanguard beta');
-    const vanguard = findRole(interaction, 'vanguard');
-    const shellShock = findRole(interaction, 'shellshock');
+    const laborer = findRole(interaction.guild, 'laborer');
+    const prospector = findRole(interaction.guild, 'prospector');
+    const prospectorDelta = findRole(interaction.guild, 'prospector delta');
+    const prospectorEpsilon = findRole(interaction.guild, 'prospector epsilon');
+    const vanguardBeta = findRole(interaction.guild, 'vanguard beta');
+    const vanguard = findRole(interaction.guild, 'vanguard');
+    const shellShock = findRole(interaction.guild, 'shellshock');
 
     // Get roles for this floor
     let roles;
@@ -111,26 +84,17 @@ async function handleKill(interaction) {
             break;
         case 19:
         case 20:
-            await interaction.reply({
-                content: `F${floor} is not supported yet!`,
-                flags: MessageFlags.Ephemeral
-            });
+            await sendEphemeralReply(interaction, `F${floor} is not supported yet!`);
             return;
         default:
-            await interaction.reply({
-                content: 'Invalid floor number!',
-                flags: MessageFlags.Ephemeral
-            });
+            await sendEphemeralReply(interaction, 'Invalid floor number!');
             return;
     }
 
     // Check if all required roles exist
     const missingRoles = roles.filter(role => !role);
     if (missingRoles.length > 0) {
-        await interaction.reply({
-            content: 'One or more required roles are missing! Please check that all roles exist.',
-            flags: MessageFlags.Ephemeral
-        });
+        await sendEphemeralReply(interaction, 'One or more required roles are missing! Please check that all roles exist.');
         return;
     }
 
@@ -140,17 +104,11 @@ async function handleKill(interaction) {
 
     try {
         await channel.send(message);
-        await interaction.reply({
-            content: `Sent the 'kill' message in #species-war to kill floor ${floor}!`,
-            flags: MessageFlags.Ephemeral
-        });
+        await sendEphemeralReply(interaction, `Sent the 'kill' message in #species-war to kill floor ${floor}!`);
     } catch (error) {
         console.error('Error sending message:', error);
         if (!interaction.replied && !interaction.deferred) {
-            await interaction.reply({
-                content: 'There was an error sending the message. Please try again.',
-                flags: MessageFlags.Ephemeral
-            });
+            await sendEphemeralReply(interaction, 'There was an error sending the message. Please try again.');
         }
     }
 }
