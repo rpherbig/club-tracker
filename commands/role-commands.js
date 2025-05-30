@@ -31,8 +31,8 @@ const NAME_MAPPING = {
   'snoooowman': '97785134845009920'
 };
 
-// Names to ignore in role checks (e.g., people not in Discord)
-const IGNORED_NAMES = new Set(['grantg']);
+// Names to ignore in role checks (e.g., people not in Discord, or not in the war)
+const IGNORED_NAMES = new Set(['grantg', 'sethpai']);
 
 // Simplified mapping from team prefix to base category role
 const TEAM_PREFIX_TO_CATEGORY_ROLE = {
