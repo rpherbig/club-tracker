@@ -138,4 +138,16 @@ export async function sendTruncatedMessage(channel, content, options = {}) {
     }
     
     return await channel.send(content);
+}
+
+/**
+ * Gets a random message from a template array, replacing placeholders with provided values
+ * @param {string} roles - The roles to insert into the message
+ * @param {string} message - The message to insert
+ * @param {string[]} templates - Array of message templates to use
+ * @returns {string} The formatted message
+ */
+export function getRandomMessage(roles, message, templates) {
+    const template = templates[Math.floor(Math.random() * templates.length)];
+    return template.replace(/{roles}/g, roles).replace(/{message}/g, message);
 } 

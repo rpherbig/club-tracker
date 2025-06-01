@@ -1,6 +1,6 @@
 import { google } from 'googleapis';
 import dotenv from 'dotenv';
-import { findChannel, findRole, findMemberByName, sendTruncatedMessage, sendEphemeralReply, validateCommandChannel } from '../utils/discord-helpers.js';
+import { findChannel, findRole, findMemberByName, sendTruncatedMessage, sendEphemeralReply, validateCommandChannel, getRandomMessage } from '../utils/discord-helpers.js';
 
 dotenv.config();
 
@@ -40,6 +40,15 @@ const TEAM_PREFIX_TO_CATEGORY_ROLE = {
   'pro': 'Prospector',
   'lab': 'Laborer',
 };
+
+// Templates for role announcements
+const ROLE_TEMPLATES = [
+    "Good news, {roles}! {message}",
+    "Wernstrom! {roles}! {message}",
+    "Sweet zombie Jesus, {roles}! {message}",
+    "{roles}, I'm going to build my own species war! With blackjack! And hookers! {message}",
+    "{roles}, I'm not sure if I'm going to show up drunk or not show up at all. {message}",
+];
 
 // Helper function to derive roles from a team name
 function getRolesForTeam(sheetTeamName) {
@@ -342,7 +351,7 @@ async function sendRoleAnnouncements(guild, uniqueTeamRoles) {
     }
 
     try {
-      await channel.send(`Good news, ${role}! You are ${roleName} for this week's species war!`);
+      await channel.send(getRandomMessage(role, `You are ${roleName} for this week's species war!`, ROLE_TEMPLATES));
     } catch (error) {
       console.error(`Failed to post announcement in #${channelName} for guild ${guild.name}:`, error);
     }
