@@ -53,7 +53,7 @@ async function handleFind(interaction) {
         return;
     }
 
-    const message = getRandomMessage(`<@&${shellShockRole.id}>`, `It's time to find F${floor}! ${additionalMessage}`, FIND_TEMPLATES);
+    const message = getRandomMessage(shellShockRole, `It's time to find F${floor}! ${additionalMessage}`, FIND_TEMPLATES);
     await channel.send(message);
     await sendEphemeralReply(interaction, `Sent the 'find' message in #species-war to find floor ${floor}!`);
 }
