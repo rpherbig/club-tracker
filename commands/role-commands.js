@@ -165,6 +165,10 @@ function getAllTeamRoles() {
   Object.keys(ROLE_CHANNEL_MAPPING).forEach(roleName => {
     allTeamRoles.add(roleName);
   });
+  // Add all base category roles
+  Object.values(TEAM_PREFIX_TO_CATEGORY_ROLE).forEach(roleName => {
+    allTeamRoles.add(roleName);
+  });
   return allTeamRoles;
 }
 
@@ -189,7 +193,7 @@ async function applyRoleChanges(member, targetRoleNames, allTeamRoles) {
   const changes = [];
   const errors = [];
 
-  // Get all current team roles
+  // Get all current team roles the user has
   const currentTeamRoles = Array.from(member.roles.cache.values())
     .filter(role => allTeamRoles.has(role.name));
 
@@ -207,18 +211,16 @@ async function applyRoleChanges(member, targetRoleNames, allTeamRoles) {
     return { changes, errors };
   }
 
-  // Calculate role changes
-  // For removal, we need to check both the category role and specific team role
-  const rolesToRemove = currentTeamRoles.filter(role => {
-    // If this is a category role (e.g., "Prospector"), check if any target role starts with it
-    if (!role.name.includes(' ')) {
-      return !targetRoleNames.some(targetName => targetName.startsWith(role.name));
-    }
-    // If this is a specific team role (e.g., "Prospector Gamma"), check if it's in target roles
-    return !targetRoleNames.includes(role.name);
-  });
-
+  // Calculate roles to add (roles they should have but don't)
   const rolesToAdd = targetRoles.filter(role => !member.roles.cache.has(role.id));
+
+  // Calculate roles to remove
+  // 1. Get all roles that could be changed (intersection of user's roles and possible team roles)
+  const possibleRolesToChange = currentTeamRoles;
+  // 2. Remove from that set any roles that we want to add
+  const rolesToRemove = possibleRolesToChange.filter(role => 
+    !targetRoles.some(targetRole => targetRole.id === role.id)
+  );
 
   // Apply all role changes
   const roleChanges = [
@@ -399,4 +401,4 @@ export async function handleSyncRoles(interaction) {
     console.error('Error in handleSyncRoles:', error);
     await sendEphemeralReply(interaction, 'An error occurred while syncing roles. Check the logs for details.');
   }
-} 
+}
