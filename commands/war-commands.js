@@ -98,7 +98,7 @@ async function handleKill(interaction) {
             roles = [prospector, vanguardBeta];
             break;
         case 17:
-            roles = [prospector, vanguard];
+            roles = [prospector, vanguardBeta];
             break;
         case 18:
             roles = [shellShock];
