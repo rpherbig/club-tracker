@@ -86,16 +86,14 @@ async function handleKill(interaction) {
         case 11:
         case 12:
         case 13:
+        case 14:
             roles = [laborer, prospectorEpsilon];
             break;
-        case 14:
+        case 15:
             roles = [laborer, prospectorEpsilon, prospectorDelta];
             break;
-        case 15:
-            roles = [laborer, prospector];
-            break;
         case 16:
-            roles = [prospector, vanguardBeta];
+            roles = [laborer, prospector];
             break;
         case 17:
             roles = [prospector, vanguardBeta];
