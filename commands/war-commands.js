@@ -99,9 +99,9 @@ async function handleKill(interaction) {
             roles = [prospector, vanguardBeta];
             break;
         case 18:
+        case 19:
             roles = [shellShock];
             break;
-        case 19:
         case 20:
             await sendEphemeralReply(interaction, `F${floor} is not supported yet!`);
             return;
