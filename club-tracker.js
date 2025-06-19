@@ -2,7 +2,7 @@ import { Client, GatewayIntentBits } from 'discord.js';
 import { promises as fs } from 'fs';
 import cron from 'node-cron';
 import { handleFind, handleKill } from './commands/war-commands.js';
-import { handleSetResource, handleShowResource, handleOverdueResource, handleTotalResource } from './commands/resource-commands.js';
+import { handleSetResource, handleShowResource, handleOverdueResource, handleTotalResource, handleRemovePlayer } from './commands/resource-commands.js';
 import { handlePostForgetfulMessage, handleTriggerDailyCheckin, sendDailyReminder } from './commands/reminder-commands.js';
 import { handleShowRoleChanges, handleSyncRoles } from './commands/role-commands.js';
 import { sendEphemeralReply, logCommandUsage } from './utils/discord-helpers.js';
@@ -142,6 +142,12 @@ client.on('interactionCreate', async interaction => {
     case 'total-essence':
     case 'total-gold':
       await handleTotalResource(interaction, guildData);
+      break;
+
+    case 'remove-player':
+      guildData = await handleRemovePlayer(interaction, guildData);
+      data.set(guildId, guildData);
+      await saveData(data, DATA_FILE);
       break;
 
     case 'find':

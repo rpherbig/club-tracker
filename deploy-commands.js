@@ -113,6 +113,18 @@ const commands = [
     description: 'Show players who are overdue updating their gold value'
   },
   {
+    name: 'remove-player',
+    description: 'Remove a player from the club data (bot-commands channel only)',
+    options: [
+      {
+        name: 'player',
+        type: 3,
+        description: 'Player name to remove',
+        required: true
+      }
+    ]
+  },
+  {
     name: 'find',
     description: 'Send a message telling club members to dig to a specific floor',
     options: [

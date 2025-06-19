@@ -1,4 +1,5 @@
 import moment from 'moment';
+import { validateCommandChannel, sendEphemeralReply } from '../utils/discord-helpers.js';
 
 const ESSENCE_OVERDUE_DAYS = 14;
 const GOLD_OVERDUE_DAYS = 42;
@@ -90,4 +91,25 @@ export async function handleTotalResource(interaction, guildData) {
   for (let i = 1; i < chunks.length; i++) {
     await interaction.followUp(chunks[i]);
   }
+}
+
+export async function handleRemovePlayer(interaction, guildData) {
+  const ALLOWED_COMMAND_CHANNEL_NAME = '🤖┃bot-commands';
+  
+  // Check if the command is used in the allowed channel
+  if (!await validateCommandChannel(interaction, ALLOWED_COMMAND_CHANNEL_NAME)) {
+    return guildData;
+  }
+
+  const player = interaction.options.getString('player').toLowerCase();
+  
+  if (!guildData.has(player)) {
+    await interaction.reply(`❌ Player '${player}' not found in the data.`);
+    return guildData;
+  }
+
+  // Remove the player from the data
+  guildData.delete(player);
+  await interaction.reply(`✅ Successfully removed player '${player}' from the data.`);
+  return guildData;
 } 
