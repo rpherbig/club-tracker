@@ -7,6 +7,7 @@
   "scripts": {
     "start": "node club-tracker.js",
     "deploy": "node deploy-commands.js",
+    "minion-relics": "node scripts/minion_relics_to_sheets.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
