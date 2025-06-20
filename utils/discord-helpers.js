@@ -1,5 +1,17 @@
 import { MessageFlags } from 'discord.js';
 
+// Unified Professor Farnsworth-style message templates
+const FARNESWORTH_TEMPLATES = [
+    "Good news, {roles}! {message}",
+    "Wernstrom! {roles}! {message}",
+    "Sweet zombie Jesus, {roles}! {message}",
+    "{roles}, I'm going to build my own mobile game! With blackjack! And hookers! {message}",
+    "{roles}, I'm not sure if I'm going to show up drunk or not show up at all. {message}",
+    "{roles}, I've taught the toaster to feel love! {message}",
+    "To shreds, you say? Well, {roles}: {message}",
+    "I don't want to live on this planet anymore... but first, {roles}, {message}",
+];
+
 /**
  * Finds a channel in a guild by name
  * @param {Guild} guild - The Discord guild to search in
@@ -141,13 +153,12 @@ export async function sendTruncatedMessage(channel, content, options = {}) {
 }
 
 /**
- * Gets a random message from a template array, replacing placeholders with provided values
+ * Gets a random message from the Farnsworth templates, replacing placeholders with provided values
  * @param {string} roles - The roles to insert into the message
  * @param {string} message - The message to insert
- * @param {string[]} templates - Array of message templates to use
  * @returns {string} The formatted message
  */
-export function getRandomMessage(roles, message, templates) {
-    const template = templates[Math.floor(Math.random() * templates.length)];
+export function getRandomMessage(roles, message) {
+    const template = FARNESWORTH_TEMPLATES[Math.floor(Math.random() * FARNESWORTH_TEMPLATES.length)];
     return template.replace(/{roles}/g, roles).replace(/{message}/g, message);
 } 

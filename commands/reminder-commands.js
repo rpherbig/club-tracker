@@ -7,16 +7,6 @@ const DAILY_CHECKIN_CHANNEL_NAME = 'daily-discord-checkin';
 const FORGETFUL_ROLE_NAME = 'Forgetful';
 const MESSAGE_LINK = 'https://discord.com/channels/1036712913727143998/1364121623283896360/1364129089572700190';
 
-// Templates for daily reminder messages
-const DAILY_REMINDER_TEMPLATES = [
-    "Good news, {roles}! {message}",
-    "Wernstrom! {roles}! {message}",
-    "Sweet zombie Jesus, {roles}! {message}",
-    "{roles}, I'm going to build my own reminder system! With blackjack! And hookers! {message}",
-    "{roles}, I'm not sure if I'm going to show up drunk or not show up at all. {message}",
-    "Good news, {roles}! I've taught the toaster to feel love! {message}",
-];
-
 export async function sendDailyReminder(guild) {
     console.log(`[Cron Job] Processing daily reminder for guild: ${guild.name} (${guild.id})`);
     try {
@@ -38,7 +28,7 @@ export async function sendDailyReminder(guild) {
         }
 
         // Construct and send the message
-        const messageContent = getRandomMessage(role, `Check the daily post: ${MESSAGE_LINK}`, DAILY_REMINDER_TEMPLATES);
+        const messageContent = getRandomMessage(role, `Check the daily post: ${MESSAGE_LINK}`);
         await channel.send(messageContent);
         console.log(`[Cron Job] Successfully sent daily check-in message to #${DAILY_CHECKIN_CHANNEL_NAME} in guild ${guild.name}.`);
 

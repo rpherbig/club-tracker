@@ -1,27 +1,5 @@
 import { findChannel, findRole, validateCommandChannel, sendEphemeralReply, getRandomMessage } from '../utils/discord-helpers.js';
 
-// Templates for finding floors
-const FIND_TEMPLATES = [
-    "Good news, {roles}! {message}",
-    "To shreds, you say? Well, {roles}: {message}",
-    "I don't want to live on this planet anymore... but first, {roles}, {message}",
-    "Wernstrom! {roles}! {message}",
-    "Sweet zombie Jesus, {roles}! {message}",
-    "{roles}, I'm going to build my own drilling machine! With blackjack! And hookers! {message}",
-    "I'm not sure if I'm going to show up drunk or not show up at all. But {roles}, {message}",
-];
-
-// Templates for killing floors
-const KILL_TEMPLATES = [
-    "Good news, {roles}! {message}",
-    "To shreds, you say? Well, {roles}: {message}",
-    "I don't want to live on this planet anymore... but first, {roles}, {message}",
-    "Wernstrom! {roles}! {message}",
-    "Sweet zombie Jesus, {roles}! {message}",
-    "{roles}, I'm going to build my own boss killer! With blackjack! And hookers! {message}",
-    "I'm not sure if I'm going to show up drunk or not show up at all. But {roles}, {message}",
-];
-
 // Helper function to get the war-orders channel
 async function getWarOrdersChannel(interaction) {
     const channel = findChannel(interaction.guild, 'war-orders');
@@ -53,7 +31,7 @@ async function handleFind(interaction) {
         return;
     }
 
-    const message = getRandomMessage(shellShockRole, `It's time to find F${floor}! ${additionalMessage}`, FIND_TEMPLATES);
+    const message = getRandomMessage(shellShockRole, `It's time to find F${floor}! ${additionalMessage}`);
     await channel.send(message);
     await sendEphemeralReply(interaction, `Sent the 'find' message in #species-war to find floor ${floor}!`);
 }
@@ -119,7 +97,7 @@ async function handleKill(interaction) {
 
     // Format the message with the roles
     const roleMentions = roles.map(role => `<@&${role.id}>`).join(' ');
-    const message = getRandomMessage(roleMentions, `Go kill the boss of F${floor}! ${additionalMessage}`, KILL_TEMPLATES);
+    const message = getRandomMessage(roleMentions, `Go kill the boss of F${floor}! ${additionalMessage}`);
 
     try {
         await channel.send(message);
