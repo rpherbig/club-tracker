@@ -34,6 +34,8 @@ const FARNESWORTH_TEMPLATES = [
     "{roles}, I still don't understand why you wouldn't let me graft a laser cannon on your chest to crush those who disobey you. {message}",
     "{roles}, these old doomsday devices are dangerously unstable. I'll rest easier not knowing where they are. {message}",
     "{roles}, it's the Apocalypse, alright. I always thought I'd have a hand in it. {message}",
+    "{roles}, I'm beginning to think there'll be no forced mating at all. {message}",
+    "{roles}, there's just one small problem - and it's a big one. {message}",
     "Oh no, {roles}, now I'm 53 years old? I'll need a fake I.D. to rent ultra-porn! {message}",
     "My God, {roles}, this is an outrage. I was going to eat that mummy! {message}",
     "Yes yes yes, {roles}, you sound like a broken mp3. {message}",
