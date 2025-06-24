@@ -1,5 +1,12 @@
 import { MessageFlags } from 'discord.js';
 
+// TODO: add role & message to templates
+const BENDER_TEMPLATES = [
+    "The pie is ready. You guys like swarms of things, right?",
+    "My story is a lot like yours, only more interesting 'cause it involves robots.",
+    "Hey, the salt in that food was ten percent less than a lethal dose.",
+]
+
 // Unified Professor Farnsworth-style message templates
 const FARNESWORTH_TEMPLATES = [
     "Good news, {roles}! {message}",
@@ -14,6 +21,7 @@ const FARNESWORTH_TEMPLATES = [
     "Wernstrom! {roles}! {message}",
     "Sweet zombie Jesus, {roles}! {message}",
     "This is a fine day for science, {roles}! {message}",
+    "After all, {roles}, who needs courage when you have a gun? {message}",
     "Huh... whaaaaa, {roles}? {message}",
     "If cop a feel I must, then cop a feel I shall. {roles}, {message}",
     "{roles}, that question is less stupid, though you asked it in a profoundly stupid way. {message}",
@@ -36,6 +44,8 @@ const FARNESWORTH_TEMPLATES = [
     "{roles}, it's the Apocalypse, alright. I always thought I'd have a hand in it. {message}",
     "{roles}, I'm beginning to think there'll be no forced mating at all. {message}",
     "{roles}, there's just one small problem - and it's a big one. {message}",
+    "{roles}, I can own property because I'm not a penniless hippy. {message}",
+    "{roles}, God didn't get to be God by giving his money away. {message}",
     "Oh no, {roles}, now I'm 53 years old? I'll need a fake I.D. to rent ultra-porn! {message}",
     "My God, {roles}, this is an outrage. I was going to eat that mummy! {message}",
     "Yes yes yes, {roles}, you sound like a broken mp3. {message}",
