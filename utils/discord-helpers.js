@@ -5,6 +5,7 @@ const BENDER_TEMPLATES = [
     "The pie is ready. You guys like swarms of things, right?",
     "My story is a lot like yours, only more interesting 'cause it involves robots.",
     "Hey, the salt in that food was ten percent less than a lethal dose.",
+    "I got ants in my butt, and I need to strut.",
 ]
 
 // Unified Professor Farnsworth-style message templates
@@ -17,7 +18,8 @@ const FARNESWORTH_TEMPLATES = [
     "Good news, {roles}! Several years ago I tried to log on to AOL, and it just went through! {message}",
     "Good news, {roles}! We were supposed to make a delivery to the planet Tweenis 12 but it's been completely destroyed. They paid in advance! {message}",
     "Good news, {roles}! There's a report on the TV with some very bad news! {message}",
-    "Good news, {roles}, it's a suppository! {message}",
+    "Good news, {roles}! It's a suppository! {message}",
+    "Good news, {roles}! Someone's home is on fire! {message}",
     "Wernstrom! {roles}! {message}",
     "Sweet zombie Jesus, {roles}! {message}",
     "This is a fine day for science, {roles}! {message}",
