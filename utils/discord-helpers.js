@@ -52,6 +52,7 @@ const FARNESWORTH_TEMPLATES = [
     "{roles}, God didn't get to be God by giving his money away. {message}",
     "{roles}, now the ball's in Farnsworth's court! {message}",
     "{roles}, oh, how could I have put that bomb timer on upside-down? I'm a dried up husk of a scientist. {message}",
+    "{roles}, I could swear I've never seen that robot before. Oh yes, yes! My good friend, of course. {message}",
     "Doomsday device, {roles}? I suppose I could part with one and still be feared. {message}",
     "Oh no, {roles}, now I'm 53 years old? I'll need a fake I.D. to rent ultra-porn! {message}",
     "My God, {roles}, this is an outrage. I was going to eat that mummy! {message}",
