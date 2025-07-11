@@ -1,5 +1,25 @@
 import { findChannel, findRole, validateCommandChannel, sendEphemeralReply, getRandomMessage } from '../utils/discord-helpers.js';
 
+// Command history storage - key: "commandType:floor", value: timestamp
+const commandHistory = new Map();
+const DUPLICATE_TIME_WINDOW = 120000; // 2 minutes in milliseconds
+
+// Helper function to check for duplicates and update history
+function isDuplicateCommand(commandType, floor) {
+    const key = `${commandType}:${floor}`;
+    const now = Date.now();
+    const lastExecuted = commandHistory.get(key);
+    
+    if (lastExecuted && (now - lastExecuted) < DUPLICATE_TIME_WINDOW) {
+        return true;
+    }
+    
+    commandHistory.set(key, now);
+    return false;
+}
+
+
+
 // Helper function to get the war-orders channel
 async function getWarOrdersChannel(interaction) {
     const channel = findChannel(interaction.guild, 'war-orders');
@@ -19,6 +39,13 @@ async function handleFind(interaction) {
 
     const floor = interaction.options.getInteger('floor');
     const additionalMessage = interaction.options.getString('message') || '';
+    
+    // Check for duplicate command
+    if (isDuplicateCommand('find', floor)) {
+        await sendEphemeralReply(interaction, `A /find command for floor ${floor} was recently executed. Please wait before trying again.`);
+        return;
+    }
+    
     const channel = await getWarOrdersChannel(interaction);
     
     if (!channel) return;
@@ -45,6 +72,13 @@ async function handleKill(interaction) {
 
     const floor = interaction.options.getInteger('floor');
     const additionalMessage = interaction.options.getString('message') || '';
+    
+    // Check for duplicate command
+    if (isDuplicateCommand('kill', floor)) {
+        await sendEphemeralReply(interaction, `A /kill command for floor ${floor} was recently executed. Please wait before trying again.`);
+        return;
+    }
+    
     const channel = await getWarOrdersChannel(interaction);
     
     if (!channel) return;
