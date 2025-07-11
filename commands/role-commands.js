@@ -19,6 +19,18 @@ const ROLE_CHANNEL_MAPPING = {
   'lab 11': 'laborers',
 };
 
+// Specific team role mapping - maps team names to their specific Discord role names
+// Missing entries will only get the category role
+const TEAM_ROLE_MAPPING = {
+  'van 19': 'Vanguard 19',
+  'van 18': 'Vanguard 18',
+  'van 17': 'Vanguard 17',
+  'pro 16': 'Prospector 16',
+  'pro 15': 'Prospector 15',
+  'pro 11': 'Prospector 11',
+  // Laborer teams don't get specific roles, only the category role
+};
+
 // Name mapping configuration - maps sheet names to Discord usernames/IDs
 const NAME_MAPPING = {
   'byproxy': '107285508710772736',
@@ -79,44 +91,23 @@ const NAME_MAPPING = {
 // Names to ignore in role checks (e.g., people not in Discord, or not in the war)
 const IGNORED_NAMES = new Set(['grantg', 'sethpai']);
 
-// Simplified mapping from team prefix to base category role
-const TEAM_PREFIX_TO_CATEGORY_ROLE = {
-  'van': 'Vanguard',
-  'pro': 'Prospector',
-  'lab': 'Laborer',
-};
-
-// Helper function to derive roles from a team name
-function getRolesForTeam(sheetTeamName) {
-  if (!sheetTeamName) return null;
-  const lowerSheetTeamName = sheetTeamName.toLowerCase(); // Ensure lowercase for splitting and lookup
-  const parts = lowerSheetTeamName.split(' ');
-
-  if (parts.length !== 2) {
-    console.warn(`Team name "${sheetTeamName}" does not follow the '<prefix> <suffix>' pattern.`);
-    return null; // Team name doesn't fit the expected pattern
+// Helper function to get roles from sheet data
+function getRolesFromSheetData(sheetTeam, sheetCategoryRole) {
+  if (!sheetTeam || !sheetCategoryRole) return null;
+  
+  const team = sheetTeam.trim().toLowerCase();
+  const categoryRole = sheetCategoryRole.trim();
+  
+  // Get the specific team role from the mapping
+  const specificTeamRole = TEAM_ROLE_MAPPING[team];
+  
+  // If we have a specific team role, return both category and specific
+  if (specificTeamRole) {
+    return [categoryRole, specificTeamRole];
   }
-
-  const prefix = parts[0];
-  const suffix = parts[1];
-
-  const categoryRole = TEAM_PREFIX_TO_CATEGORY_ROLE[prefix];
-  if (!categoryRole) {
-    console.warn(`No category role mapping for prefix "${prefix}" in team "${sheetTeamName}".`);
-    return null; // Prefix not found in our map
-  }
-
-  // Special case for Laborer teams - only return the category role
-  if (prefix === 'lab') {
-    return [categoryRole];
-  }
-
-  // For other teams, return both category and specific team role
-  // Capitalize the first letter of the suffix (e.g., "alpha" -> "Alpha")
-  const capitalizedSuffix = suffix.charAt(0).toUpperCase() + suffix.slice(1);
-  const specificTeamRole = `${categoryRole} ${capitalizedSuffix}`;
-
-  return [categoryRole, specificTeamRole];
+  
+  // Otherwise, just return the category role
+  return [categoryRole];
 }
 
 async function getSheetData() {
@@ -150,16 +141,17 @@ async function getSheetData() {
       console.log(`Checking sheet: ${sheetTitle}`);
       
       try {
-        const headerRange = `'${sheetTitle}'!A1:B1`;
+        const headerRange = `'${sheetTitle}'!A1:D1`;
         const headerResponse = await sheets.spreadsheets.values.get({
           spreadsheetId: SPREADSHEET_ID,
           range: headerRange,
         });
         
         const headers = headerResponse.data.values ? headerResponse.data.values[0] : null;
-        if (headers && headers.length >= 2 && 
+        if (headers && headers.length >= 4 && 
             headers[0].toLowerCase() === 'name' && 
-            headers[1].toLowerCase() === 'team') {
+            headers[1].toLowerCase() === 'team' &&
+            headers[3].toLowerCase() === 'kit') {
           targetSheet = sheet;
           targetSheetTitle = sheetTitle;
           console.log(`Found matching sheet: ${sheetTitle}`);
@@ -172,17 +164,17 @@ async function getSheetData() {
     }
 
     if (!targetSheet) {
-      throw new Error('Could not find a sheet with the required "Name" and "Team" headers.');
+      throw new Error('Could not find a sheet with the required "Name", "Team", and "Kit" headers.');
     }
 
     // Read data from the found sheet
-    const dataRange = `'${targetSheetTitle}'!A2:B`;
+    const dataRange = `'${targetSheetTitle}'!A2:D`;
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId: SPREADSHEET_ID,
       range: dataRange,
     });
 
-    return response.data.values || []; // Array of [name, team]
+    return response.data.values || []; // Array of [name, team, ?, categoryRole]
   } catch (error) {
     console.error('Error accessing Google Sheet:', error);
     if (error.code === 403) {
@@ -201,8 +193,13 @@ function getAllTeamRoles() {
   Object.keys(ROLE_CHANNEL_MAPPING).forEach(roleName => {
     allTeamRoles.add(roleName);
   });
-  // Add all base category roles
-  Object.values(TEAM_PREFIX_TO_CATEGORY_ROLE).forEach(roleName => {
+  // Add all specific team roles from TEAM_ROLE_MAPPING
+  Object.values(TEAM_ROLE_MAPPING).forEach(roleName => {
+    allTeamRoles.add(roleName);
+  });
+  // Add common category roles that might be used
+  const commonCategoryRoles = ['Vanguard', 'Prospector', 'Laborer'];
+  commonCategoryRoles.forEach(roleName => {
     allTeamRoles.add(roleName);
   });
   return allTeamRoles;
@@ -276,8 +273,8 @@ async function applyRoleChanges(member, targetRoleNames, allTeamRoles) {
   return { changes, errors };
 }
 
-function formatRoleUpdateResult(member, sheetName, sheetTeam, changes, errors) {
-  let message = `- ${member.user.tag} (Sheet Name: ${sheetName}, Team: ${sheetTeam}):`;
+function formatRoleUpdateResult(member, sheetName, sheetTeam, sheetCategoryRole, changes, errors) {
+  let message = `- ${member.user.tag} (Sheet Name: ${sheetName}, Team: ${sheetTeam}, Category: ${sheetCategoryRole}):`;
   if (changes.length > 0) {
     message += `\n  Changes: ${changes.join(', ')}`;
   }
@@ -321,9 +318,10 @@ export async function syncRoles(guild, outputChannel) {
   for (const row of sheetData) {
     const sheetName = row[0] ? row[0].trim() : null;
     const sheetTeam = row[1] ? row[1].trim().toLowerCase() : null;
+    const sheetCategoryRole = row[3] ? row[3].trim() : null; // Category role is in column D
 
-    if (!sheetName || !sheetTeam) {
-      console.log('Skipping row with missing name or team:', row);
+    if (!sheetName || !sheetTeam || !sheetCategoryRole) {
+      console.log('Skipping row with missing name, team, or category role:', row);
       continue;
     }
 
@@ -336,21 +334,21 @@ export async function syncRoles(guild, outputChannel) {
 
     membersProcessed++;
 
-    const targetRoleNames = getRolesForTeam(sheetTeam);
+    const targetRoleNames = getRolesFromSheetData(sheetTeam, sheetCategoryRole);
     if (!targetRoleNames || targetRoleNames.length === 0) {
-      updateResults.push(`- ${sheetName} (Team: ${row[1]}): Could not determine roles for this team (e.g., pattern mismatch, unmapped prefix, or malformed team name "${sheetTeam}").`);
+      updateResults.push(`- ${sheetName} (Team: ${row[1]}, Category Role: ${row[3]}): Could not determine roles for this team (missing category role or invalid data).`);
       continue;
     }
 
     const member = findMemberByName(guild, sheetName, { nameMapping: NAME_MAPPING });
     if (!member) {
-      updateResults.push(`- ${sheetName} (Team: ${row[1]}): User not found in this server.`);
+      updateResults.push(`- ${sheetName} (Team: ${row[1]}, Category Role: ${row[3]}): User not found in this server.`);
       continue;
     }
 
     const { changes, errors } = await applyRoleChanges(member, targetRoleNames, allTeamRoles);
     if (changes.length > 0 || errors.length > 0) {
-      updateResults.push(formatRoleUpdateResult(member, sheetName, row[1], changes, errors));
+      updateResults.push(formatRoleUpdateResult(member, sheetName, row[1], row[3], changes, errors));
     }
   }
 
