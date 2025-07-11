@@ -6,6 +6,16 @@ const BENDER_TEMPLATES = [
     "My story is a lot like yours, only more interesting 'cause it involves robots.",
     "Hey, the salt in that food was ten percent less than a lethal dose.",
     "I got ants in my butt, and I need to strut.",
+    "What Do You Mean 'We', Mammal?",
+    "Blackmail Is Such an Ugly Word. I Prefer Extortion.",
+    "Compare Your Lives to Mine and Then Kill Yourselves!",
+    "Can't You See I'm Using The Toilet?!",
+    "Hey, Guess What You're Accessories To!",
+    "Hey Sexy Mama... Wanna Kill All Humans?",
+    "I'm Bender, Baby! Please Insert Liquor!",
+    "I'm Gonna Go Build My Own Theme Park!",
+    "Bite My Shiny Metal Ass!",
+    "I'm back, baby!",
 ]
 
 // Unified Professor Farnsworth-style message templates
