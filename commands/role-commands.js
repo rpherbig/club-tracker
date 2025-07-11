@@ -10,12 +10,13 @@ const SPREADSHEET_ID = '1JQ3Atkgv1APC6kXawTIR2HjeWVCvBYepQqtZnygWSUU';
 // Channel mapping for role announcements
 // Missing entries will be skipped
 const ROLE_CHANNEL_MAPPING = {
-  'Vanguard Alpha': 'van-alpha',
-  'Vanguard Beta': 'van-beta',
-  'Prospector Gamma': 'pro-gamma',
-  'Prospector Delta': 'pro-delta',
-  'Prospector Epsilon': 'pro-epsilon',
-  'Laborer': 'laborers'
+  'van 19': 'van-19',
+  'van 18': 'van-18',
+  'van 17': 'van-17',
+  'pro 16': 'pro-16',
+  'pro 15': 'pro-15',
+  'pro 11': 'pro-11',
+  'lab 11': 'laborers',
 };
 
 // Name mapping configuration - maps sheet names to Discord usernames/IDs
