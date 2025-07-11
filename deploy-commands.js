@@ -175,6 +175,10 @@ const commands = [
   {
     name: 'sync-sheet-roles',
     description: 'Manually sync roles from the Google Sheet without sending announcements',
+  },
+  {
+    name: 'trigger-war-draft',
+    description: 'Manually trigger the war draft message',
   }
 ];
 

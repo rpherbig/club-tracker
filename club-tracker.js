@@ -5,6 +5,7 @@ import { handleFind, handleKill } from './commands/war-commands.js';
 import { handleSetResource, handleShowResource, handleOverdueResource, handleTotalResource, handleRemovePlayer } from './commands/resource-commands.js';
 import { handlePostForgetfulMessage, handleTriggerDailyCheckin, sendDailyReminder } from './commands/reminder-commands.js';
 import { handleShowRoleChanges, handleSyncRoles } from './commands/role-commands.js';
+import { sendWarDraftMessage, handleTriggerWarDraft } from './commands/war-draft-commands.js';
 import { sendEphemeralReply, logCommandUsage } from './utils/discord-helpers.js';
 import { handleForgetfulReaction } from './events/role-events.js';
 import dotenv from 'dotenv';
@@ -103,6 +104,22 @@ client.once('ready', async () => {
   } else {
       console.error('Invalid cron pattern for weekly role check.');
   }
+
+  // Schedule the war draft message for Friday at 6pm
+  if (cron.validate('0 18 * * 5')) {
+      cron.schedule('0 18 * * 5', async () => {
+          client.guilds.cache.forEach(async (guild) => {
+              console.log(`[Cron Job] Processing war draft message for guild: ${guild.name}`);
+              await sendWarDraftMessage(guild);
+          });
+      }, {
+          scheduled: true,
+          timezone: "America/New_York"
+      });
+      console.log('Scheduled war draft message for Friday 6:00 PM America/New_York.');
+  } else {
+      console.error('Invalid cron pattern for war draft message.');
+  }
 });
 
 client.on('interactionCreate', async interaction => {
@@ -176,6 +193,10 @@ client.on('interactionCreate', async interaction => {
 
     case 'sync-sheet-roles':
       await handleSyncRoles(interaction);
+      break;
+
+    case 'trigger-war-draft':
+      await handleTriggerWarDraft(interaction);
       break;
   }
 });
