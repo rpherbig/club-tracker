@@ -3,7 +3,7 @@ import { promises as fs } from 'fs';
 import cron from 'node-cron';
 import { handleFind, handleKill } from './commands/war-commands.js';
 import { handleSetResource, handleShowResource, handleOverdueResource, handleTotalResource, handleRemovePlayer } from './commands/resource-commands.js';
-import { handlePostForgetfulMessage, handleTriggerDailyCheckin, sendDailyReminder, sendArenaPromotionReminder } from './commands/reminder-commands.js';
+import { handlePostForgetfulMessage, handleTriggerDailyCheckin, sendDailyReminder, sendPromotionReminder } from './commands/reminder-commands.js';
 import { handleShowRoleChanges, handleSyncRoles } from './commands/role-commands.js';
 import { sendWarDraftMessage, handleTriggerWarDraft } from './commands/war-draft-commands.js';
 import { sendEphemeralReply, logCommandUsage } from './utils/discord-helpers.js';
@@ -121,20 +121,20 @@ client.once('ready', async () => {
       console.error('Invalid cron pattern for war draft message.');
   }
 
-  // Schedule the arena promotion reminder for Thursday at 6pm
+  // Schedule the promotion reminder for Thursday at 6pm
   if (cron.validate('0 18 * * 4')) {
       cron.schedule('0 18 * * 4', async () => {
           client.guilds.cache.forEach(async (guild) => {
-              console.log(`[Cron Job] Processing arena promotion reminder for guild: ${guild.name}`);
-              await sendArenaPromotionReminder(guild);
+              console.log(`[Cron Job] Processing promotion reminder for guild: ${guild.name}`);
+              await sendPromotionReminder(guild);
           });
       }, {
           scheduled: true,
           timezone: "America/New_York"
       });
-      console.log('Scheduled arena promotion reminder for Thursday 6:00 PM America/New_York.');
+      console.log('Scheduled promotion reminder for Thursday 6:00 PM America/New_York.');
   } else {
-      console.error('Invalid cron pattern for arena promotion reminder.');
+      console.error('Invalid cron pattern for promotion reminder.');
   }
 });
 

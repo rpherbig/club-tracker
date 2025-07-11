@@ -52,11 +52,11 @@ export async function handleTriggerDailyCheckin(interaction) {
     }
 }
 
-export async function sendArenaPromotionReminder(guild) {
-    console.log(`[Cron Job] Processing arena promotion reminder for guild: ${guild.name} (${guild.id})`);
+export async function sendPromotionReminder(guild) {
+    console.log(`[Cron Job] Processing promotion reminder for guild: ${guild.name} (${guild.id})`);
     try {
         // Find the target channel
-        const channel = findChannel(guild, 'ss-chat', 'Skipping arena promotion reminder.');
+        const channel = findChannel(guild, 'ss-chat', 'Skipping promotion reminder.');
         if (!channel) return;
 
         // Check permissions
@@ -65,12 +65,12 @@ export async function sendArenaPromotionReminder(guild) {
             return;
         }
 
-        // Send the arena promotion reminder message
-        await channel.send('Arena promotion is about to end, get in those attacks!');
-        console.log(`[Cron Job] Successfully sent arena promotion reminder to #ss-chat in guild ${guild.name}.`);
+        // Send the promotion reminder message
+        await channel.send('# ⚔️ PROMOTION REMINDER ⚔️\n\n🏆 Arena promotion and minion sims are about to end, get in those attacks! 🏆');
+        console.log(`[Cron Job] Successfully sent promotion reminder to #ss-chat in guild ${guild.name}.`);
 
     } catch (error) {
-        console.error(`[Cron Job] Failed to send arena promotion reminder for guild ${guild.name}:`, error);
+        console.error(`[Cron Job] Failed to send promotion reminder for guild ${guild.name}:`, error);
     }
 }
 
