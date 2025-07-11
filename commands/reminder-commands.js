@@ -52,6 +52,28 @@ export async function handleTriggerDailyCheckin(interaction) {
     }
 }
 
+export async function sendArenaPromotionReminder(guild) {
+    console.log(`[Cron Job] Processing arena promotion reminder for guild: ${guild.name} (${guild.id})`);
+    try {
+        // Find the target channel
+        const channel = findChannel(guild, 'ss-chat', 'Skipping arena promotion reminder.');
+        if (!channel) return;
+
+        // Check permissions
+        if (!checkBotPermissions(channel, PermissionsBitField.Flags.SendMessages)) {
+            console.log(`[Cron Job] Missing Send Messages permission in #ss-chat for guild ${guild.name}. Skipping.`);
+            return;
+        }
+
+        // Send the arena promotion reminder message
+        await channel.send('Arena promotion is about to end, get in those attacks!');
+        console.log(`[Cron Job] Successfully sent arena promotion reminder to #ss-chat in guild ${guild.name}.`);
+
+    } catch (error) {
+        console.error(`[Cron Job] Failed to send arena promotion reminder for guild ${guild.name}:`, error);
+    }
+}
+
 // Returns the new message ID (string) on success, or null on failure.
 async function handlePostForgetfulMessage(interaction) {
   try {
