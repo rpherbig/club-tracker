@@ -25,9 +25,7 @@ export const mantis = `# Mantis fighter cultivation guide
 ➤ Optimal order is different each war!  keep an eye out for instructions once we know what the order will be this`;
 
 // BEETLE
-export const beetle = `# Dung Beetle
-
-## Chronicle Requirements
+export const beetle = `## Chronicle Requirements
 ✔️ Attack all bosses with Lu Bu equipped (except the final boss!)
 ✔️ Final boss: Use Cosmos or Mirror, depending on Rush – Lu Bu NOT required.
 ✔️ Equip attack gear and form.
@@ -40,8 +38,7 @@ Optional Quests:
 ➤ Dung Week is a great time to use W-Tads to swap from farming mode to push mode!`;
 
 // GOLDFISH
-export const goldfish = `# Goldfish
-## Chronicle Requirements
+export const goldfish = `## Chronicle Requirements
 ✔️ Use BOTH attacks daily. No exceptions.
 ✔️ Set up troops ASAP – both offensive and defensive teams.
 ✔️ Attack ONLY 1000/1000 and 500/1000 targets.
@@ -49,14 +46,12 @@ export const goldfish = `# Goldfish
 ✔️ Prioritize attacks for the highest merits where you have a win condition. (The fish-shaped flags indicate merit values!)`;
 
 // CLAM
-export const clam = `# Clam
-
-## Chronicle Requirements
+export const clam = `## Chronicle Requirements
 ✔️ Place minions in the tower ASAP daily.
 ✔️ Attack the highest Chronicle Boss you can defeat. (Minions heal for free overnight!)`;
 
 // HAMSTER
-export const hamster = `# Hamster Day 1 🐹
+export const hamster = `# Chronicle - Day 1 🐹
 🚨 NO BIDDING & NO SPENDING DICE! 🚨
 ✔️ Start but DO NOT complete the tutorial.
 ❌ DO NOT spend your 3 dice.
@@ -64,22 +59,67 @@ export const hamster = `# Hamster Day 1 🐹
 🟢 DO open Chronicle and CLAIM your 8 dice!
 🎯 Your goal: 0/11 DICE used! 🎯
 
-# Hamster Day 2 🐹
+# Chronicle - Day 2 🐹
 
 ✔️ Complete the tutorial – use 3 dice & 1 gold bar, no extra gold spending yet.
 ✔️ Claim 8 dice but DO NOT spend them yet.
 
 Chronicle Bidding: React upon placement.
 
-# Hamster Day 3, 4, 5 🐹
+# Chronicle - Day 3, 4, 5 🐹
 ✔️ Dice: Claim & use all dice.
 ✔️ Gold Bars: SPEND 0 – hold extra bars until further notice.
 
 Chronicle Bidding: React upon placement.
 
-# Hamster Final Day 🐹
+# Chronicle - Final Day 🐹
 ✔️ Red Dice Rug Pull – These are for you, so collect your personal rewards!
 ✔️ Hammy Shop: Amarin recommends green robots – you only need 777 partner.
 
 ⚠️ LAST DAY to use ALL war resources!! ⚠️
 🎲 Good luck with your red dice! 🍀`;
+
+// MAIN WAR MESSAGE GENERATOR - Combines species detection and boilerplate
+export const generateWarMessage = (speciesWarInfo, roles, warStartDate) => {
+  const info = speciesWarInfo.toLowerCase();
+  
+  // Determine which species content to use
+  let speciesContent;
+  if (info.includes('mantis')) {
+    speciesContent = mantis;
+  } else if (info.includes('dung')) {
+    speciesContent = beetle;
+  } else if (info.includes('goldfish')) {
+    speciesContent = goldfish;
+  } else if (info.includes('clam')) {
+    speciesContent = clam;
+  } else if (info.includes('ham')) {
+    speciesContent = hamster;
+  } else {
+    // No match found
+    return null;
+  }
+  
+  // Format the war start date
+  const formattedDate = warStartDate.toLocaleDateString('en-US', { 
+    month: 'numeric',
+    day: 'numeric', 
+    year: '2-digit'
+  });
+  
+  // Return the complete message with boilerplate and role mentions
+  return `# ${speciesWarInfo} - ${formattedDate}
+
+# Boss Strategy:
+* F5, F11+: ${roles.laborer} ${roles.prospector11} :arrow_right: Start with F5, then full hit F11+ as casualties allow. Push up to F17 if possible; otherwise, clean up.
+* F15+: ${roles.prospector15} :arrow_right: Hold tokens until F15 is located. Full hit F15+ as casualties allow.
+* F16+: ${roles.prospector16} :arrow_right: Hold tokens until F16 is located. Full hit F16+ as casualties allow.
+* F17+: ${roles.vanguard17} :arrow_right: Hold tokens until F17 is located. Full hit F17+ as casualties allow.
+* F18+: ${roles.vanguard18} :arrow_right: Hold tokens until F18 is located. Full hit F18+ as casualties allow.
+* F19+: ${roles.vanguard19} :arrow_right: Hold tokens until F19 is located. Full hit F19+ as casualties allow.
+
+📌 Spreadsheet for tracking (updated every Friday):
+🔗 [Team Front-End Spreadsheet](https://docs.google.com/spreadsheets/d/1JQ3Atkgv1APC6kXawTIR2HjeWVCvBYepQqtZnygWSUU/edit?gid=903491486#gid=903491486) (Pinned in this channel!)
+
+${speciesContent}`;
+};

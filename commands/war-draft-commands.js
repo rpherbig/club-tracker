@@ -1,7 +1,7 @@
 import { google } from 'googleapis';
 import dotenv from 'dotenv';
-import { findChannel, sendEphemeralReply, validateCommandChannel } from '../utils/discord-helpers.js';
-import { mantis, beetle, goldfish, clam, hamster } from '../war-message-templates.js';
+import { findChannel, findRole, sendEphemeralReply, validateCommandChannel } from '../utils/discord-helpers.js';
+import { generateWarMessage } from '../war-message-templates.js';
 
 dotenv.config();
 
@@ -52,23 +52,7 @@ async function getSpeciesWarInfo() {
   }
 }
 
-/**
- * Determines which war type function to use based on the species war info
- * @param {string} speciesWarInfo - The species war information from the sheet
- * @returns {Function} The war message function
- */
-function getSpeciesWarMessage(speciesWarInfo) {  
-  const info = speciesWarInfo.toLowerCase();
 
-  if (info.includes('mantis')) return mantis;
-  if (info.includes('dung')) return beetle;
-  if (info.includes('goldfish')) return goldfish;
-  if (info.includes('clam')) return clam;
-  if (info.includes('ham')) return hamster;
-
-  // No match was found
-  return null;
-}
 
 /**
  * Posts the war draft message to the war-drafts channel
@@ -85,12 +69,25 @@ export async function sendWarDraftMessage(guild) {
       return;
     }
 
-    // Find the Manager role
-    const managersRole = findRole(guild, 'Manager');
-    if (!managersRole) {
-      console.log(`[Cron Job] Could not find Manager role in guild ${guild.name}. Skipping.`);
-      return;
-    }
+    // Find the specific team roles to mention
+    const laborerRole = findRole(guild, 'Laborer');
+    const prospector11Role = findRole(guild, 'Prospector 11');
+    const prospector15Role = findRole(guild, 'Prospector 15');
+    const prospector16Role = findRole(guild, 'Prospector 16');
+    const vanguard17Role = findRole(guild, 'Vanguard 17');
+    const vanguard18Role = findRole(guild, 'Vanguard 18');
+    const vanguard19Role = findRole(guild, 'Vanguard 19');
+    
+    // Build roles object with specific team roles
+    const roles = {
+      laborer: laborerRole,
+      prospector11: prospector11Role,
+      prospector15: prospector15Role,
+      prospector16: prospector16Role,
+      vanguard17: vanguard17Role,
+      vanguard18: vanguard18Role,
+      vanguard19: vanguard19Role,
+    };
 
     // Get species war info from Google Sheet
     const speciesWarInfo = await getSpeciesWarInfo();
@@ -99,18 +96,21 @@ export async function sendWarDraftMessage(guild) {
       return;
     }
 
-    // Get the message content
-    const messageContent = getSpeciesWarMessage(speciesWarInfo);
-    if (!messageContent) {
+    // Calculate the Friday war start date (next Friday after today)
+    const today = new Date();
+    const daysUntilFriday = (5 - today.getDay() + 7) % 7; // 5 = Friday
+    const warStartDate = new Date(today);
+    warStartDate.setDate(today.getDate() + daysUntilFriday);
+    
+    // Generate the complete war message with role mentions and war start date
+    const warMessage = generateWarMessage(speciesWarInfo, roles, warStartDate);
+    if (!warMessage) {
       console.log(`[Cron Job] No message content found for species war info: ${speciesWarInfo}. Skipping.`);
       return;
     }
 
-    // Create the full message with role mention
-    const fullMessage = `${managersRole} Here's the draft for tomorrow's ${speciesWarInfo}species war:\n\n${messageContent}`;
-
     // Send the message
-    await channel.send(fullMessage);
+    await channel.send(warMessage);
     console.log(`[Cron Job] Successfully sent war draft message to #war-drafts in guild ${guild.name}.`);
 
   } catch (error) {
