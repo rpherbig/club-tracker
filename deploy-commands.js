@@ -173,6 +173,10 @@ const commands = [
     description: 'Manually trigger the daily check-in message.'
   },
   {
+    name: 'trigger-promotion-reminder',
+    description: 'Manually trigger the promotion reminder message.'
+  },
+  {
     name: 'sync-sheet-roles',
     description: 'Manually sync roles from the Google Sheet without sending announcements',
   },

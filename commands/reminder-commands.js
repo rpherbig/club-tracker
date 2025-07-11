@@ -74,6 +74,21 @@ export async function sendPromotionReminder(guild) {
     }
 }
 
+export async function handleTriggerPromotionReminder(interaction) {
+    try {
+      // 1. Check if the command is used in the allowed channel
+      if (!await validateCommandChannel(interaction, ALLOWED_COMMAND_CHANNEL_NAME)) {
+        return;
+      }
+
+      await sendPromotionReminder(interaction.guild);
+      await sendEphemeralReply(interaction, 'Promotion reminder sent successfully!');
+    } catch (error) {
+      console.error(`[Cron Job] Failed to send promotion reminder for guild ${interaction.guild.name}:`, error);
+      await sendEphemeralReply(interaction, 'Failed to send promotion reminder. Check the logs for details.');
+    }
+}
+
 // Returns the new message ID (string) on success, or null on failure.
 async function handlePostForgetfulMessage(interaction) {
   try {

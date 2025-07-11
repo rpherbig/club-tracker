@@ -3,7 +3,7 @@ import { promises as fs } from 'fs';
 import cron from 'node-cron';
 import { handleFind, handleKill } from './commands/war-commands.js';
 import { handleSetResource, handleShowResource, handleOverdueResource, handleTotalResource, handleRemovePlayer } from './commands/resource-commands.js';
-import { handlePostForgetfulMessage, handleTriggerDailyCheckin, sendDailyReminder, sendPromotionReminder } from './commands/reminder-commands.js';
+import { handlePostForgetfulMessage, handleTriggerDailyCheckin, sendDailyReminder, sendPromotionReminder, handleTriggerPromotionReminder } from './commands/reminder-commands.js';
 import { handleShowRoleChanges, handleSyncRoles } from './commands/role-commands.js';
 import { sendWarDraftMessage, handleTriggerWarDraft } from './commands/war-draft-commands.js';
 import { sendEphemeralReply, logCommandUsage } from './utils/discord-helpers.js';
@@ -205,6 +205,10 @@ client.on('interactionCreate', async interaction => {
 
     case 'trigger-daily-checkin':
       await handleTriggerDailyCheckin(interaction);
+      break;
+
+    case 'trigger-promotion-reminder':
+      await handleTriggerPromotionReminder(interaction);
       break;
 
     case 'sync-sheet-roles':
