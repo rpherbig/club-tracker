@@ -1,25 +1,34 @@
-const fs = require('fs');
-const path = require('path');
-const { google } = require('googleapis');
-const dotenv = require('dotenv');
+import fs from 'fs';
+import path from 'path';
+import { google } from 'googleapis';
+import dotenv from 'dotenv';
+import { fileURLToPath } from 'url';
 
 dotenv.config();
 
 // Load minion relics data
 function loadMinionRelics() {
-    const dataPath = path.join(__dirname, '..', 'data', 'minion_relics.json');
+    const currentDir = path.dirname(fileURLToPath(import.meta.url));
+    const dataPath = path.join(currentDir, '..', 'data', 'minion_relics.json');
+    console.log('Loading data from:', dataPath);
     const rawData = fs.readFileSync(dataPath, 'utf8');
-    return JSON.parse(rawData);
+    const relics = JSON.parse(rawData);
+    console.log(`Loaded ${relics.length} relics`);
+    return relics;
 }
 
 // Transform data for Google Sheets
 function transformData(relics) {
-    return relics.map(relic => [
+    console.log('Transforming data...');
+    const transformed = relics.map(relic => [
         relic.name,                           // Name
         relic.affct.dominant,                 // Dominant AFFCT stat
         relic.rank,                           // Rank
         relic.minionType                      // Minion type
     ]);
+    console.log(`Transformed ${transformed.length} relics`);
+    console.log('Sample data:', transformed[0]);
+    return transformed;
 }
 
 // Google Sheets authentication using the same method as role-commands.js
@@ -49,13 +58,13 @@ async function updateSheet(auth, data) {
         // Clear existing data and add headers
         await sheets.spreadsheets.values.clear({
             spreadsheetId,
-            range: 'A:D',
+            range: 'Purple!A:D',
         });
         
         // Add headers
         await sheets.spreadsheets.values.update({
             spreadsheetId,
-            range: 'A1:D1',
+            range: 'Purple!A1:D1',
             valueInputOption: 'RAW',
             resource: {
                 values: [headers]
@@ -66,7 +75,7 @@ async function updateSheet(auth, data) {
         if (data.length > 0) {
             await sheets.spreadsheets.values.update({
                 spreadsheetId,
-                range: `A2:D${data.length + 1}`,
+                range: `Purple!A2:D${data.length + 1}`,
                 valueInputOption: 'RAW',
                 resource: {
                     values: data
@@ -112,11 +121,10 @@ async function main() {
 }
 
 // Run the script
-if (require.main === module) {
-    main();
-}
+console.log('Script starting...');
+main();
 
-module.exports = {
+export {
     loadMinionRelics,
     transformData,
     getAuth,
