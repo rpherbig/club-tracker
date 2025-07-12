@@ -86,9 +86,12 @@ async function handleKill(interaction) {
     // Find all possible roles. Will return null if the role is not found.
     const laborer = findRole(interaction.guild, 'laborer');
     const prospector = findRole(interaction.guild, 'prospector');
-    const prospectorDelta = findRole(interaction.guild, 'prospector delta');
-    const prospectorEpsilon = findRole(interaction.guild, 'prospector epsilon');
-    const vanguardBeta = findRole(interaction.guild, 'vanguard beta');
+    //const prospector16 = findRole(interaction.guild, 'prospector 16');
+    const prospector15 = findRole(interaction.guild, 'prospector 15');
+    const prospector11 = findRole(interaction.guild, 'prospector 11');
+    const vanguard17 = findRole(interaction.guild, 'vanguard 17');
+    const vanguard18 = findRole(interaction.guild, 'vanguard 18');
+    //const vanguard19 = findRole(interaction.guild, 'vanguard 19');
     const vanguard = findRole(interaction.guild, 'vanguard');
     const shellShock = findRole(interaction.guild, 'shellshock');
 
@@ -99,18 +102,20 @@ async function handleKill(interaction) {
         case 12:
         case 13:
         case 14:
-            roles = [laborer, prospectorEpsilon];
+            roles = [laborer, prospector11];
             break;
         case 15:
-            roles = [laborer, prospectorEpsilon, prospectorDelta];
+            roles = [laborer, prospector11, prospector15];
             break;
         case 16:
             roles = [laborer, prospector];
             break;
         case 17:
-            roles = [prospector, vanguardBeta];
+            roles = [laborer, prospector, vanguard17];
             break;
         case 18:
+            roles = [laborer, prospector, vanguard17, vanguard18];
+            break;
         case 19:
             roles = [shellShock];
             break;
