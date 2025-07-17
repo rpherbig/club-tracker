@@ -26,11 +26,11 @@ const client = new Client({
 });
 
 function objectToMap(obj) {
-    if (typeof obj !== "object" || obj === null) return obj; // Base case: not an object
-    if (Array.isArray(obj)) return obj; // Keep arrays as arrays
-    return new Map(
-        Object.entries(obj).map(([key, value]) => [key, objectToMap(value)])
-    );
+  if (typeof obj !== "object" || obj === null) return obj; // Base case: not an object
+  if (Array.isArray(obj)) return obj; // Keep arrays as arrays
+  return new Map(
+    Object.entries(obj).map(([key, value]) => [key, objectToMap(value)])
+  );
 }
 
 async function loadData(filePath) {
@@ -39,17 +39,17 @@ async function loadData(filePath) {
     const parsedData = JSON.parse(jsonString);
     console.log(`Loaded data from ${filePath}`);
     return objectToMap(parsedData);
-  } catch {
+  } catch (error) {
     console.error(`Error loading data from ${filePath}:`, error);
     return new Map();
   }
 }
 
 function mapToObject(map) {
-    if (!(map instanceof Map)) return map; // Base case: not a Map
-    return Object.fromEntries(
-        Array.from(map.entries(), ([key, value]) => [key, mapToObject(value)])
-    );
+  if (!(map instanceof Map)) return map; // Base case: not a Map
+  return Object.fromEntries(
+    Array.from(map.entries(), ([key, value]) => [key, mapToObject(value)])
+  );
 }
 
 async function saveData(dataToSave, filePath) {
@@ -75,66 +75,66 @@ client.once('ready', async () => {
 
   // Schedule the daily check-in message
   if (cron.validate('0 10 * * *')) {
-      cron.schedule('0 10 * * *', async () => {
-          client.guilds.cache.forEach(async (guild) => {
-              console.log(`[Cron Job] Processing daily check-in for guild: ${guild.name}`);
-              await sendDailyReminder(guild);
-          });
-      }, {
-          scheduled: true,
-          timezone: "America/New_York"
+    cron.schedule('0 10 * * *', async () => {
+      client.guilds.cache.forEach(async (guild) => {
+        console.log(`[Cron Job] Processing daily check-in for guild: ${guild.name}`);
+        await sendDailyReminder(guild);
       });
-      console.log('Scheduled daily check-in message for 10:00 AM America/New_York.');
+    }, {
+      scheduled: true,
+      timezone: "America/New_York"
+    });
+    console.log('Scheduled daily check-in message for 10:00 AM America/New_York.');
   } else {
-      console.error('Invalid cron pattern for daily check-in.');
+    console.error('Invalid cron pattern for daily check-in.');
   }
 
   // Schedule the weekly role check for Friday at 9am
   if (cron.validate('0 9 * * 5')) {
-      cron.schedule('0 9 * * 5', async () => {
-          client.guilds.cache.forEach(async (guild) => {
-              console.log(`[Cron Job] Processing weekly role check for guild: ${guild.name}`);
-              await handleShowRoleChanges(guild);
-          });
-      }, {
-          scheduled: true,
-          timezone: "America/New_York"
+    cron.schedule('0 9 * * 5', async () => {
+      client.guilds.cache.forEach(async (guild) => {
+        console.log(`[Cron Job] Processing weekly role check for guild: ${guild.name}`);
+        await handleShowRoleChanges(guild);
       });
-      console.log('Scheduled weekly role check for Friday 9:00 AM America/New_York.');
+    }, {
+      scheduled: true,
+      timezone: "America/New_York"
+    });
+    console.log('Scheduled weekly role check for Friday 9:00 AM America/New_York.');
   } else {
-      console.error('Invalid cron pattern for weekly role check.');
+    console.error('Invalid cron pattern for weekly role check.');
   }
 
   // Schedule the war draft message for Friday at 6pm
   if (cron.validate('0 18 * * 5')) {
-      cron.schedule('0 18 * * 5', async () => {
-          client.guilds.cache.forEach(async (guild) => {
-              console.log(`[Cron Job] Processing war draft message for guild: ${guild.name}`);
-              await sendWarDraftMessage(guild);
-          });
-      }, {
-          scheduled: true,
-          timezone: "America/New_York"
+    cron.schedule('0 18 * * 5', async () => {
+      client.guilds.cache.forEach(async (guild) => {
+        console.log(`[Cron Job] Processing war draft message for guild: ${guild.name}`);
+        await sendWarDraftMessage(guild);
       });
-      console.log('Scheduled war draft message for Friday 6:00 PM America/New_York.');
+    }, {
+      scheduled: true,
+      timezone: "America/New_York"
+    });
+    console.log('Scheduled war draft message for Friday 6:00 PM America/New_York.');
   } else {
-      console.error('Invalid cron pattern for war draft message.');
+    console.error('Invalid cron pattern for war draft message.');
   }
 
   // Schedule the promotion reminder for Thursday at 6pm
   if (cron.validate('0 18 * * 4')) {
-      cron.schedule('0 18 * * 4', async () => {
-          client.guilds.cache.forEach(async (guild) => {
-              console.log(`[Cron Job] Processing promotion reminder for guild: ${guild.name}`);
-              await sendPromotionReminder(guild);
-          });
-      }, {
-          scheduled: true,
-          timezone: "America/New_York"
+    cron.schedule('0 18 * * 4', async () => {
+      client.guilds.cache.forEach(async (guild) => {
+        console.log(`[Cron Job] Processing promotion reminder for guild: ${guild.name}`);
+        await sendPromotionReminder(guild);
       });
-      console.log('Scheduled promotion reminder for Thursday 6:00 PM America/New_York.');
+    }, {
+      scheduled: true,
+      timezone: "America/New_York"
+    });
+    console.log('Scheduled promotion reminder for Thursday 6:00 PM America/New_York.');
   } else {
-      console.error('Invalid cron pattern for promotion reminder.');
+    console.error('Invalid cron pattern for promotion reminder.');
   }
 });
 
@@ -196,10 +196,10 @@ client.on('interactionCreate', async interaction => {
       const newMessageId = await handlePostForgetfulMessage(interaction);
 
       if (newMessageId) {
-          const currentList = forgetfulMessageStore.get(guildId) || [];
-          const updatedList = [...currentList, newMessageId];
-          forgetfulMessageStore.set(guildId, updatedList);
-          await saveData(forgetfulMessageStore, FORGETFUL_MESSAGES_FILE);
+        const currentList = forgetfulMessageStore.get(guildId) || [];
+        const updatedList = [...currentList, newMessageId];
+        forgetfulMessageStore.set(guildId, updatedList);
+        await saveData(forgetfulMessageStore, FORGETFUL_MESSAGES_FILE);
       }
       break;
 
@@ -223,7 +223,7 @@ client.on('interactionCreate', async interaction => {
 
 // Listener for message reactions to assign the Forgetful role
 client.on('messageReactionAdd', async (reaction, user) => {
-    await handleForgetfulReaction(reaction, user, forgetfulMessageStore);
+  await handleForgetfulReaction(reaction, user, forgetfulMessageStore);
 });
 
 client.login(process.env.TOKEN);
