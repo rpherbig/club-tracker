@@ -181,6 +181,10 @@ const commands = [
     description: 'Manually sync roles from the Google Sheet without sending announcements',
   },
   {
+    name: 'trigger-announce-roles',
+    description: 'Manually announce team roles in their channels.'
+  },
+  {
     name: 'trigger-war-draft',
     description: 'Manually trigger the war draft message',
   }

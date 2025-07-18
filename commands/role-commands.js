@@ -439,3 +439,19 @@ export async function handleSyncRoles(interaction) {
     await sendEphemeralReply(interaction, 'An error occurred while syncing roles. Check the logs for details.');
   }
 }
+
+export async function handleAnnounceRoles(interaction) {
+  try {
+    // Check if the command is used in the allowed channel
+    if (!await validateCommandChannel(interaction, ALLOWED_COMMAND_CHANNEL_NAME)) {
+      return;
+    }
+
+    await sendEphemeralReply(interaction, 'Announcing roles...');
+    await sendRoleAnnouncements(interaction.guild);
+    await sendEphemeralReply(interaction, 'Role announcements sent!');
+  } catch (error) {
+    console.error('Error in handleAnnounceRoles:', error);
+    await sendEphemeralReply(interaction, 'An error occurred while announcing roles. Check the logs for details.');
+  }
+}

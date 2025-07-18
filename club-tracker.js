@@ -4,7 +4,7 @@ import cron from 'node-cron';
 import { handleFind, handleKill } from './commands/war-commands.js';
 import { handleSetResource, handleShowResource, handleOverdueResource, handleTotalResource, handleRemovePlayer } from './commands/resource-commands.js';
 import { handlePostForgetfulMessage, handleTriggerDailyCheckin, sendDailyReminder, sendPromotionReminder, handleTriggerPromotionReminder } from './commands/reminder-commands.js';
-import { handleShowRoleChanges, handleSyncRoles } from './commands/role-commands.js';
+import { handleShowRoleChanges, handleSyncRoles, handleAnnounceRoles } from './commands/role-commands.js';
 import { sendWarDraftMessage, handleTriggerWarDraft } from './commands/war-draft-commands.js';
 import { sendEphemeralReply, logCommandUsage } from './utils/discord-helpers.js';
 import { handleForgetfulReaction } from './events/role-events.js';
@@ -217,6 +217,10 @@ client.on('interactionCreate', async interaction => {
 
     case 'trigger-war-draft':
       await handleTriggerWarDraft(interaction);
+      break;
+
+    case 'trigger-announce-roles':
+      await handleAnnounceRoles(interaction);
       break;
   }
 });
