@@ -71,6 +71,7 @@ const NAME_MAPPING = {
   'traveler956': '915663499810717716',
   'ninjaxom': '389819274975510528',
   'ekstentythre': '346826665474916362',
+  'ekstwntthre': '346826665474916362',
   'confusdsquirrl': '505984275678625812',
   'konx': '230519955240648704',
   'jwfw': '663562170507984928',
@@ -88,7 +89,7 @@ const NAME_MAPPING = {
   'bishop501': '250239865210404866',
 };
 
-// Names to ignore in role checks (e.g., people not in Discord, or not in the war)
+// Names to ignore in role checks (e.g., people not in Discord, or not in the war, or not in the club)
 const IGNORED_NAMES = new Set(['grantg', 'sethpai']);
 
 // Helper function to get roles from sheet data
