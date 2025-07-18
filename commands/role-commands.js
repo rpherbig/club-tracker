@@ -28,7 +28,7 @@ const TEAM_ROLE_MAPPING = {
   'pro 16': 'Prospector 16',
   'pro 15': 'Prospector 15',
   'pro 11': 'Prospector 11',
-  // Laborer teams don't get specific roles, only the category role
+  'lab 11': 'Laborer', // Laborers only have one role in Discord
 };
 
 // Name mapping configuration - maps sheet names to Discord usernames/IDs
@@ -370,14 +370,19 @@ export async function syncRoles(guild, outputChannel) {
  * @param {Guild} guild - The Discord guild to send announcements in
  * @param {Set<string>} uniqueTeamRoles - Set of role names to announce
  */
-async function sendRoleAnnouncements(guild, uniqueTeamRoles) {
-  for (const roleName of uniqueTeamRoles) {
-    const channelName = ROLE_CHANNEL_MAPPING[roleName];
-    if (!channelName) continue;
-
+async function sendRoleAnnouncements(guild) {
+  // Loop over the keys of ROLE_CHANNEL_MAPPING
+  for (const teamKey of Object.keys(ROLE_CHANNEL_MAPPING)) {
+    const channelName = ROLE_CHANNEL_MAPPING[teamKey];
     const channel = findChannel(guild, channelName);
     if (!channel) {
       console.warn(`Could not find channel #${channelName} for role ${roleName} in guild ${guild.name}`);
+      continue;
+    }
+
+    const roleName = TEAM_ROLE_MAPPING[teamKey];
+    if (!roleName) {
+      console.warn(`Could not find role name for team ${teamKey} in TEAM_ROLE_MAPPING in guild ${guild.name}`);
       continue;
     }
 
@@ -402,15 +407,12 @@ export async function handleShowRoleChanges(guild) {
     console.error(`Could not find the war-planning channel in guild ${guild.name}`);
     return;
   }
-
-  // Use the keys from ROLE_CHANNEL_MAPPING as our unique team roles
-  const uniqueTeamRoles = new Set(Object.keys(ROLE_CHANNEL_MAPPING));
   
   // Sync roles first
   await syncRoles(guild, warPlanningChannel);
 
   // Send announcements
-  await sendRoleAnnouncements(guild, uniqueTeamRoles);
+  await sendRoleAnnouncements(guild);
 }
 
 const ALLOWED_COMMAND_CHANNEL_NAME = '🤖┃bot-commands';
