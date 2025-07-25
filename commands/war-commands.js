@@ -18,8 +18,6 @@ function isDuplicateCommand(commandType, floor) {
     return false;
 }
 
-
-
 // Helper function to get the war-orders channel
 async function getWarOrdersChannel(interaction) {
     const channel = findChannel(interaction.guild, 'war-orders');

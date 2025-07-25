@@ -124,7 +124,8 @@ async function getSheetData() {
     });
     
     if (!spreadsheetMeta.data.sheets || spreadsheetMeta.data.sheets.length === 0) {
-      throw new Error('No sheets found in the spreadsheet.');
+      console.error('No sheets found in the spreadsheet.');
+      return null;
     }
 
     // Log all available sheets for debugging
@@ -165,7 +166,8 @@ async function getSheetData() {
     }
 
     if (!targetSheet) {
-      throw new Error('Could not find a sheet with the required "Name", "Team", and "Kit" headers.');
+      console.error('Could not find a sheet with the required "Name", "Team", and "Kit" headers.');
+      return null;
     }
 
     // Read data from the found sheet
