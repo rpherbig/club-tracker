@@ -293,7 +293,7 @@ function formatRoleUpdateResult(member, sheetName, sheetTeam, sheetCategoryRole,
 export async function syncRoles(guild, outputChannel) {
   if (!guild) {
     console.error('No guild provided for role check');
-    return;
+    return false;
   }
 
   const updateResults = [];
@@ -307,12 +307,12 @@ export async function syncRoles(guild, outputChannel) {
   const sheetData = await getSheetData();
   if (!sheetData) {
     await outputChannel.send('Could not retrieve data from the Google Sheet. Check bot logs for details.');
-    return;
+    return false;
   }
 
   if (sheetData.length === 0) {
     await outputChannel.send('No data found in the specified Google Sheet tab or columns.');
-    return;
+    return false;
   }
 
   // Process role changes
@@ -363,6 +363,8 @@ export async function syncRoles(guild, outputChannel) {
     replyMessage += updateResults.join('\n');
     await sendTruncatedMessage(outputChannel, replyMessage);
   }
+
+  return true;
 }
 
 /**
@@ -409,10 +411,14 @@ export async function handleShowRoleChanges(guild) {
   }
   
   // Sync roles first
-  await syncRoles(guild, warPlanningChannel);
+  const syncSuccess = await syncRoles(guild, warPlanningChannel);
 
-  // Send announcements
-  await sendRoleAnnouncements(guild);
+  // Send announcements only if sync was successful
+  if (syncSuccess) {
+    await sendRoleAnnouncements(guild);
+  } else {
+    console.warn('Role sync failed, skipping announcements.');
+  }
 }
 
 const ALLOWED_COMMAND_CHANNEL_NAME = '🤖┃bot-commands';
