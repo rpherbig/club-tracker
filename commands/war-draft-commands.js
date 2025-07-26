@@ -89,6 +89,8 @@ export async function sendWarDraftMessage(guild) {
       vanguard19: vanguard19Role,
     };
 
+    console.log(`[Cron Job] Fetching species war info from Google Sheets...`);
+    
     // Get species war info from Google Sheet
     const speciesWarInfo = await getSpeciesWarInfo();
     if (!speciesWarInfo) {
@@ -96,11 +98,15 @@ export async function sendWarDraftMessage(guild) {
       return;
     }
 
+    console.log(`[Cron Job] Retrieved species war info: ${speciesWarInfo}`);
+
     // Calculate the Friday war start date (next Friday after today)
     const today = new Date();
     const daysUntilFriday = (5 - today.getDay() + 7) % 7; // 5 = Friday
     const warStartDate = new Date(today);
     warStartDate.setDate(today.getDate() + daysUntilFriday);
+    
+    console.log(`[Cron Job] Generating war message...`);
     
     // Generate the complete war message with role mentions and war start date
     const warMessage = generateWarMessage(speciesWarInfo, roles, warStartDate);
@@ -108,6 +114,8 @@ export async function sendWarDraftMessage(guild) {
       console.log(`[Cron Job] No message content found for species war info: ${speciesWarInfo}. Skipping.`);
       return;
     }
+
+    console.log(`[Cron Job] Sending war draft messages...`);
 
     // Always send two messages: main strategy message and species guide
     await channel.send(warMessage.main);
@@ -117,6 +125,7 @@ export async function sendWarDraftMessage(guild) {
 
   } catch (error) {
     console.error(`[Cron Job] Failed to send war draft message for guild ${guild.name}:`, error);
+    throw error; // Re-throw so the calling function can handle it
   }
 }
 
@@ -131,10 +140,22 @@ export async function handleTriggerWarDraft(interaction) {
       return;
     }
 
+    // Defer the reply to extend interaction lifetime to 15 minutes
+    await interaction.deferReply({ ephemeral: true });
+
+    // Now we have up to 15 minutes to process and respond
     await sendWarDraftMessage(interaction.guild);
-    await sendEphemeralReply(interaction, 'War draft message sent successfully!');
+    
+    // Send success response
+    await interaction.editReply('War draft message sent successfully!');
+
   } catch (error) {
-    console.error(`[Manual Trigger] Failed to send war draft message for guild ${interaction.guild.name}:`, error);
-    await sendEphemeralReply(interaction, 'Failed to send war draft message. Check the logs for details.');
+    console.error(`[Manual Trigger] Failed to handle war draft trigger for guild ${interaction.guild.name}:`, error);
+    // Send error response using editReply since we deferred
+    try {
+      await interaction.editReply('Failed to send war draft message. Check the logs for details.');
+    } catch (replyError) {
+      console.error('Could not send error reply:', replyError);
+    }
   }
 }
