@@ -90,7 +90,7 @@ export async function handleTriggerPromotionReminder(interaction) {
 }
 
 // Returns the new message ID (string) on success, or null on failure.
-async function handlePostForgetfulMessage(interaction) {
+export async function handlePostForgetfulMessage(interaction) {
   try {
     // 1. Check if the command is used in the allowed channel
     if (!await validateCommandChannel(interaction, ALLOWED_COMMAND_CHANNEL_NAME)) {
@@ -139,4 +139,34 @@ async function handlePostForgetfulMessage(interaction) {
   }
 }
 
-export { handlePostForgetfulMessage }; 
+export async function sendAnniversaryLoginReminder(guild) {
+    console.log(`[Cron Job] Processing anniversary login reminder for guild: ${guild.name} (${guild.id})`);
+    try {
+        // Find the target channel - using ss-chat as the default channel
+        const channel = findChannel(guild, 'ss-chat', 'Skipping anniversary login reminder.');
+        if (!channel) {
+            console.log(`[Cron Job] Channel 'ss-chat' not found in guild ${guild.name}. Skipping.`);
+            return;
+        }
+
+        // Find the ShellShock role
+        const role = findRole(guild, 'ShellShock');
+        if (!role) {
+            console.log(`[Cron Job] Role 'ShellShock' not found in guild ${guild.name}. Skipping.`);
+            return;
+        }
+
+        // Check permissions
+        if (!checkBotPermissions(channel, PermissionsBitField.Flags.SendMessages)) {
+            console.log(`[Cron Job] Missing Send Messages permission in #ss-chat for guild ${guild.name}. Skipping.`);
+            return;
+        }
+
+        // Send the anniversary login reminder message
+        await channel.send(`${role} remember to log-in and do your daily check-in: https://h5-sg.qcplay.com/snail_2ndSpecial_eu/anniversary`);
+        console.log(`[Cron Job] Successfully sent anniversary login reminder to #ss-chat in guild ${guild.name}.`);
+
+    } catch (error) {
+        console.error(`[Cron Job] Failed to send anniversary login reminder for guild ${guild.name}:`, error);
+    }
+} 
