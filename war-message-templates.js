@@ -107,8 +107,8 @@ export const generateWarMessage = (speciesWarInfo, roles, warStartDate) => {
     year: '2-digit'
   });
   
-  // Return the complete message with boilerplate and role mentions
-  return `# ${speciesWarInfo} - ${formattedDate}
+  // Create the main message with strategy and spreadsheet link
+  const mainMessage = `# ${speciesWarInfo} - ${formattedDate}
 
 # Boss Strategy:
 * F5, F11+: ${roles.laborer} ${roles.prospector11} :arrow_right: Start with F5, then full hit F11+ as casualties allow. Push up to F17 if possible; otherwise, clean up.
@@ -119,7 +119,11 @@ export const generateWarMessage = (speciesWarInfo, roles, warStartDate) => {
 * F19+: ${roles.vanguard19} :arrow_right: Hold tokens until F19 is located. Full hit F19+ as casualties allow.
 
 📌 Spreadsheet for tracking (updated every Friday):
-🔗 [Team Front-End Spreadsheet](https://docs.google.com/spreadsheets/d/1JQ3Atkgv1APC6kXawTIR2HjeWVCvBYepQqtZnygWSUU/edit?gid=903491486#gid=903491486) (Pinned in this channel!)
+🔗 [Team Front-End Spreadsheet](https://docs.google.com/spreadsheets/d/1JQ3Atkgv1APC6kXawTIR2HjeWVCvBYepQqtZnygWSUU/edit?gid=903491486#gid=903491486) (Pinned in this channel!)`;
 
-${speciesContent}`;
+  // Always return an object with both messages
+  return {
+    main: mainMessage,
+    guide: speciesContent
+  };
 };
