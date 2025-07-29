@@ -3,7 +3,7 @@ import { promises as fs } from 'fs';
 import cron from 'node-cron';
 import { handleFind, handleKill } from './commands/war-commands.js';
 import { handleSetResource, handleShowResource, handleOverdueResource, handleTotalResource, handleRemovePlayer } from './commands/resource-commands.js';
-import { handlePostForgetfulMessage, handleTriggerDailyCheckin, sendDailyReminder, sendPromotionReminder, handleTriggerPromotionReminder, sendAnniversaryLoginReminder } from './commands/reminder-commands.js';
+import { handlePostForgetfulMessage, handleTriggerDailyCheckin, sendDailyReminder, sendPromotionReminder, handleTriggerPromotionReminder } from './commands/reminder-commands.js';
 import { handleShowRoleChanges, handleSyncRoles, handleAnnounceRoles } from './commands/role-commands.js';
 import { sendWarDraftMessage, handleTriggerWarDraft } from './commands/war-draft-commands.js';
 import { sendEphemeralReply, logCommandUsage } from './utils/discord-helpers.js';
@@ -135,22 +135,6 @@ client.once('ready', async () => {
     console.log('Scheduled promotion reminder for Thursday 6:00 PM America/New_York.');
   } else {
     console.error('Invalid cron pattern for promotion reminder.');
-  }
-
-  // Schedule the anniversary login reminder for 11am every day
-  if (cron.validate('0 11 * * *')) {
-    cron.schedule('0 11 * * *', async () => {
-      client.guilds.cache.forEach(async (guild) => {
-        console.log(`[Cron Job] Processing anniversary login reminder for guild: ${guild.name}`);
-        await sendAnniversaryLoginReminder(guild);
-      });
-    }, {
-      scheduled: true,
-      timezone: "America/New_York"
-    });
-    console.log('Scheduled anniversary login reminder for 11:00 AM America/New_York.');
-  } else {
-    console.error('Invalid cron pattern for anniversary login reminder.');
   }
 });
 
