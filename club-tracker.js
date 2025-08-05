@@ -233,4 +233,14 @@ client.on('messageReactionAdd', async (reaction, user) => {
   await handleForgetfulReaction(reaction, user, forgetfulMessageStore);
 });
 
+// Global error handler to prevent crashes
+client.on('error', (error) => {
+  console.error('Discord client error:', error);
+});
+
+// Handle unhandled promise rejections
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+});
+
 client.login(process.env.TOKEN);
