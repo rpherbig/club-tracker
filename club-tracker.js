@@ -145,6 +145,9 @@ client.on('interactionCreate', async interaction => {
     return;
   }
 
+  // Always defer reply to extend interaction life
+  await interaction.deferReply({ ephemeral: true });
+
   logCommandUsage(interaction, interaction.commandName);
 
   let guildId = interaction.guildId;

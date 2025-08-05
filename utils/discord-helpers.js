@@ -136,18 +136,42 @@ export async function validateCommandChannel(interaction, allowedChannelName) {
 }
 
 /**
+ * Checks if an interaction has timed out (Discord has a 3-second timeout)
+ * @param {CommandInteraction} interaction - The command interaction
+ * @returns {boolean} True if the interaction has timed out
+ */
+export function isInteractionTimedOut(interaction) {
+    const now = Date.now();
+    const interactionAge = now - interaction.createdTimestamp;
+    const timeoutThreshold = 3000; // 3 seconds in milliseconds
+    
+    return interactionAge > timeoutThreshold;
+}
+
+/**
  * Sends an ephemeral reply to an interaction
  * @param {CommandInteraction} interaction - The command interaction
  * @param {string} content - The message content
  * @returns {Promise<void>}
  */
 export async function sendEphemeralReply(interaction, content) {
-    if (interaction.replied) {
+    // Check if interaction has timed out before attempting to reply
+    if (isInteractionTimedOut(interaction)) {
+        console.warn(`Interaction timed out for command ${interaction.commandName} in ${interaction.guild?.name || 'unknown guild'}`);
+        return;
+    }
+
+    if (interaction.deferred) {
+        // If the interaction was deferred, use editReply
+        await interaction.editReply(content);
+    } else if (interaction.replied) {
+        // If already replied, use followUp
         await interaction.followUp({
             content,
             flags: MessageFlags.Ephemeral
         });
     } else {
+        // Initial reply
         await interaction.reply({
             content,
             flags: MessageFlags.Ephemeral

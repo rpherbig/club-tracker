@@ -140,9 +140,6 @@ export async function handleTriggerWarDraft(interaction) {
       return;
     }
 
-    // Defer the reply to extend interaction lifetime to 15 minutes
-    await interaction.deferReply({ ephemeral: true });
-
     // Now we have up to 15 minutes to process and respond
     await sendWarDraftMessage(interaction.guild);
     
