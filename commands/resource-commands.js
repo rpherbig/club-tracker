@@ -29,7 +29,7 @@ export async function handleSetResource(interaction, guildData) {
   playerData.set(key, amount);
   playerData.set(dateKey, moment());
   guildData.set(player, playerData);
-  await interaction.reply(`Set ${player}'s ${key} to ${amount}`);
+  await sendEphemeralReply(interaction, `Set ${player}'s ${key} to ${amount}`);
   return guildData;
 }
 
@@ -41,7 +41,7 @@ export async function handleShowResource(interaction, guildData) {
   const targetPlayerData = guildData.get(targetPlayer) || new Map();
   const val = targetPlayerData.get(key) || 0;
   const lastUpdated = getLastUpdated(targetPlayerData, dateKey);
-  await interaction.reply(`${targetPlayer} has ${val} ${key} (last updated ${lastUpdated})`);
+  await sendEphemeralReply(interaction, `${targetPlayer} has ${val} ${key} (last updated ${lastUpdated})`);
 }
 
 export async function handleOverdueResource(interaction, guildData) {
@@ -57,7 +57,7 @@ export async function handleOverdueResource(interaction, guildData) {
     .map(([name, amount, lastUpdated]) => [name, amount, toRelativeDate(lastUpdated)])
     .map(([name, amount, lastUpdated]) => `${name}: ${amount} (last updated ${lastUpdated})`)
     .join('\n');
-  await interaction.reply(`Overdue Members for ${key}:\n${overduePlayers}`);
+  await sendEphemeralReply(interaction, `Overdue Members for ${key}:\n${overduePlayers}`);
 }
 
 export async function handleTotalResource(interaction, guildData) {
@@ -87,7 +87,7 @@ export async function handleTotalResource(interaction, guildData) {
     chunks.push(currentChunk);
   }
 
-  await interaction.reply(chunks[0]);
+  await sendEphemeralReply(interaction, chunks[0]);
   for (let i = 1; i < chunks.length; i++) {
     await interaction.followUp(chunks[i]);
   }
@@ -104,12 +104,12 @@ export async function handleRemovePlayer(interaction, guildData) {
   const player = interaction.options.getString('player').toLowerCase();
   
   if (!guildData.has(player)) {
-    await interaction.reply(`❌ Player '${player}' not found in the data.`);
+    await sendEphemeralReply(interaction, `❌ Player '${player}' not found in the data.`);
     return guildData;
   }
 
   // Remove the player from the data
   guildData.delete(player);
-  await interaction.reply(`✅ Successfully removed player '${player}' from the data.`);
+  await sendEphemeralReply(interaction, `✅ Successfully removed player '${player}' from the data.`);
   return guildData;
 } 

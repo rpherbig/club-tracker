@@ -126,10 +126,7 @@ export function checkBotPermissions(channel, requiredPermissions) {
  */
 export async function validateCommandChannel(interaction, allowedChannelName) {
     if (interaction.channel.name !== allowedChannelName) {
-        await interaction.reply({
-            content: `This command can only be used in #${allowedChannelName}!`,
-            flags: MessageFlags.Ephemeral
-        });
+        await sendEphemeralReply(interaction, `This command can only be used in #${allowedChannelName}!`);
         return false;
     }
     return true;
