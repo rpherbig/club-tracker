@@ -72,9 +72,8 @@ export async function sendWarDraftMessage(guild) {
     // Find the specific team roles to mention
     const laborerRole = findRole(guild, 'Laborer');
     const prospector11Role = findRole(guild, 'Prospector 11');
-    const prospector15Role = findRole(guild, 'Prospector 15');
     const prospector16Role = findRole(guild, 'Prospector 16');
-    const vanguard17Role = findRole(guild, 'Vanguard 17');
+    const prospector17Role = findRole(guild, 'Prospector 17');
     const vanguard18Role = findRole(guild, 'Vanguard 18');
     const vanguard19Role = findRole(guild, 'Vanguard 19');
     
@@ -82,9 +81,8 @@ export async function sendWarDraftMessage(guild) {
     const roles = {
       laborer: laborerRole,
       prospector11: prospector11Role,
-      prospector15: prospector15Role,
       prospector16: prospector16Role,
-      vanguard17: vanguard17Role,
+      prospector17: prospector17Role,
       vanguard18: vanguard18Role,
       vanguard19: vanguard19Role,
     };
@@ -140,7 +138,6 @@ export async function handleTriggerWarDraft(interaction) {
       return;
     }
 
-    // Now we have up to 15 minutes to process and respond
     await sendWarDraftMessage(interaction.guild);
     
     // Send success response
