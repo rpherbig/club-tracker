@@ -1,6 +1,6 @@
 import { google } from 'googleapis';
 import dotenv from 'dotenv';
-import { findChannel, findRole, findMemberByName, sendTruncatedMessage, sendEphemeralReply, validateCommandChannel, getRandomMessage } from '../utils/discord-helpers.js';
+import { findChannel, findRole, findMemberByName, sendChannelMessage, sendEphemeralReply, validateCommandChannel, getRandomMessage } from '../utils/discord-helpers.js';
 
 dotenv.config();
 
@@ -306,12 +306,12 @@ export async function syncRoles(guild, outputChannel) {
 
   const sheetData = await getSheetData();
   if (!sheetData) {
-    await outputChannel.send('Could not retrieve data from the Google Sheet. Check bot logs for details.');
+    await sendChannelMessage(outputChannel, 'Could not retrieve data from the Google Sheet. Check bot logs for details.');
     return false;
   }
 
   if (sheetData.length === 0) {
-    await outputChannel.send('No data found in the specified Google Sheet tab or columns.');
+    await sendChannelMessage(outputChannel, 'No data found in the specified Google Sheet tab or columns.');
     return false;
   }
 
@@ -355,13 +355,13 @@ export async function syncRoles(guild, outputChannel) {
 
   // Send results to output channel
   if (updateResults.length === 0 && membersProcessed > 0) {
-    await outputChannel.send(`All processed members from the sheet have been updated to their correct roles.\n(Processed ${membersProcessed} entries, skipped ${membersSkipped} ignored names)`);
+    await sendChannelMessage(outputChannel, `All processed members from the sheet have been updated to their correct roles.\n(Processed ${membersProcessed} entries, skipped ${membersSkipped} ignored names)`);
   } else if (updateResults.length === 0 && membersProcessed === 0) {
-    await outputChannel.send(`No valid user data found in the sheet to process.\n(Skipped ${membersSkipped} ignored names)`);
+    await sendChannelMessage(outputChannel, `No valid user data found in the sheet to process.\n(Skipped ${membersSkipped} ignored names)`);
   } else {
     let replyMessage = `**Role Update Results:**\n(Processed ${membersProcessed} entries, skipped ${membersSkipped} ignored names)\n`;
     replyMessage += updateResults.join('\n');
-    await sendTruncatedMessage(outputChannel, replyMessage);
+    await sendChannelMessage(outputChannel, replyMessage);
   }
 
   return true;
@@ -395,7 +395,7 @@ async function sendRoleAnnouncements(guild) {
     }
 
     try {
-      await channel.send(getRandomMessage(role, `You are ${roleName} for this week's species war!`));
+      await sendChannelMessage(channel, getRandomMessage(role, `You are ${roleName} for this week's species war!`));
     } catch (error) {
       console.error(`Failed to post announcement in #${channelName} for guild ${guild.name}:`, error);
     }

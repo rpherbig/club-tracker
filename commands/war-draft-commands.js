@@ -1,6 +1,6 @@
 import { google } from 'googleapis';
 import dotenv from 'dotenv';
-import { findChannel, findRole, sendEphemeralReply, validateCommandChannel } from '../utils/discord-helpers.js';
+import { findChannel, findRole, sendEphemeralReply, validateCommandChannel, sendChannelMessage } from '../utils/discord-helpers.js';
 import { generateWarMessage } from '../war-message-templates.js';
 
 dotenv.config();
@@ -116,8 +116,8 @@ export async function sendWarDraftMessage(guild) {
     console.log(`[Cron Job] Sending war draft messages...`);
 
     // Always send two messages: main strategy message and species guide
-    await channel.send(warMessage.main);
-    await channel.send(warMessage.guide);
+    await sendChannelMessage(channel, warMessage.main);
+    await sendChannelMessage(channel, warMessage.guide);
     
     console.log(`[Cron Job] Successfully sent war draft messages to #war-drafts in guild ${guild.name}.`);
 

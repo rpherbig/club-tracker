@@ -1,5 +1,5 @@
 import { MessageFlags, PermissionsBitField } from 'discord.js';
-import { findChannel, findRole, validateCommandChannel, checkBotPermissions, sendEphemeralReply, getRandomMessage } from '../utils/discord-helpers.js';
+import { findChannel, findRole, validateCommandChannel, checkBotPermissions, sendEphemeralReply, getRandomMessage, sendChannelMessage } from '../utils/discord-helpers.js';
 
 const TARGET_CHANNEL_NAME = 'friends-of-ss-chat';
 const ALLOWED_COMMAND_CHANNEL_NAME = '🤖┃bot-commands';
@@ -29,7 +29,7 @@ export async function sendDailyReminder(guild) {
 
         // Construct and send the message
         const messageContent = getRandomMessage(role, `Check the daily post: ${MESSAGE_LINK}`);
-        await channel.send(messageContent);
+        await sendChannelMessage(channel, messageContent);
         console.log(`[Cron Job] Successfully sent daily check-in message to #${DAILY_CHECKIN_CHANNEL_NAME} in guild ${guild.name}.`);
 
     } catch (error) {
@@ -66,7 +66,7 @@ export async function sendPromotionReminder(guild) {
         }
 
         // Send the promotion reminder message
-        await channel.send('# ⚔️ PROMOTION REMINDER ⚔️\n\n🏆 Arena promotion and minion sims are about to end, get in those attacks! 🏆');
+        await sendChannelMessage(channel, '# ⚔️ PROMOTION REMINDER ⚔️\n\n🏆 Arena promotion and minion sims are about to end, get in those attacks! 🏆');
         console.log(`[Cron Job] Successfully sent promotion reminder to #ss-chat in guild ${guild.name}.`);
 
     } catch (error) {
@@ -111,7 +111,7 @@ export async function handlePostForgetfulMessage(interaction) {
     }
 
     // 3. Post the message
-    const message = await targetChannel.send(
+    const message = await sendChannelMessage(targetChannel,
       'React to this message with any emoji to get the \'Forgetful\' role and receive daily check-in reminders!'
     );
 

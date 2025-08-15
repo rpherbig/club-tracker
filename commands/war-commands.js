@@ -1,4 +1,4 @@
-import { findChannel, findRole, validateCommandChannel, sendEphemeralReply, getRandomMessage } from '../utils/discord-helpers.js';
+import { findChannel, findRole, validateCommandChannel, sendEphemeralReply, getRandomMessage, sendChannelMessage } from '../utils/discord-helpers.js';
 
 // Command history storage - key: "commandType:floor", value: timestamp
 const commandHistory = new Map();
@@ -57,7 +57,7 @@ async function handleFind(interaction) {
     }
 
     const message = getRandomMessage(shellShockRole, `It's time to find F${floor}! ${additionalMessage}`);
-    await channel.send(message);
+    await sendChannelMessage(channel, message);
     await sendEphemeralReply(interaction, `Sent the 'find' message in #species-war to find floor ${floor}!`);
 }
 
@@ -133,7 +133,7 @@ async function handleKill(interaction) {
     const message = getRandomMessage(roleMentions, `Go kill the boss of F${floor}! ${additionalMessage}`);
 
     try {
-        await channel.send(message);
+        await sendChannelMessage(channel, message);
         await sendEphemeralReply(interaction, `Sent the 'kill' message in #species-war to kill floor ${floor}!`);
     } catch (error) {
         console.error('Error sending message:', error);
