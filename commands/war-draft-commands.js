@@ -141,15 +141,11 @@ export async function handleTriggerWarDraft(interaction) {
     await sendWarDraftMessage(interaction.guild);
     
     // Send success response
-    await interaction.editReply('War draft message sent successfully!');
+    await sendEphemeralReply(interaction, 'War draft message sent successfully!');
 
   } catch (error) {
     console.error(`[Manual Trigger] Failed to handle war draft trigger for guild ${interaction.guild.name}:`, error);
-    // Send error response using editReply since we deferred
-    try {
-      await interaction.editReply('Failed to send war draft message. Check the logs for details.');
-    } catch (replyError) {
-      console.error('Could not send error reply:', replyError);
-    }
+    // Send error response using the wrapper
+    await sendEphemeralReply(interaction, 'Failed to send war draft message. Check the logs for details.');
   }
 }
