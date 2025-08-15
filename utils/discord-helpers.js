@@ -219,22 +219,58 @@ export function logCommandUsage(interaction, commandName) {
 }
 
 /**
- * Sends a message to a channel, handling Discord's character limit by truncating if necessary
+ * Sends a message to a channel, handling Discord's character limit by splitting into multiple messages if necessary
  * @param {TextChannel} channel - The channel to send the message to
  * @param {string} content - The message content
  * @param {Object} [options] - Optional configuration
- * @param {number} [options.maxLength=2000] - Maximum length before truncating
- * @param {string} [options.truncateMessage='...\n(Message truncated)'] - Message to append when truncated
- * @returns {Promise<Message>} The sent message
+ * @param {number} [options.maxLength=2000] - Maximum length per message
+ * @param {string} [options.continuationPrefix=''] - Optional prefix to add to continuation messages
+ * @returns {Promise<Message[]>} Array of sent messages
  */
 export async function sendTruncatedMessage(channel, content, options = {}) {
-    const { maxLength = 2000, truncateMessage = '...\n(Message truncated)' } = options;
+    const { maxLength = 2000, continuationPrefix = '' } = options;
     
-    if (content.length > maxLength) {
-        content = content.substring(0, maxLength - truncateMessage.length) + truncateMessage;
+    if (content.length <= maxLength) {
+        // If content fits in one message, send it as is
+        return [await channel.send(content)];
     }
     
-    return await channel.send(content);
+    // Split content into multiple messages
+    const messages = [];
+    let remainingContent = content;
+    
+    while (remainingContent.length > 0) {
+        let messageContent;
+        let contentToSend;
+        
+        if (messages.length === 0) {
+            // First message - no prefix
+            contentToSend = remainingContent.substring(0, maxLength);
+            messageContent = contentToSend;
+        } else {
+            // Subsequent messages - add prefix if specified
+            const availableLength = maxLength - continuationPrefix.length;
+            contentToSend = remainingContent.substring(0, availableLength);
+            messageContent = continuationPrefix + contentToSend;
+        }
+        
+        // Try to break at a newline if possible to avoid cutting words
+        if (messages.length > 0 && contentToSend.length < remainingContent.length) {
+            const lastNewline = contentToSend.lastIndexOf('\n');
+            if (lastNewline > 0) {
+                contentToSend = contentToSend.substring(0, lastNewline);
+                messageContent = continuationPrefix + contentToSend;
+            }
+        }
+        
+        const sentMessage = await channel.send(messageContent);
+        messages.push(sentMessage);
+        
+        // Remove the sent content from remaining content
+        remainingContent = remainingContent.substring(contentToSend.length);
+    }
+    
+    return messages;
 }
 
 /**
