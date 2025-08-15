@@ -113,13 +113,12 @@ export async function sendWarDraftMessage(guild) {
       return;
     }
 
-    console.log(`[Cron Job] Sending war draft messages...`);
+    console.log(`[Cron Job] Sending war draft message...`);
 
-    // Always send two messages: main strategy message and species guide
-    await sendChannelMessage(channel, warMessage.main);
-    await sendChannelMessage(channel, warMessage.guide);
+    // Send the combined message (will be automatically split if needed)
+    await sendChannelMessage(channel, warMessage);
     
-    console.log(`[Cron Job] Successfully sent war draft messages to #war-drafts in guild ${guild.name}.`);
+    console.log(`[Cron Job] Successfully sent war draft message to #war-drafts in guild ${guild.name}.`);
 
   } catch (error) {
     console.error(`[Cron Job] Failed to send war draft message for guild ${guild.name}:`, error);

@@ -81,7 +81,7 @@ Chronicle Bidding: React upon placement.
 ⚠️ LAST DAY to use ALL war resources!! ⚠️
 🎲 Good luck with your red dice! 🍀`;
 
-// MAIN WAR MESSAGE GENERATOR - Combines species detection and boilerplate
+// WAR MESSAGE GENERATOR - Combines species detection and boilerplate
 export const generateWarMessage = (speciesWarInfo, roles, warStartDate) => {
   const info = speciesWarInfo.toLowerCase();
   
@@ -109,8 +109,8 @@ export const generateWarMessage = (speciesWarInfo, roles, warStartDate) => {
     year: '2-digit'
   });
   
-  // Create the main message with strategy and spreadsheet link
-  const mainMessage = `# ${speciesWarInfo} - ${formattedDate}
+  // Create the war message with strategy and spreadsheet link
+  const message = `# ${speciesWarInfo} - ${formattedDate}
 
 # Boss Strategy:
 * F5, F11+: ${roles.laborer} ${roles.prospector11} :arrow_right: Start with F5, then full hit F11+ as casualties allow. Push up to F17 if possible; otherwise, clean up.
@@ -120,11 +120,12 @@ export const generateWarMessage = (speciesWarInfo, roles, warStartDate) => {
 * F19+: ${roles.vanguard19} :arrow_right: Hold tokens until F19 is located. Full hit F19+ as casualties allow.
 
 📌 Spreadsheet for tracking (updated every Friday):
-🔗 [Team Front-End Spreadsheet](https://docs.google.com/spreadsheets/d/1JQ3Atkgv1APC6kXawTIR2HjeWVCvBYepQqtZnygWSUU/edit?gid=903491486#gid=903491486) (Pinned in this channel!)`;
+🔗 [Team Front-End Spreadsheet](https://docs.google.com/spreadsheets/d/1JQ3Atkgv1APC6kXawTIR2HjeWVCvBYepQqtZnygWSUU/edit?gid=903491486#gid=903491486) (Pinned in this channel!)
 
-  // Always return an object with both messages
-  return {
-    main: mainMessage,
-    guide: speciesContent
-  };
+---
+
+${speciesContent}`;
+
+  // Return the combined message
+  return message;
 };
