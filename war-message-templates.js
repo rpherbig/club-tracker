@@ -47,8 +47,10 @@ export const goldfish = `## Chronicle Requirements
 
 // CLAM
 export const clam = `## Chronicle Requirements
-✔️ Place minions in the tower ASAP daily.
-✔️ Attack the highest Chronicle Boss you can defeat. (Minions heal for free overnight!)`;
+✔️ Fight the Shadow and place your Minions in the tower ASAP daily.
+✔️ Attack the highest Shadow you can defeat. (Minions heal for free overnight!)
+✔️ Attack shadow FIRST and build tower afterwards, otherwise you might not have all your minions available for the fight
+✔️ FYI: Building speed is not based on tier of minion. You only need to send as many as possible (the cap is your leadership). The auto feature works just fine.`;
 
 // HAMSTER
 export const hamster = `# Chronicle - Day 1 🐹
