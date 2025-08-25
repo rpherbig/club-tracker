@@ -121,9 +121,9 @@ client.once('ready', async () => {
     console.error('Invalid cron pattern for war draft message.');
   }
 
-  // Schedule the promotion reminder for Thursday at 6pm
-  if (cron.validate('0 18 * * 4')) {
-    cron.schedule('0 18 * * 4', async () => {
+  // Schedule the promotion reminder for Thursday at noon
+  if (cron.validate('0 12 * * 4')) {
+    cron.schedule('0 12 * * 4', async () => {
       client.guilds.cache.forEach(async (guild) => {
         console.log(`[Cron Job] Processing promotion reminder for guild: ${guild.name}`);
         await sendPromotionReminder(guild);
@@ -132,7 +132,7 @@ client.once('ready', async () => {
       scheduled: true,
       timezone: "America/New_York"
     });
-    console.log('Scheduled promotion reminder for Thursday 6:00 PM America/New_York.');
+    console.log('Scheduled promotion reminder for Thursday 12:00 PM America/New_York.');
   } else {
     console.error('Invalid cron pattern for promotion reminder.');
   }

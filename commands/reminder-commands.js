@@ -56,18 +56,26 @@ export async function sendPromotionReminder(guild) {
     console.log(`[Cron Job] Processing promotion reminder for guild: ${guild.name} (${guild.id})`);
     try {
         // Find the target channel
-        const channel = findChannel(guild, 'ss-chat', 'Skipping promotion reminder.');
+        const channel = findChannel(guild, DAILY_CHECKIN_CHANNEL_NAME, 'Skipping promotion reminder.');
         if (!channel) return;
 
-        // Check permissions
-        if (!checkBotPermissions(channel, PermissionsBitField.Flags.SendMessages)) {
-            console.log(`[Cron Job] Missing Send Messages permission in #ss-chat for guild ${guild.name}. Skipping.`);
+        // Find the Forgetful role
+        const role = findRole(guild, FORGETFUL_ROLE_NAME);
+        if (!role) {
+            console.log(`[Cron Job] Role '${FORGETFUL_ROLE_NAME}' not found in guild ${guild.name}. Skipping.`);
             return;
         }
 
-        // Send the promotion reminder message
-        await sendChannelMessage(channel, '# ⚔️ PROMOTION REMINDER ⚔️\n\n🏆 Arena promotion and minion sims are about to end, get in those attacks! 🏆');
-        console.log(`[Cron Job] Successfully sent promotion reminder to #ss-chat in guild ${guild.name}.`);
+        // Check permissions
+        if (!checkBotPermissions(channel, PermissionsBitField.Flags.SendMessages)) {
+            console.log(`[Cron Job] Missing Send Messages permission in #${DAILY_CHECKIN_CHANNEL_NAME} for guild ${guild.name}. Skipping.`);
+            return;
+        }
+
+        // Construct and send the message with role mention
+        const messageContent = `${role}\n\n# ⚔️ PROMOTION REMINDER ⚔️\n\n🏆 Arena promotion, minion sims, and stock purchases are about to end, don't miss out! 🏆`;
+        await sendChannelMessage(channel, messageContent);
+        console.log(`[Cron Job] Successfully sent promotion reminder to #${DAILY_CHECKIN_CHANNEL_NAME} in guild ${guild.name}.`);
 
     } catch (error) {
         console.error(`[Cron Job] Failed to send promotion reminder for guild ${guild.name}:`, error);
