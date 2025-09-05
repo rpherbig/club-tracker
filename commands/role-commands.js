@@ -30,6 +30,7 @@ const TEAM_ROLE_MAPPING = {
 };
 
 // Name mapping configuration - maps sheet names to Discord usernames/IDs
+// Note: Keys should be lowercase for case-insensitive lookups in findMemberByName
 const NAME_MAPPING = {
   'byproxy': '107285508710772736',
   'sydlexic': '305789864631336972',

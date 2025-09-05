@@ -190,8 +190,8 @@ export async function sendEphemeralReply(interaction, content) {
 export function findMemberByName(guild, name, options = {}) {
     const { nameMapping = {} } = options;
     
-    // First check if we have a mapping for this name
-    const mappedName = nameMapping[name];
+    // First check if we have a mapping for this name (case insensitive)
+    const mappedName = nameMapping[name.toLowerCase()];
     if (mappedName) {
         // If the mapped name is a Discord ID (18 digits)
         if (/^\d{17,19}$/.test(mappedName)) {
