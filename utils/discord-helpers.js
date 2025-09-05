@@ -204,6 +204,9 @@ export function findMemberByName(guild, name, options = {}) {
         );
     }
 
+    // Log when no mapping exists for this name
+    console.log(`[Member] No mapping found for name "${name}" in NAME_MAPPING. Consider adding this member to the mapping.`);
+
     // If no mapping exists, try the original name
     return guild.members.cache.find(
         m => m.user.username.toLowerCase() === name.toLowerCase() ||
