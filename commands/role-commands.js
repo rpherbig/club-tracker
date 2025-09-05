@@ -86,6 +86,11 @@ const NAME_MAPPING = {
   'dingus1990': '263889079517708288',
   'fleep': '236615172393926656',
   'bishop501': '250239865210404866',
+  'magnusdark': '155367571372244993',
+  'snooowman': '97785134845009920',
+  'coming4you': '1158470833140940800',
+  'ekstwntythre': '346826665474916362',
+  'dingus': '263889079517708288',
 };
 
 // Names to ignore in role checks (e.g., people not in Discord, or not in the war, or not in the club)
