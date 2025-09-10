@@ -61,68 +61,66 @@ async function getSpeciesWarInfo() {
 export async function sendWarDraftMessage(guild) {
   console.log(`[Cron Job] Processing war draft message for guild: ${guild.name} (${guild.id})`);
   
-  try {
-    // Find the war-drafts channel
-    const channel = findChannel(guild, 'war-drafts');
-    if (!channel) {
-      console.log(`[Cron Job] Could not find #war-drafts channel in guild ${guild.name}. Skipping.`);
-      return;
-    }
+  // Find the war-drafts channel
+  const channel = findChannel(guild, 'war-drafts');
+  if (!channel) {
+    console.log(`[Cron Job] Could not find #war-drafts channel in guild ${guild.name}. Skipping.`);
+    return;
+  }
 
-    // Find the specific team roles to mention
-    const laborerRole = findRole(guild, 'Laborer');
-    const prospector11Role = findRole(guild, 'Prospector 11');
-    const prospector16Role = findRole(guild, 'Prospector 16');
-    const prospector17Role = findRole(guild, 'Prospector 17');
-    const vanguard18Role = findRole(guild, 'Vanguard 18');
-    const vanguard19Role = findRole(guild, 'Vanguard 19');
-    
-    // Build roles object with specific team roles
-    const roles = {
-      laborer: laborerRole,
-      prospector11: prospector11Role,
-      prospector16: prospector16Role,
-      prospector17: prospector17Role,
-      vanguard18: vanguard18Role,
-      vanguard19: vanguard19Role,
-    };
+  // Find the specific team roles to mention
+  const laborerRole = findRole(guild, 'Laborer');
+  const prospector11Role = findRole(guild, 'Prospector 11');
+  const prospector16Role = findRole(guild, 'Prospector 16');
+  const prospector17Role = findRole(guild, 'Prospector 17');
+  const vanguard18Role = findRole(guild, 'Vanguard 18');
+  const vanguard19Role = findRole(guild, 'Vanguard 19');
+  
+  // Build roles object with specific team roles
+  const roles = {
+    laborer: laborerRole,
+    prospector11: prospector11Role,
+    prospector16: prospector16Role,
+    prospector17: prospector17Role,
+    vanguard18: vanguard18Role,
+    vanguard19: vanguard19Role,
+  };
 
-    console.log(`[Cron Job] Fetching species war info from Google Sheets...`);
-    
-    // Get species war info from Google Sheet
-    const speciesWarInfo = await getSpeciesWarInfo();
-    if (!speciesWarInfo) {
-      console.log(`[Cron Job] Could not retrieve species war info for guild ${guild.name}. Skipping.`);
-      return;
-    }
+  console.log(`[Cron Job] Fetching species war info from Google Sheets...`);
+  
+  // Get species war info from Google Sheet
+  const speciesWarInfo = await getSpeciesWarInfo();
+  if (!speciesWarInfo) {
+    console.log(`[Cron Job] Could not retrieve species war info for guild ${guild.name}. Skipping.`);
+    return;
+  }
 
-    console.log(`[Cron Job] Retrieved species war info: ${speciesWarInfo}`);
+  console.log(`[Cron Job] Retrieved species war info: ${speciesWarInfo}`);
 
-    // Calculate the Friday war start date (next Friday after today)
-    const today = new Date();
-    const daysUntilFriday = (5 - today.getDay() + 7) % 7; // 5 = Friday
-    const warStartDate = new Date(today);
-    warStartDate.setDate(today.getDate() + daysUntilFriday);
-    
-    console.log(`[Cron Job] Generating war message...`);
-    
-    // Generate the complete war message with role mentions and war start date
-    const warMessage = generateWarMessage(speciesWarInfo, roles, warStartDate);
-    if (!warMessage) {
-      console.log(`[Cron Job] No message content found for species war info: ${speciesWarInfo}. Skipping.`);
-      return;
-    }
+  // Calculate the Friday war start date (next Friday after today)
+  const today = new Date();
+  const daysUntilFriday = (5 - today.getDay() + 7) % 7; // 5 = Friday
+  const warStartDate = new Date(today);
+  warStartDate.setDate(today.getDate() + daysUntilFriday);
+  
+  console.log(`[Cron Job] Generating war message...`);
+  
+  // Generate the complete war message with role mentions and war start date
+  const warMessage = generateWarMessage(speciesWarInfo, roles, warStartDate);
+  if (!warMessage) {
+    console.log(`[Cron Job] No message content found for species war info: ${speciesWarInfo}. Skipping.`);
+    return;
+  }
 
-    console.log(`[Cron Job] Sending war draft message...`);
+  console.log(`[Cron Job] Sending war draft message...`);
 
-    // Send the combined message (will be automatically split if needed)
-    await sendChannelMessage(channel, warMessage);
-    
+  // Send the combined message (will be automatically split if needed)
+  const message = await sendChannelMessage(channel, warMessage);
+  
+  if (message) {
     console.log(`[Cron Job] Successfully sent war draft message to #war-drafts in guild ${guild.name}.`);
-
-  } catch (error) {
-    console.error(`[Cron Job] Failed to send war draft message for guild ${guild.name}:`, error);
-    throw error; // Re-throw so the calling function can handle it
+  } else {
+    console.error(`[Cron Job] Failed to send war draft message for guild ${guild.name}`);
   }
 }
 

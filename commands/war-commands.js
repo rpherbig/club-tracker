@@ -57,8 +57,12 @@ async function handleFind(interaction) {
     }
 
     const message = getRandomMessage(shellShockRole, `It's time to find F${floor}! ${additionalMessage}`);
-    await sendChannelMessage(channel, message);
-    await sendEphemeralReply(interaction, `Sent the 'find' message in #species-war to find floor ${floor}!`);
+    const sentMessage = await sendChannelMessage(channel, message);
+    if (sentMessage) {
+        await sendEphemeralReply(interaction, `Sent the 'find' message in #species-war to find floor ${floor}!`);
+    } else {
+        await sendEphemeralReply(interaction, `Failed to send the 'find' message. I may not have permission to send messages in #species-war.`);
+    }
 }
 
 // 'Kill' command implementation
@@ -132,14 +136,11 @@ async function handleKill(interaction) {
     const roleMentions = roles.map(role => `<@&${role.id}>`).join(' ');
     const message = getRandomMessage(roleMentions, `Go kill the boss of F${floor}! ${additionalMessage}`);
 
-    try {
-        await sendChannelMessage(channel, message);
+    const sentMessage = await sendChannelMessage(channel, message);
+    if (sentMessage) {
         await sendEphemeralReply(interaction, `Sent the 'kill' message in #species-war to kill floor ${floor}!`);
-    } catch (error) {
-        console.error('Error sending message:', error);
-        if (!interaction.replied && !interaction.deferred) {
-            await sendEphemeralReply(interaction, 'There was an error sending the message. Please try again.');
-        }
+    } else {
+        await sendEphemeralReply(interaction, `Failed to send the 'kill' message. I may not have permission to send messages in #species-war.`);
     }
 }
 

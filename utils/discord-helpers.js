@@ -220,12 +220,12 @@ export function logCommandUsage(interaction, commandName) {
 const DISCORD_MAX_MESSAGE_LENGTH = 2000;
 
 /**
- * Sends a message to a channel, handling Discord's character limit by splitting into multiple messages if necessary
+ * Private helper function that handles message splitting and sending
  * @param {TextChannel} channel - The channel to send the message to
  * @param {string} content - The message content
  * @returns {Promise<Message>} The first message sent
  */
-export async function sendChannelMessage(channel, content) {
+async function _sendMessageWithSplitting(channel, content) {
     if (content.length <= DISCORD_MAX_MESSAGE_LENGTH) {
         // If content fits in one message, send it as is
         return await channel.send(content);
@@ -258,6 +258,28 @@ export async function sendChannelMessage(channel, content) {
     }
     
     return firstMessage;
+}
+
+/**
+ * Ultimate wrapper for sending messages to channels with permission checking and error handling
+ * @param {TextChannel} channel - The channel to send the message to
+ * @param {string} content - The message content
+ * @returns {Promise<Message|null>} The first message sent, or null if failed
+ */
+export async function sendChannelMessage(channel, content) {
+    try {
+        // Check bot permissions first
+        if (!checkBotPermissions(channel, PermissionsBitField.Flags.SendMessages)) {
+            console.error(`[sendChannelMessage] Missing Send Messages permission in #${channel.name} for guild ${channel.guild.name}`);
+            return null;
+        }
+
+        // Send the message with splitting if needed
+        return await _sendMessageWithSplitting(channel, content);
+    } catch (error) {
+        console.error(`[sendChannelMessage] Failed to send message to #${channel.name} in guild ${channel.guild.name}:`, error);
+        return null;
+    }
 }
 
 /**

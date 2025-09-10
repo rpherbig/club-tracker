@@ -88,13 +88,16 @@ export async function handleTotalResource(interaction, guildData) {
   }
 
   // Post the total resource info as a new (persistent) message in the channel
-  await sendChannelMessage(interaction.channel, chunks[0]);
-  for (let i = 1; i < chunks.length; i++) {
-    await interaction.channel.send(chunks[i]);
+  const firstMessage = await sendChannelMessage(interaction.channel, chunks[0]);
+  if (firstMessage) {
+    for (let i = 1; i < chunks.length; i++) {
+      await interaction.channel.send(chunks[i]);
+    }
+    // Send ephemeral confirmation that the command completed
+    await sendEphemeralReply(interaction, "Total resource information posted to channel.");
+  } else {
+    await sendEphemeralReply(interaction, "Failed to post resource information. I may not have permission to send messages in this channel.");
   }
-  
-  // Send ephemeral confirmation that the command completed
-  await sendEphemeralReply(interaction, "Total resource information posted to channel.");
 }
 
 export async function handleRemovePlayer(interaction, guildData) {

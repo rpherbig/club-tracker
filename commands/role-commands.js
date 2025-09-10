@@ -400,10 +400,9 @@ async function sendRoleAnnouncements(guild) {
       continue;
     }
 
-    try {
-      await sendChannelMessage(channel, getRandomMessage(role, `You are ${roleName} for this week's species war!`));
-    } catch (error) {
-      console.error(`Failed to post announcement in #${channelName} for guild ${guild.name}:`, error);
+    const message = await sendChannelMessage(channel, getRandomMessage(role, `You are ${roleName} for this week's species war!`));
+    if (!message) {
+      console.error(`Failed to post announcement in #${channelName} for guild ${guild.name}: Missing permissions or channel access`);
     }
   }
 }
