@@ -1,4 +1,3 @@
-import { MessageFlags, PermissionsBitField } from 'discord.js';
 import { findChannel, findRole, validateCommandChannel, sendEphemeralReply, getRandomMessage, sendChannelMessage } from '../utils/discord-helpers.js';
 
 const TARGET_CHANNEL_NAME = 'friends-of-ss-chat';

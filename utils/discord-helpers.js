@@ -1,4 +1,4 @@
-import { MessageFlags } from 'discord.js';
+import { MessageFlags, PermissionsBitField } from 'discord.js';
 
 // TODO: add role & message to templates
 const BENDER_TEMPLATES = [
@@ -112,7 +112,7 @@ export function findRole(guild, roleName) {
  * @param {PermissionResolvable} requiredPermissions - The permissions to check for
  * @returns {boolean} True if bot has required permissions, false otherwise
  */
-export function checkBotPermissions(channel, requiredPermissions) {
+function _checkBotPermissions(channel, requiredPermissions) {
     const botPermissions = channel.permissionsFor(channel.guild.members.me);
     if (!botPermissions || !botPermissions.has(requiredPermissions)) {
         console.log(`[Permissions] Missing required permissions in #${channel.name} for guild ${channel.guild.name}`);
@@ -269,7 +269,7 @@ async function _sendMessageWithSplitting(channel, content) {
 export async function sendChannelMessage(channel, content) {
     try {
         // Check bot permissions first
-        if (!checkBotPermissions(channel, PermissionsBitField.Flags.SendMessages)) {
+        if (!_checkBotPermissions(channel, PermissionsBitField.Flags.SendMessages)) {
             console.error(`[sendChannelMessage] Missing Send Messages permission in #${channel.name} for guild ${channel.guild.name}`);
             return null;
         }
