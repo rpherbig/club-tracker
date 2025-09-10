@@ -3,7 +3,6 @@ import { validateCommandChannel, sendEphemeralReply, sendChannelMessage } from '
 
 const ESSENCE_OVERDUE_DAYS = 14;
 const GOLD_OVERDUE_DAYS = 42;
-const DISCORD_CHAR_LIMIT = 1800;
 
 function toRelativeDate(lastUpdated) {
   if(lastUpdated === undefined) {
@@ -71,28 +70,13 @@ export async function handleTotalResource(interaction, guildData) {
   const breakdown = playersData
     .sort(([_name1, amount1, _lastUpdated1], [_name2, amount2, _lastUpdated2]) => amount2 - amount1)
     .map(([name, amount, lastUpdated]) => `${name}: ${amount} (last updated ${lastUpdated})`);
-  const chunks = [];
-  
-  let currentChunk = `Total Club ${key}: ${total}\nMembers: ${memberCount}\n\nBreakdown:\n`;
 
-  for(const part of breakdown) {
-    if ((currentChunk + part).length > DISCORD_CHAR_LIMIT) {
-      chunks.push(currentChunk);
-      currentChunk = "";
-    }
-    currentChunk += part + '\n';
-  }
-
-  if(currentChunk) {
-    chunks.push(currentChunk);
-  }
+  // Build the complete message - let sendChannelMessage handle splitting
+  const message = `Total Club ${key}: ${total}\nMembers: ${memberCount}\n\nBreakdown:\n${breakdown.join('\n')}`;
 
   // Post the total resource info as a new (persistent) message in the channel
-  const firstMessage = await sendChannelMessage(interaction.channel, chunks[0]);
-  if (firstMessage) {
-    for (let i = 1; i < chunks.length; i++) {
-      await interaction.channel.send(chunks[i]);
-    }
+  const messageResult = await sendChannelMessage(interaction.channel, message);
+  if (messageResult) {
     // Send ephemeral confirmation that the command completed
     await sendEphemeralReply(interaction, "Total resource information posted to channel.");
   } else {
