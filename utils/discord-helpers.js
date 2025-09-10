@@ -107,15 +107,18 @@ export function findRole(guild, roleName) {
 }
 
 /**
- * Checks if the bot has required permissions in a channel
+ * Checks if the bot has Send Messages permission in a channel
  * @param {Channel} channel - The Discord channel to check permissions in
- * @param {PermissionResolvable} requiredPermissions - The permissions to check for
- * @returns {boolean} True if bot has required permissions, false otherwise
+ * @returns {boolean} True if bot has Send Messages permission, false otherwise
  */
-function _checkBotPermissions(channel, requiredPermissions) {
+function _checkBotPermissions(channel) {
     const botPermissions = channel.permissionsFor(channel.guild.members.me);
-    if (!botPermissions || !botPermissions.has(requiredPermissions)) {
-        console.log(`[Permissions] Missing required permissions in #${channel.name} for guild ${channel.guild.name}`);
+    if (!botPermissions) {
+        console.log(`[Permissions] Bot has no permissions in #${channel.name} for guild ${channel.guild.name} (likely no access to channel)`);
+        return false;
+    }
+    if (!botPermissions.has(PermissionsBitField.Flags.SendMessages)) {
+        console.log(`[Permissions] Missing Send Messages permission in #${channel.name} for guild ${channel.guild.name}`);
         return false;
     }
     return true;
@@ -267,18 +270,28 @@ async function _sendMessageWithSplitting(channel, content) {
  * @returns {Promise<Message|null>} The first message sent, or null if failed
  */
 export async function sendChannelMessage(channel, content) {
-    try {
-        // Check bot permissions first
-        if (!_checkBotPermissions(channel, PermissionsBitField.Flags.SendMessages)) {
-            console.error(`[sendChannelMessage] Missing Send Messages permission in #${channel.name} for guild ${channel.guild.name}`);
-            return null;
-        }
+    // Check bot permissions first
+    if (!_checkBotPermissions(channel)) {
+        console.error(`[sendChannelMessage] Missing Send Messages permission in #${channel.name} for guild ${channel.guild.name}`);
+        return null;
+    }
 
-        // Send the message with splitting if needed
+    // Send the message with splitting if needed
+    try {
         return await _sendMessageWithSplitting(channel, content);
     } catch (error) {
-        console.error(`[sendChannelMessage] Failed to send message to #${channel.name} in guild ${channel.guild.name}:`, error);
-        return null;
+        // Handle specific Discord API errors
+        // These can occur even after the above check passes because of caching issues
+        if (error.code === 50001) { // Missing Access
+            console.error(`[sendChannelMessage] Bot does not have access to #${channel.name} in guild ${channel.guild.name}`);
+            return null;
+        } else if (error.code === 50013) { // Missing Permissions
+            console.error(`[sendChannelMessage] Bot missing required permissions in #${channel.name} for guild ${channel.guild.name}`);
+            return null;
+        } else {
+            console.error(`[sendChannelMessage] Failed to send message to #${channel.name} in guild ${channel.guild.name}:`, error);
+            return null;
+        }
     }
 }
 
