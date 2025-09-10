@@ -1,5 +1,5 @@
 import moment from 'moment';
-import { validateCommandChannel, sendEphemeralReply } from '../utils/discord-helpers.js';
+import { validateCommandChannel, sendEphemeralReply, sendChannelMessage } from '../utils/discord-helpers.js';
 
 const ESSENCE_OVERDUE_DAYS = 14;
 const GOLD_OVERDUE_DAYS = 42;
@@ -87,10 +87,14 @@ export async function handleTotalResource(interaction, guildData) {
     chunks.push(currentChunk);
   }
 
-  await sendEphemeralReply(interaction, chunks[0]);
+  // Post the total resource info as a new (persistent) message in the channel
+  await sendChannelMessage(interaction.channel, chunks[0]);
   for (let i = 1; i < chunks.length; i++) {
-    await interaction.followUp(chunks[i]);
+    await interaction.channel.send(chunks[i]);
   }
+  
+  // Send ephemeral confirmation that the command completed
+  await sendEphemeralReply(interaction, "Total resource information posted to channel.");
 }
 
 export async function handleRemovePlayer(interaction, guildData) {
