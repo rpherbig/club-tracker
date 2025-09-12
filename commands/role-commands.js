@@ -286,7 +286,7 @@ function formatRoleUpdateResult(member, sheetName, sheetTeam, sheetCategoryRole,
     message += `\n  Changes: ${changes.join(', ')}`;
   }
   if (errors.length > 0) {
-    message += `\n  Errors: ${errors.join(', ')}`;
+    message += `\n  ***Errors: ${errors.join(', ')}***`;
   }
   return message;
 }
@@ -343,13 +343,13 @@ export async function syncRoles(guild, outputChannel) {
 
     const targetRoleNames = getRolesFromSheetData(sheetTeam, sheetCategoryRole);
     if (!targetRoleNames || targetRoleNames.length === 0) {
-      updateResults.push(`- ${sheetName} (Team: ${row[1]}, Category Role: ${row[3]}): Could not determine roles for this team (missing category role or invalid data).`);
+      updateResults.push(`- ${sheetName} (Team: ${row[1]}, Category Role: ${row[3]}): ***Could not determine roles for this team (missing category role or invalid data).***`);
       continue;
     }
 
     const member = findMemberByName(guild, sheetName, { nameMapping: NAME_MAPPING });
     if (!member) {
-      updateResults.push(`- ${sheetName} (Team: ${row[1]}, Category Role: ${row[3]}): User not found in this server.`);
+      updateResults.push(`- ${sheetName} (Team: ${row[1]}, Category Role: ${row[3]}): ***User not found in this server.***`);
       continue;
     }
 
