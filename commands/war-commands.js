@@ -115,13 +115,12 @@ async function handleKill(interaction) {
             roles = [laborer, prospector, vanguard18];
             break;
         case 19:
+        case 20:
+        case 21:
             roles = [shellShock];
             break;
-        case 20:
-            await sendEphemeralReply(interaction, `F${floor} is not supported yet!`);
-            return;
         default:
-            await sendEphemeralReply(interaction, 'Invalid floor number!');
+            await sendEphemeralReply(interaction, `F${floor} is not supported yet!`);
             return;
     }
 
