@@ -56,7 +56,18 @@ export async function handleOverdueResource(interaction, guildData) {
     .map(([name, amount, lastUpdated]) => [name, amount, toRelativeDate(lastUpdated)])
     .map(([name, amount, lastUpdated]) => `${name}: ${amount} (last updated ${lastUpdated})`)
     .join('\n');
-  await sendEphemeralReply(interaction, `Overdue Members for ${key}:\n${overduePlayers}`);
+
+  // Build the complete message
+  const message = `Overdue Members for ${key}:\n${overduePlayers}`;
+
+  // Post the overdue resource info as a new (persistent) message in the channel
+  const messageResult = await sendChannelMessage(interaction.channel, message);
+  if (messageResult) {
+    // Send ephemeral confirmation that the command completed
+    await sendEphemeralReply(interaction, "Overdue resource information posted to channel.");
+  } else {
+    await sendEphemeralReply(interaction, "Failed to post overdue resource information. I may not have permission to send messages in this channel.");
+  }
 }
 
 export async function handleTotalResource(interaction, guildData) {
