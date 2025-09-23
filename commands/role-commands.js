@@ -10,6 +10,7 @@ const SPREADSHEET_ID = '1JQ3Atkgv1APC6kXawTIR2HjeWVCvBYepQqtZnygWSUU';
 // Channel mapping for role announcements
 // Missing entries will be skipped
 const ROLE_CHANNEL_MAPPING = {
+  'van 20': 'van-20',
   'van 19': 'van-19',
   'van 18': 'van-18',
   'pro 17': 'pro-17',
@@ -21,6 +22,7 @@ const ROLE_CHANNEL_MAPPING = {
 // Specific team role mapping - maps team names to their specific Discord role names
 // Missing entries will only get the category role
 const TEAM_ROLE_MAPPING = {
+  'van 20': 'Vanguard 20',
   'van 19': 'Vanguard 19',
   'van 18': 'Vanguard 18',
   'pro 17': 'Prospector 17',
