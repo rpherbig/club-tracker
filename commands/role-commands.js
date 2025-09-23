@@ -109,6 +109,16 @@ function getRolesFromSheetData(sheetTeam, sheetCategoryRole) {
   // Get the specific team role from the mapping
   const specificTeamRole = TEAM_ROLE_MAPPING[team];
   
+  // Log if team is missing from TEAM_ROLE_MAPPING
+  if (!specificTeamRole) {
+    console.warn(`⚠️  MISSING ROLE MAPPING: Team "${team}" not found in TEAM_ROLE_MAPPING. User will only get category role: ${categoryRole}`);
+  }
+  
+  // Log if team is missing from ROLE_CHANNEL_MAPPING
+  if (!ROLE_CHANNEL_MAPPING[team]) {
+    console.warn(`⚠️  MISSING CHANNEL MAPPING: Team "${team}" not found in ROLE_CHANNEL_MAPPING. No announcement will be sent for this team.`);
+  }
+  
   // If we have a specific team role, return both category and specific
   if (specificTeamRole) {
     return [categoryRole, specificTeamRole];
@@ -387,25 +397,25 @@ async function sendRoleAnnouncements(guild) {
     const channelName = ROLE_CHANNEL_MAPPING[teamKey];
     const channel = findChannel(guild, channelName);
     if (!channel) {
-      console.warn(`Could not find channel #${channelName} for role ${roleName} in guild ${guild.name}`);
+      console.warn(`⚠️  MISSING CHANNEL: Could not find channel #${channelName} for team ${teamKey} in guild ${guild.name}`);
       continue;
     }
 
     const roleName = TEAM_ROLE_MAPPING[teamKey];
     if (!roleName) {
-      console.warn(`Could not find role name for team ${teamKey} in TEAM_ROLE_MAPPING in guild ${guild.name}`);
+      console.warn(`⚠️  MISSING ROLE MAPPING: Could not find role name for team ${teamKey} in TEAM_ROLE_MAPPING in guild ${guild.name}`);
       continue;
     }
 
     const role = findRole(guild, roleName);
     if (!role) {
-      console.warn(`Could not find role ${roleName} in guild ${guild.name}`);
+      console.warn(`⚠️  MISSING DISCORD ROLE: Could not find role "${roleName}" in guild ${guild.name} - role may need to be created in Discord`);
       continue;
     }
 
     const message = await sendChannelMessage(channel, getRandomMessage(role, `You are ${roleName} for this week's species war!`));
     if (!message) {
-      console.error(`Failed to post announcement in #${channelName} for guild ${guild.name}: Missing permissions or channel access`);
+      console.error(`❌ FAILED ANNOUNCEMENT: Failed to post announcement in #${channelName} for guild ${guild.name}: Missing permissions or channel access`);
     }
   }
 }
