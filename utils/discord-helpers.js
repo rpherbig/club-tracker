@@ -242,7 +242,7 @@ async function _sendMessageWithSplitting(channel, content) {
         let contentToSend = remainingContent.substring(0, DISCORD_MAX_MESSAGE_LENGTH);
         
         // Try to break at a newline if possible to avoid cutting words
-        if (remainingContent !== content && contentToSend.length < remainingContent.length) {
+        if (contentToSend.length < remainingContent.length) {
             const lastNewline = contentToSend.lastIndexOf('\n');
             if (lastNewline > 0) {
                 contentToSend = contentToSend.substring(0, lastNewline);
