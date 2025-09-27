@@ -31,72 +31,6 @@ const TEAM_ROLE_MAPPING = {
   'lab 11': 'Laborer', // Laborers only have one role in Discord
 };
 
-// Name mapping configuration - maps sheet names to Discord usernames/IDs
-// Note: Keys should be lowercase for case-insensitive lookups in findMemberByName
-const NAME_MAPPING = {
-  'byproxy': '107285508710772736',
-  'sydlexic': '305789864631336972',
-  'slooger': '299379678752538624',
-  'pepsihater': '222830269911138305',
-  'snailybob': '233793523269238785',
-  'loulu': '248963429451300867',
-  'amarin': '158622934271918081',
-  'coop': '1141073493950222497',
-  'itisl': '558481091191767041',
-  'imitationsnail': '268480420021010442',
-  'crackajack': '379829462767894540',
-  'bigeats': '480219464194064384',
-  'deathly': '311257784853463051',
-  'nyrlatoep': '691680899070296085',
-  'snoooowman': '97785134845009920',
-  'knobbler': '160333165028835328',
-  'duckandcower': '416804880896884737',
-  'mike': '757384703501271200',
-  'chumpus': '1246471131112673321',
-  'goldcargo': '397019979993841667',
-  'talas300': '335557154398273537',
-  'garythesnale': '809874369157005313',
-  'slugtato': '296441628904914944',
-  'brownroach': '379837589173174272',
-  'chutemi': '297315906906882058',
-  'sheltim': '85187136659128320',
-  'worm': '696100595198722058',
-  'venich': '173716912881008640',
-  'leecchh': '482008530572804116',
-  'vonlee': '743629973075656712',
-  'iceefox': '495999786026008582',
-  'sneakysneaker': '270066551233839104',
-  'traveler42069': '1142241123331473550',
-  'hines': '230431329072840706',
-  'ceg1729': '490379439562162211',
-  'traveler956': '915663499810717716',
-  'ninjaxom': '389819274975510528',
-  'ekstentythre': '346826665474916362',
-  'ekstwntthre': '346826665474916362',
-  'confusdsquirrl': '505984275678625812',
-  'konx': '230519955240648704',
-  'jwfw': '663562170507984928',
-  'mrslime': '411835173584502785',
-  'melonking': '197115561359048705',
-  'gastropod': '739845007409807572',
-  'satimica': '316371714110128129',
-  'sayam': '433759629068075009',
-  'vendus8': '423128903888928778',
-  '48drago': '613699750662766623',
-  'bingus': '292763135452905475',
-  'edge': '544254868408500244',
-  'dingus1990': '263889079517708288',
-  'fleep': '236615172393926656',
-  'bishop501': '250239865210404866',
-  'magnusdark': '155367571372244993',
-  'snooowman': '97785134845009920',
-  'coming4you': '1158470833140940800',
-  'ekstwntythre': '346826665474916362',
-  'dingus': '263889079517708288',
-  'jinbo': '106115113823502336',
-  'dragonfire9833': '183034579555319809',
-  'stryker': '1210572815368069153',
-};
 
 // Names to ignore in role checks (e.g., people not in Discord, or not in the war, or not in the club)
 const IGNORED_NAMES = new Set(['grantg', 'sethpai']);
@@ -162,17 +96,18 @@ async function getSheetData() {
       console.log(`Checking sheet: ${sheetTitle}`);
       
       try {
-        const headerRange = `'${sheetTitle}'!A1:D1`;
+        const headerRange = `'${sheetTitle}'!A1:E1`;
         const headerResponse = await sheets.spreadsheets.values.get({
           spreadsheetId: SPREADSHEET_ID,
           range: headerRange,
         });
         
         const headers = headerResponse.data.values ? headerResponse.data.values[0] : null;
-        if (headers && headers.length >= 4 && 
+        if (headers && headers.length >= 5 && 
             headers[0].toLowerCase() === 'name' && 
             headers[1].toLowerCase() === 'team' &&
-            headers[3].toLowerCase() === 'kit') {
+            headers[3].toLowerCase() === 'kit' &&
+            headers[4].toLowerCase() === 'discord id') {
           targetSheet = sheet;
           targetSheetTitle = sheetTitle;
           console.log(`Found matching sheet: ${sheetTitle}`);
@@ -185,18 +120,18 @@ async function getSheetData() {
     }
 
     if (!targetSheet) {
-      console.error('Could not find a sheet with the required "Name", "Team", and "Kit" headers.');
+      console.error('Could not find a sheet with the required "Name", "Team", "Kit", and "Discord ID" headers.');
       return null;
     }
 
     // Read data from the found sheet
-    const dataRange = `'${targetSheetTitle}'!A2:D`;
+    const dataRange = `'${targetSheetTitle}'!A2:E`;
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId: SPREADSHEET_ID,
       range: dataRange,
     });
 
-    return response.data.values || []; // Array of [name, team, ?, categoryRole]
+    return response.data.values || []; // Array of [name, team, ?, categoryRole, discordId]
   } catch (error) {
     console.error('Error accessing Google Sheet:', error);
     if (error.code === 403) {
@@ -341,6 +276,7 @@ export async function syncRoles(guild, outputChannel) {
     const sheetName = row[0] ? row[0].trim() : null;
     const sheetTeam = row[1] ? row[1].trim().toLowerCase() : null;
     const sheetCategoryRole = row[3] ? row[3].trim() : null; // Category role is in column D
+    const discordId = row[4] ? row[4].trim() : null; // Discord ID is in column E
 
     if (!sheetName || !sheetTeam || !sheetCategoryRole) {
       console.log('Skipping row with missing name, team, or category role:', row);
@@ -362,9 +298,17 @@ export async function syncRoles(guild, outputChannel) {
       continue;
     }
 
-    const member = findMemberByName(guild, sheetName, { nameMapping: NAME_MAPPING });
+    // Handle external users (Discord ID is "n/a")
+    if (!discordId || discordId.toLowerCase() === 'n/a') {
+      console.log(`Skipping external user: ${sheetName}`);
+      membersSkipped++;
+      continue;
+    }
+
+    // Use Discord ID directly to find the member
+    const member = guild.members.cache.get(discordId);
     if (!member) {
-      updateResults.push(`- ${sheetName} (Team: ${row[1]}, Category Role: ${row[3]}): ***User not found in this server.***`);
+      updateResults.push(`- ${sheetName} (Team: ${row[1]}, Category Role: ${row[3]}): ***User not found in this server (Discord ID: ${discordId}).***`);
       continue;
     }
 
