@@ -24,7 +24,7 @@ const NAME_TO_USER_ID_MAPPING = {
   'melon king': '197115561359048705', 
   'jwfw5931': '663562170507984928', 
   'mike: i’m not dead yet': '757384703501271200', 
-  'grantg': { userId: 'external_grantg', external: true },
+  'grantg': { userId: 'grantg', external: true },
   'venich: the sane ™': '173716912881008640', 
   'hingus': '230431329072840706', 
   'goldinguscargingus': '397019979993841667', 

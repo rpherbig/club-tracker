@@ -1,5 +1,5 @@
 import moment from 'moment';
-import { validateCommandChannel, sendEphemeralReply, sendChannelMessage } from '../utils/discord-helpers.js';
+import { validateCommandChannel, sendEphemeralReply, sendChannelMessage, findMemberByName } from '../utils/discord-helpers.js';
 
 const ESSENCE_OVERDUE_DAYS = 14;
 const GOLD_OVERDUE_DAYS = 42;
@@ -16,31 +16,83 @@ function getLastUpdated(playerData, dateKey) {
   return toRelativeDate(lastUpdated);
 }
 
+/**
+ * Converts a display name to a user ID for data storage
+ * For Discord users: returns their actual User ID
+ * For external users: returns the display name (which is their ID in the data)
+ */
+function displayNameToUserId(displayName, guild, guildData) {
+  // Check if this is an external user by looking in the data
+  // For external users, their "user ID" is just their display name
+  const userData = guildData.get(displayName.toLowerCase());
+  if (userData && userData.get('external')) {
+    return displayName.toLowerCase();
+  }
+  
+  // For Discord users, try to find them in the guild
+  // This handles both display names and usernames
+  if (guild) {
+    const foundMember = findMemberByName(guild, displayName);
+    if (foundMember) {
+      return foundMember.user.id;
+    }
+  }
+  
+  // Fallback - this shouldn't happen in normal operation
+  console.warn(`Could not find Discord user for display name: ${displayName}`);
+  return displayName; // Keep original case for consistency
+}
+
+/**
+ * Converts a user ID back to a display name for display
+ * For external users: returns the userId as display name (it's already the name like 'grantg')
+ * For Discord users: returns their display name from guild, or userId as fallback
+ */
+function userIdToDisplayName(userId, playerData, guild) {
+  if (playerData.get('external')) {
+    // For external users, use the userId as display name (it's already the name like 'grantg')
+    return userId;
+  } else {
+    // For Discord users, try to get display name from guild
+    const member = guild.members.cache.get(userId);
+    return member ? member.displayName : userId;
+  }
+}
+
 export async function handleSetResource(interaction, guildData) {
   const key = interaction.commandName.includes("essence") || interaction.commandName === "se" ? 'essence' : 'gold';
   const dateKey = `${key}-date`;
   const amount = interaction.options.getInteger('amount');
-  const player = interaction.commandName.startsWith('set-player') 
-    ? interaction.options.getString('player').toLowerCase()
-    : interaction.member.displayName.toLowerCase();
+  
+  let userId, displayName;  
+  if (interaction.commandName.startsWith('set-player')) {
+    const playerName = interaction.options.getString('player');
+    userId = displayNameToUserId(playerName, interaction.guild, guildData);
+    displayName = playerName;
+  } else {
+    userId = interaction.member.user.id;
+    displayName = interaction.member.displayName;
+  }
 
-  const playerData = guildData.get(player) || new Map();
+  const playerData = guildData.get(userId) || new Map();
   playerData.set(key, amount);
   playerData.set(dateKey, moment());
-  guildData.set(player, playerData);
-  await sendEphemeralReply(interaction, `Set ${player}'s ${key} to ${amount}`);
+  guildData.set(userId, playerData);
+  
+  await sendEphemeralReply(interaction, `Set ${displayName}'s ${key} to ${amount}`);
   return guildData;
 }
 
 export async function handleShowResource(interaction, guildData) {
   const key = interaction.commandName.includes("essence") || interaction.commandName === "se" ? 'essence' : 'gold';
   const dateKey = `${key}-date`;
-  const targetPlayer = interaction.member.displayName.toLowerCase();
+  const displayName = interaction.member.displayName;
+  const userId = interaction.member.user.id;
   
-  const targetPlayerData = guildData.get(targetPlayer) || new Map();
+  const targetPlayerData = guildData.get(userId) || new Map();
   const val = targetPlayerData.get(key) || 0;
   const lastUpdated = getLastUpdated(targetPlayerData, dateKey);
-  await sendEphemeralReply(interaction, `${targetPlayer} has ${val} ${key} (last updated ${lastUpdated})`);
+  await sendEphemeralReply(interaction, `${displayName} has ${val} ${key} (last updated ${lastUpdated})`);
 }
 
 export async function handleOverdueResource(interaction, guildData) {
@@ -50,7 +102,10 @@ export async function handleOverdueResource(interaction, guildData) {
   const cutoffDate = moment().subtract(days, 'days');
 
   const overduePlayers = Array.from(guildData.entries())
-    .map(([name, pData]) => [name, pData.get(key) || 0, pData.get(dateKey)])
+    .map(([userId, pData]) => {
+      const displayName = userIdToDisplayName(userId, pData, interaction.guild);
+      return [displayName, pData.get(key) || 0, pData.get(dateKey)];
+    })
     .filter(([_name, _amount, lastUpdated]) => !lastUpdated || moment(lastUpdated).isBefore(cutoffDate))
     .sort(([_name1, _amount1, lastUpdated1], [_name2, _amount2, lastUpdated2]) => new Date(lastUpdated1) - new Date(lastUpdated2))
     .map(([name, amount, lastUpdated]) => [name, amount, toRelativeDate(lastUpdated)])
@@ -75,7 +130,10 @@ export async function handleTotalResource(interaction, guildData) {
   const dateKey = `${key}-date`;
   
   const playersData = Array.from(guildData.entries())
-    .map(([name, pData]) => [name, pData.get(key) || 0, getLastUpdated(pData, dateKey)]);
+    .map(([userId, pData]) => {
+      const displayName = userIdToDisplayName(userId, pData, interaction.guild);
+      return [displayName, pData.get(key) || 0, getLastUpdated(pData, dateKey)];
+    });
   const memberCount = playersData.length;
   const total = playersData.reduce((sum, [_name, amount]) => sum + amount, 0);
   const breakdown = playersData
@@ -103,15 +161,16 @@ export async function handleRemovePlayer(interaction, guildData) {
     return guildData;
   }
 
-  const player = interaction.options.getString('player').toLowerCase();
+  const displayName = interaction.options.getString('player');
+  const userId = displayNameToUserId(displayName, interaction.guild, guildData);
   
-  if (!guildData.has(player)) {
-    await sendEphemeralReply(interaction, `❌ Player '${player}' not found in the data.`);
+  if (!guildData.has(userId)) {
+    await sendEphemeralReply(interaction, `❌ Player '${displayName}' not found in the data.`);
     return guildData;
   }
 
   // Remove the player from the data
-  guildData.delete(player);
-  await sendEphemeralReply(interaction, `✅ Successfully removed player '${player}' from the data.`);
+  guildData.delete(userId);
+  await sendEphemeralReply(interaction, `✅ Successfully removed player '${displayName}' from the data.`);
   return guildData;
 } 
