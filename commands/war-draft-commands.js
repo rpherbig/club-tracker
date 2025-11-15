@@ -75,7 +75,9 @@ export async function sendWarDraftMessage(guild) {
   const prospector17Role = findRole(guild, 'Prospector 17');
   const vanguard18Role = findRole(guild, 'Vanguard 18');
   const vanguard19Role = findRole(guild, 'Vanguard 19');
-  
+  const vanguard20Role = findRole(guild, 'Vanguard 20');
+  const vanguard21Role = findRole(guild, 'Vanguard 21');
+
   // Build roles object with specific team roles
   const roles = {
     laborer: laborerRole,
@@ -84,6 +86,8 @@ export async function sendWarDraftMessage(guild) {
     prospector17: prospector17Role,
     vanguard18: vanguard18Role,
     vanguard19: vanguard19Role,
+    vanguard20: vanguard20Role,
+    vanguard21: vanguard21Role,
   };
 
   console.log(`[Cron Job] Fetching species war info from Google Sheets...`);

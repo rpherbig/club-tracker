@@ -90,10 +90,12 @@ async function handleKill(interaction) {
     const prospector = findRole(interaction.guild, 'prospector');
     const prospector16 = findRole(interaction.guild, 'prospector 16');
     const prospector11 = findRole(interaction.guild, 'prospector 11');
-    const prospector17 = findRole(interaction.guild, 'prospector 17');
+    //const prospector17 = findRole(interaction.guild, 'prospector 17');
     const vanguard18 = findRole(interaction.guild, 'vanguard 18');
     const vanguard19 = findRole(interaction.guild, 'vanguard 19');
-    const vanguard = findRole(interaction.guild, 'vanguard');
+    const vanguard20 = findRole(interaction.guild, 'vanguard 20');
+    //const vanguard21 = findRole(interaction.guild, 'vanguard 21');
+    //const vanguard = findRole(interaction.guild, 'vanguard');
     const shellShock = findRole(interaction.guild, 'shellshock');
 
     // Get roles for this floor
@@ -119,6 +121,8 @@ async function handleKill(interaction) {
             roles = [laborer, prospector, vanguard18, vanguard19];
             break;
         case 20:
+            roles = [laborer, prospector, vanguard18, vanguard19,  vanguard20];
+            break;
         case 21:
             roles = [shellShock];
             break;
