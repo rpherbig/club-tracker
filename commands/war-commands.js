@@ -50,10 +50,8 @@ async function handleFind(interaction) {
 
     // Find the ShellShock role
     const shellShockRole = findRole(interaction.guild, 'shellshock');
-
     if (!shellShockRole) {
         await sendEphemeralReply(interaction, 'Could not find the ShellShock role!');
-        return;
     }
 
     const message = getRandomMessage(shellShockRole, `It's time to find F${floor}! ${additionalMessage}`);
@@ -137,11 +135,10 @@ async function handleKill(interaction) {
     const missingRoles = roles.filter(role => !role);
     if (missingRoles.length > 0) {
         await sendEphemeralReply(interaction, 'One or more required roles are missing! Please check that all roles exist.');
-        return;
     }
 
     // Format the message with the roles
-    const roleMentions = roles.map(role => `<@&${role.id}>`).join(' ');
+    const roleMentions = roles.map(role => `<@&${role?.id}>`).join(' ');
     const message = getRandomMessage(roleMentions, `Go kill the boss of F${floor}! ${additionalMessage}`);
 
     const sentMessage = await sendChannelMessage(channel, message);

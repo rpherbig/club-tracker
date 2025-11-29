@@ -101,9 +101,13 @@ export function findChannel(guild, channelName, errorMessage = null) {
  * @returns {Role|null} The found role or null if not found
  */
 export function findRole(guild, roleName) {
-    return guild.roles.cache.find(role => 
+    const role = guild.roles.cache.find(role => 
         role.name.toLowerCase() === roleName.toLowerCase()
     );
+    if (!role) {
+        console.log(`[Role] Role "${roleName}" not found in guild ${guild.name}`);
+    }
+    return role;
 }
 
 /**
