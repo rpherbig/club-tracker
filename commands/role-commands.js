@@ -346,18 +346,26 @@ export async function syncRoles(guild, outputChannel) {
  * @param {Set<string>} uniqueTeamRoles - Set of role names to announce
  */
 async function sendRoleAnnouncements(guild) {
+  const announcedRoles = new Set(); // dedupe by role (first channel wins)
+
   // Loop over the keys of ROLE_CHANNEL_MAPPING
   for (const teamKey of Object.keys(ROLE_CHANNEL_MAPPING)) {
     const channelName = ROLE_CHANNEL_MAPPING[teamKey];
-    const channel = findChannel(guild, channelName);
-    if (!channel) {
-      console.warn(`⚠️  MISSING CHANNEL: Could not find channel #${channelName} for team ${teamKey} in guild ${guild.name}`);
-      continue;
-    }
-
     const roleName = TEAM_ROLE_MAPPING[teamKey];
     if (!roleName) {
       console.warn(`⚠️  MISSING ROLE MAPPING: Could not find role name for team ${teamKey} in TEAM_ROLE_MAPPING in guild ${guild.name}`);
+      continue;
+    }
+
+    const roleKey = roleName.toLowerCase();
+    if (announcedRoles.has(roleKey)) {
+      // Already announced this role; skip additional announcements
+      continue;
+    }
+
+    const channel = findChannel(guild, channelName);
+    if (!channel) {
+      console.warn(`⚠️  MISSING CHANNEL: Could not find channel #${channelName} for team ${teamKey} in guild ${guild.name}`);
       continue;
     }
 
@@ -371,6 +379,8 @@ async function sendRoleAnnouncements(guild) {
     if (!message) {
       console.error(`❌ FAILED ANNOUNCEMENT: Failed to post announcement in #${channelName} for guild ${guild.name}: Missing permissions or channel access`);
     }
+
+    announcedRoles.add(roleKey);
   }
 }
 
