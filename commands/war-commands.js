@@ -86,12 +86,10 @@ async function handleKill(interaction) {
     // Find all possible roles. Will return null if the role is not found.
     const laborer = findRole(interaction.guild, 'laborer');
     const prospector = findRole(interaction.guild, 'prospector');
-    const prospector11 = findRole(interaction.guild, 'prospector 11');
     const prospector14 = findRole(interaction.guild, 'prospector 14');
     const prospector16 = findRole(interaction.guild, 'prospector 16');
     const prospector17 = findRole(interaction.guild, 'prospector 17');
     //const prospector18 = findRole(interaction.guild, 'prospector 18');
-    const vanguard18 = findRole(interaction.guild, 'vanguard 18');
     const vanguard19 = findRole(interaction.guild, 'vanguard 19');
     const vanguard20 = findRole(interaction.guild, 'vanguard 20');
     //const vanguard21 = findRole(interaction.guild, 'vanguard 21');
@@ -106,22 +104,22 @@ async function handleKill(interaction) {
         case 13:
         case 14:
         case 15:
-            roles = [laborer, prospector11, prospector14];
+            roles = [laborer, prospector14];
             break;
         case 16:
-            roles = [laborer, prospector11, prospector14, prospector16];
+            roles = [laborer, prospector14, prospector16];
             break;
         case 17:
-            roles = [laborer, prospector11, prospector14, prospector16, prospector17];
+            roles = [laborer, prospector14, prospector16, prospector17];
             break;
         case 18:
-            roles = [laborer, prospector, vanguard18];
+            roles = [laborer, prospector];
             break;
         case 19:
-            roles = [laborer, prospector, vanguard18, vanguard19];
+            roles = [laborer, prospector, vanguard19];
             break;
         case 20:
-            roles = [laborer, prospector, vanguard18, vanguard19,  vanguard20];
+            roles = [laborer, prospector, vanguard19, vanguard20];
             break;
         case 21:
             roles = [shellShock];

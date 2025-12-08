@@ -13,13 +13,10 @@ const ROLE_CHANNEL_MAPPING = {
   'van 21': 'van-21',
   'van 20': 'van-20',
   'van 19': 'van-19',
-  'van 18': 'van-18',
   'pro 18': 'pro-18',
   'pro 17': 'pro-17',
   'pro 16': 'pro-16',
   'pro 14': 'pro-14',
-  'pro 11': 'pro-11',
-  'lab 11': 'laborers',
   'lab 14': 'laborers',
 };
 
@@ -29,13 +26,10 @@ const TEAM_ROLE_MAPPING = {
   'van 21': 'Vanguard 21',
   'van 20': 'Vanguard 20',
   'van 19': 'Vanguard 19',
-  'van 18': 'Vanguard 18',
   'pro 18': 'Prospector 18',
   'pro 17': 'Prospector 17',
   'pro 16': 'Prospector 16',
   'pro 14': 'Prospector 14',
-  'pro 11': 'Prospector 11',
-  'lab 11': 'Laborer', // Laborers only have one role in Discord
   'lab 14': 'Laborer', // Laborers only have one role in Discord
 };
 
