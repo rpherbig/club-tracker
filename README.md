@@ -12,8 +12,8 @@ Club resource tracking bot for the game Super Snail.
 * `/show-gold`: Show gold count for yourself
 * `/total-gold`: Show total gold for all club members
 * `/overdue-gold`: Show players who are overdue updating their gold value
-* `/find [floor] [message]`: Send a message telling club members to dig to a specific floor (11-20)
-* `/kill [floor] [message]`: Send a message telling club members to kill a specific floor boss (11-20)
+* `/find [floor] [message]`: Send a message telling club members to dig to a specific floor (11-22)
+* `/kill [floor] [message]`: Send a message telling club members to kill a specific floor boss (11-22)
 * `/post-forgetful-message`: Posts the message for users to react to, to get automatically assigned the Forgetful role
 * `/trigger-daily-checkin`: Manually trigger the daily check-in reminder message
 * `/sync-sheet-roles`: Manually sync roles based on the Google Sheet data without sending announcements (useful for fixing role issues)
