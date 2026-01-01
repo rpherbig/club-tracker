@@ -89,6 +89,9 @@ async function getSheetData() {
       console.log(`${index + 1}. ${sheet.properties.title}`);
     });
 
+    // Track headers we saw for debugging in case the expected headers are missing
+    const checkedHeaders = [];
+
     // Try to find a sheet with the expected headers
     let targetSheet = null;
     let targetSheetTitle = null;
@@ -105,6 +108,9 @@ async function getSheetData() {
         });
         
         const headers = headerResponse.data.values ? headerResponse.data.values[0] : null;
+        // Capture what we found for troubleshooting
+        checkedHeaders.push({ sheetTitle, headers: headers || [] });
+
         if (headers && headers.length >= 5 && 
             headers[0].toLowerCase() === 'name' && 
             headers[1].toLowerCase() === 'team' &&
@@ -123,6 +129,7 @@ async function getSheetData() {
 
     if (!targetSheet) {
       console.error('Could not find a sheet with the required "Name", "Team", "Kit", and "Discord ID" headers.');
+      console.error('Headers discovered in checked sheets:', JSON.stringify(checkedHeaders, null, 2));
       return null;
     }
 
