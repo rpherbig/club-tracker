@@ -6,6 +6,46 @@ const DAILY_CHECKIN_CHANNEL_NAME = 'daily-discord-checkin';
 const FORGETFUL_ROLE_NAME = 'Forgetful';
 const MESSAGE_LINK = 'https://discord.com/channels/1036712913727143998/1364121623283896360/1364129089572700190';
 
+// Manhunt cadence: event ends every 30 days, send reminder 2 days before end.
+const MANHUNT_CYCLE_DAYS = 30;
+const MANHUNT_REMINDER_LEAD_DAYS = 2;
+const MS_PER_DAY = 24 * 60 * 60 * 1000;
+const MANHUNT_CYCLE_MS = MANHUNT_CYCLE_DAYS * MS_PER_DAY;
+const MANHUNT_FIRST_END_DATE = new Date('2026-01-09T12:00:00-05:00');
+
+/**
+ * Calculate the next Manhunt end date based on a known anchor date.
+ * 
+ * The event repeats on a fixed 30-day cycle. Given any point in time,
+ * we figure out which cycle we're currently in and return when it ends.
+ * 
+ * Example timeline (with anchor Jan 9):
+ *   Jan 1  -> next end is Jan 9  (cycle 0, haven't reached first end yet)
+ *   Jan 10 -> next end is Feb 8  (cycle 0 completed, now in cycle 1)
+ *   Feb 9  -> next end is Mar 10 (cycle 1 completed, now in cycle 2)
+ */
+function getNextManhuntEndDate(now = new Date()) {
+    // Before the first known end date, just return that date
+    if (now <= MANHUNT_FIRST_END_DATE) {
+        return MANHUNT_FIRST_END_DATE;
+    }
+
+    // How much time has passed since the anchor end date?
+    const elapsedMs = now.getTime() - MANHUNT_FIRST_END_DATE.getTime();
+
+    // How many full 30-day cycles have completed?
+    const cyclesCompleted = Math.floor(elapsedMs / MANHUNT_CYCLE_MS);
+
+    // The next end is one cycle after the last completed one
+    return new Date(MANHUNT_FIRST_END_DATE.getTime() + (cyclesCompleted + 1) * MANHUNT_CYCLE_MS);
+}
+
+export function shouldSendManhuntReminder(now = new Date()) {
+    const nextEndDate = getNextManhuntEndDate(now);
+    const daysUntilEnd = Math.ceil((nextEndDate.getTime() - now.getTime()) / MS_PER_DAY);
+    return daysUntilEnd === MANHUNT_REMINDER_LEAD_DAYS;
+}
+
 export async function sendDailyReminder(guild) {
     console.log(`[Cron Job] Processing daily reminder for guild: ${guild.name} (${guild.id})`);
     
@@ -72,6 +112,34 @@ export async function handleTriggerPromotionReminder(interaction) {
 
   await sendPromotionReminder(interaction.guild);
   await sendEphemeralReply(interaction, 'Promotion reminder sent successfully!');
+}
+
+export async function sendManhuntReminder(guild) {
+    console.log(`[Cron Job] Processing manhunt reminder for guild: ${guild.name} (${guild.id})`);
+    
+    // Find the target channel
+    const channel = findChannel(guild, DAILY_CHECKIN_CHANNEL_NAME, 'Skipping manhunt reminder.');
+    if (!channel) return;
+
+    const nextEndDate = getNextManhuntEndDate();
+    const endDateText = nextEndDate.toLocaleDateString('en-US', { timeZone: 'America/New_York' });
+
+    const messageContent = `# 🏹 MANHUNT REMINDER 🏹\n\nManhunt ends soon (every ${MANHUNT_CYCLE_DAYS} days). Finish your runs before ${endDateText}!`;
+    const message = await sendChannelMessage(channel, messageContent);
+    if (message) {
+        console.log(`[Cron Job] Successfully sent manhunt reminder to #${DAILY_CHECKIN_CHANNEL_NAME} in guild ${guild.name}.`);
+    } else {
+      console.error(`[Cron Job] Failed to send manhunt reminder to #${DAILY_CHECKIN_CHANNEL_NAME} for guild ${guild.name}`);
+    }
+}
+
+export async function handleTriggerManhuntReminder(interaction) {
+  if (!await validateCommandChannel(interaction, ALLOWED_COMMAND_CHANNEL_NAME)) {
+    return;
+  }
+
+  await sendManhuntReminder(interaction.guild);
+  await sendEphemeralReply(interaction, 'Manhunt reminder sent successfully!');
 }
 
 // Returns the new message ID (string) on success, or null on failure.

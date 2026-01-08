@@ -3,7 +3,7 @@ import { promises as fs } from 'fs';
 import cron from 'node-cron';
 import { handleFind, handleKill } from './commands/war-commands.js';
 import { handleSetResource, handleShowResource, handleOverdueResource, handleTotalResource, handleRemovePlayer } from './commands/resource-commands.js';
-import { handlePostForgetfulMessage, handleTriggerDailyCheckin, sendDailyReminder, sendPromotionReminder, handleTriggerPromotionReminder } from './commands/reminder-commands.js';
+import { handlePostForgetfulMessage, handleTriggerDailyCheckin, sendDailyReminder, sendPromotionReminder, handleTriggerPromotionReminder, sendManhuntReminder, handleTriggerManhuntReminder, shouldSendManhuntReminder } from './commands/reminder-commands.js';
 import { handleShowRoleChanges, handleSyncRoles, handleAnnounceRoles } from './commands/role-commands.js';
 import { sendWarDraftMessage, handleTriggerWarDraft } from './commands/war-draft-commands.js';
 import { sendEphemeralReply, logCommandUsage } from './utils/discord-helpers.js';
@@ -136,6 +136,24 @@ client.once('ready', async () => {
   } else {
     console.error('Invalid cron pattern for promotion reminder.');
   }
+
+  // Schedule the manhunt reminder check daily at noon ET; sends only when 2 days before the next end date.
+  if (cron.validate('0 12 * * *')) {
+    cron.schedule('0 12 * * *', async () => {
+      if (!shouldSendManhuntReminder()) return;
+
+      client.guilds.cache.forEach(async (guild) => {
+        console.log(`[Cron Job] Processing manhunt reminder for guild: ${guild.name}`);
+        await sendManhuntReminder(guild);
+      });
+    }, {
+      scheduled: true,
+      timezone: "America/New_York"
+    });
+    console.log('Scheduled manhunt reminder check daily at 12:00 PM America/New_York.');
+  } else {
+    console.error('Invalid cron pattern for manhunt reminder check.');
+  }
 });
 
 client.on('interactionCreate', async interaction => {
@@ -212,6 +230,10 @@ client.on('interactionCreate', async interaction => {
 
     case 'trigger-promotion-reminder':
       await handleTriggerPromotionReminder(interaction);
+      break;
+
+    case 'trigger-manhunt-reminder':
+      await handleTriggerManhuntReminder(interaction);
       break;
 
     case 'sync-sheet-roles':
