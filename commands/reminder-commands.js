@@ -6,8 +6,8 @@ const DAILY_CHECKIN_CHANNEL_NAME = 'daily-discord-checkin';
 const FORGETFUL_ROLE_NAME = 'Forgetful';
 const MESSAGE_LINK = 'https://discord.com/channels/1036712913727143998/1364121623283896360/1364129089572700190';
 
-// Manhunt cadence: event ends every 30 days, send reminder 2 days before end.
-const MANHUNT_CYCLE_DAYS = 30;
+// Manhunt cadence: event ends every 28 days, send reminder 2 days before end.
+const MANHUNT_CYCLE_DAYS = 28;
 const MANHUNT_REMINDER_LEAD_DAYS = 2;
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 const MANHUNT_CYCLE_MS = MANHUNT_CYCLE_DAYS * MS_PER_DAY;
@@ -16,7 +16,7 @@ const MANHUNT_FIRST_END_DATE = new Date('2026-01-09T12:00:00-05:00');
 /**
  * Calculate the next Manhunt end date based on a known anchor date.
  * 
- * The event repeats on a fixed 30-day cycle. Given any point in time,
+ * The event repeats on a fixed 28-day cycle. Given any point in time,
  * we figure out which cycle we're currently in and return when it ends.
  * 
  * Example timeline (with anchor Jan 9):
