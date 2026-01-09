@@ -124,7 +124,7 @@ export async function sendManhuntReminder(guild) {
     const nextEndDate = getNextManhuntEndDate();
     const endDateText = nextEndDate.toLocaleDateString('en-US', { timeZone: 'America/New_York' });
 
-    const messageContent = `# 🏹 MANHUNT REMINDER 🏹\n\nManhunt ends soon (every ${MANHUNT_CYCLE_DAYS} days). Finish your runs before ${endDateText}!`;
+    const messageContent = `# 🏹 MANHUNT/PURGE PLAN REMINDER 🏹\n\nManhunt Act and Purge Plan end soon (every ${MANHUNT_CYCLE_DAYS} days). Finish your runs before ${endDateText}!`;
     const message = await sendChannelMessage(channel, messageContent);
     if (message) {
         console.log(`[Cron Job] Successfully sent manhunt reminder to #${DAILY_CHECKIN_CHANNEL_NAME} in guild ${guild.name}.`);
