@@ -17,7 +17,7 @@ const ROLE_CHANNEL_MAPPING = {
   'pro 17': 'pro-17',
   'pro 16': 'pro-16',
   'pro 14': 'pro-14',
-  'lab 14': 'laborers',
+  'labor': 'laborers',
 };
 
 // Specific team role mapping - maps team names to their specific Discord role names
@@ -30,7 +30,7 @@ const TEAM_ROLE_MAPPING = {
   'pro 17': 'Prospector 17',
   'pro 16': 'Prospector 16',
   'pro 14': 'Prospector 14',
-  'lab 14': 'Laborer', // Laborers only have one role in Discord
+  'labor': 'Laborer', // Laborers only have one role in Discord
 };
 
 
