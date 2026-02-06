@@ -10,26 +10,26 @@ const SPREADSHEET_ID = '1JQ3Atkgv1APC6kXawTIR2HjeWVCvBYepQqtZnygWSUU';
 // Channel mapping for role announcements
 // Missing entries will be skipped
 const ROLE_CHANNEL_MAPPING = {
+  'van 22': 'van-22',
   'van 21': 'van-21',
   'van 20': 'van-20',
   'van 19': 'van-19',
   'pro 18': 'pro-18',
   'pro 17': 'pro-17',
-  'pro 16': 'pro-16',
-  'pro 14': 'pro-14',
+  'pro 15': 'pro-15',
   'labor': 'laborers',
 };
 
 // Specific team role mapping - maps team names to their specific Discord role names
 // Missing entries will only get the category role
 const TEAM_ROLE_MAPPING = {
+  'van 22': 'Vanguard 22',
   'van 21': 'Vanguard 21',
   'van 20': 'Vanguard 20',
   'van 19': 'Vanguard 19',
   'pro 18': 'Prospector 18',
   'pro 17': 'Prospector 17',
-  'pro 16': 'Prospector 16',
-  'pro 14': 'Prospector 14',
+  'pro 15': 'Prospector 15',
   'labor': 'Laborer', // Laborers only have one role in Discord
 };
 
