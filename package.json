@@ -15,7 +15,7 @@
   "license": "GPLv3",
   "dependencies": {
     "discord.js": "^14.25.1",
-    "dotenv": "^17.2.3",
+    "dotenv": "^17.2.4",
     "googleapis": "^171.4.0",
     "moment": "^2.30.1",
     "node-cron": "^4.2.1"
