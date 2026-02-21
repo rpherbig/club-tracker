@@ -108,10 +108,9 @@ export async function sendWarDraftMessage(guild) {
   warStartDate.setDate(today.getDate() + daysUntilFriday);
   
   console.log(`[Cron Job] Generating war message...`);
-  
-  // Generate the complete war message with role mentions and war start date
-  const warMessage = generateWarMessage(speciesWarInfo, roles, warStartDate);
-  if (!warMessage) {
+
+  const { generalInfo, speciesContent } = generateWarMessage(speciesWarInfo, roles, warStartDate) ?? {};
+  if (!generalInfo || !speciesContent) {
     console.log(`[Cron Job] No message content found for species war info: ${speciesWarInfo}. Skipping.`);
     return;
   }
@@ -119,9 +118,10 @@ export async function sendWarDraftMessage(guild) {
   console.log(`[Cron Job] Sending war draft message (copy-paste friendly)...`);
 
   await sendChannelMessage(channel, '📋 *Copy the block(s) below and paste in the other channel. Remove the ```md and ``` lines after pasting if they were included.*');
-  const message = await sendChannelMessageAsCodeBlock(channel, warMessage);
+  const first = await sendChannelMessageAsCodeBlock(channel, generalInfo);
+  const second = await sendChannelMessageAsCodeBlock(channel, speciesContent);
 
-  if (message) {
+  if (first && second) {
     console.log(`[Cron Job] Successfully sent war draft message to #war-drafts in guild ${guild.name}.`);
   } else {
     console.error(`[Cron Job] Failed to send war draft message for guild ${guild.name}`);

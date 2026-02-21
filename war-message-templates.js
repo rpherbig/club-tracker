@@ -81,11 +81,10 @@ Chronicle Bidding: React upon placement.
 ⚠️ LAST DAY to use ALL war resources!! ⚠️
 🎲 Good luck with your red dice! 🍀`;
 
-// WAR MESSAGE GENERATOR - Combines species detection and boilerplate
+// WAR MESSAGE GENERATOR - Returns general war info and species-specific content separately for flexible sending (e.g. two code blocks)
 export const generateWarMessage = (speciesWarInfo, roles, warStartDate) => {
   const info = speciesWarInfo.toLowerCase();
-  
-  // Determine which species content to use
+
   let speciesContent;
   if (info.includes('mantis')) {
     speciesContent = mantis;
@@ -98,19 +97,16 @@ export const generateWarMessage = (speciesWarInfo, roles, warStartDate) => {
   } else if (info.includes('ham')) {
     speciesContent = hamster;
   } else {
-    // No match found
     return null;
   }
-  
-  // Format the war start date
-  const formattedDate = warStartDate.toLocaleDateString('en-US', { 
+
+  const formattedDate = warStartDate.toLocaleDateString('en-US', {
     month: 'numeric',
-    day: 'numeric', 
+    day: 'numeric',
     year: '2-digit'
   });
-  
-  // Create the war message with strategy and spreadsheet link
-  const message = `# ${speciesWarInfo} - ${formattedDate}
+
+  const generalInfo = `# ${speciesWarInfo} - ${formattedDate}
 
 # Boss Strategy:
 * F5, F15+: ${roles.laborer} ${roles.prospector15} :arrow_right: Start with F5, then full hit F15+ as casualties allow. Push up to F18 if possible; otherwise, clean up.
@@ -122,12 +118,7 @@ export const generateWarMessage = (speciesWarInfo, roles, warStartDate) => {
 * F22+: ${roles.vanguard22} :arrow_right: Hold tokens until F22 is located. Full hit F22+ as casualties allow.
 
 📌 Spreadsheet for tracking (updated every Friday):
-🔗 [Team Front-End Spreadsheet](https://docs.google.com/spreadsheets/d/1JQ3Atkgv1APC6kXawTIR2HjeWVCvBYepQqtZnygWSUU/edit?gid=903491486#gid=903491486) (Pinned in this channel!)
+🔗 [Team Front-End Spreadsheet](https://docs.google.com/spreadsheets/d/1JQ3Atkgv1APC6kXawTIR2HjeWVCvBYepQqtZnygWSUU/edit?gid=903491486#gid=903491486) (Pinned in this channel!)`;
 
----
-
-${speciesContent}`;
-
-  // Return the combined message
-  return message;
+  return { generalInfo, speciesContent };
 };
