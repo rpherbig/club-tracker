@@ -1,0 +1,22 @@
+---
+description: When changing Discord roles, consult and update the roles reference
+globs: commands/role-commands.js,commands/war-commands.js,commands/war-draft-commands.js,commands/reminder-commands.js,war-message-templates.js,events/role-events.js
+alwaysApply: false
+---
+
+# Discord role changes
+
+When **adding, renaming, or removing** any Discord role (especially species war / team roles):
+
+1. **Read `docs/ROLES.md` first.** It lists every file and every role reference.
+2. **Update every listed location** in a single change so the bot stays consistent and no errors are sent to Discord.
+3. **Update `docs/ROLES.md`** if you add new role references or rename/remove roles, so the doc stays accurate for the next change.
+
+Common places that must stay in sync:
+
+- `commands/role-commands.js`: `ROLE_CHANNEL_MAPPING`, `TEAM_ROLE_MAPPING`
+- `commands/war-draft-commands.js`: `findRole()` calls and the `roles` object for `generateWarMessage()`
+- `war-message-templates.js`: strategy section and `roles.*` usage
+- `commands/war-commands.js`: `findRole()` calls and `switch(floor)` role arrays
+
+Use the checklist at the bottom of `docs/ROLES.md` before finishing.
