@@ -6,9 +6,9 @@ const DAILY_CHECKIN_CHANNEL_NAME = 'daily-discord-checkin';
 const FORGETFUL_ROLE_NAME = 'Forgetful';
 const MESSAGE_LINK = 'https://discord.com/channels/1036712913727143998/1364121623283896360/1364129089572700190';
 
-// Manhunt cadence: event ends every 28 days, send reminder 2 days before end.
+// Manhunt cadence: event ends every 28 days, send reminder 1 day before end (Thursday).
 const MANHUNT_CYCLE_DAYS = 28;
-const MANHUNT_REMINDER_LEAD_DAYS = 2;
+const MANHUNT_REMINDER_LEAD_DAYS = 1;
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 const MANHUNT_CYCLE_MS = MANHUNT_CYCLE_DAYS * MS_PER_DAY;
 const MANHUNT_FIRST_END_DATE = new Date('2026-01-09T12:00:00-05:00');
@@ -124,7 +124,7 @@ export async function sendManhuntReminder(guild) {
     const nextEndDate = getNextManhuntEndDate();
     const endDateText = nextEndDate.toLocaleDateString('en-US', { timeZone: 'America/New_York' });
 
-    const messageContent = `# 🏹 MANHUNT/PURGE PLAN REMINDER 🏹\n\nManhunt Act and Purge Plan end soon (every ${MANHUNT_CYCLE_DAYS} days). Finish your runs before ${endDateText}!`;
+    const messageContent = `# 🏹 MANHUNT / SPACE SEAM REMINDER 🏹\n\nManhunt Act and Space Seam end soon (every ${MANHUNT_CYCLE_DAYS} days). Finish your runs and spend your banquet tickets before ${endDateText}!`;
     const message = await sendChannelMessage(channel, messageContent);
     if (message) {
         console.log(`[Cron Job] Successfully sent manhunt reminder to #${DAILY_CHECKIN_CHANNEL_NAME} in guild ${guild.name}.`);
