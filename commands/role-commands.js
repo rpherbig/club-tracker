@@ -1,37 +1,15 @@
 import { google } from 'googleapis';
 import dotenv from 'dotenv';
 import { findChannel, findRole, findMemberByName, sendChannelMessage, sendEphemeralReply, validateCommandChannel, getRandomMessage } from '../utils/discord-helpers.js';
+import { getRoleChannelMapping, getTeamRoleMapping, getAllTeamRoleNames } from '../config/roles.js';
 
 dotenv.config();
 
 // Configuration:
 const SPREADSHEET_ID = '1JQ3Atkgv1APC6kXawTIR2HjeWVCvBYepQqtZnygWSUU';
 
-// Channel mapping for role announcements
-// Missing entries will be skipped
-const ROLE_CHANNEL_MAPPING = {
-  'van 22': 'van-22',
-  'van 21': 'van-21',
-  'van 20': 'van-20',
-  'van 19': 'van-19',
-  'pro 18': 'pro-18',
-  'pro 17': 'pro-17',
-  'pro 15': 'pro-15',
-  'labor': 'laborers',
-};
-
-// Specific team role mapping - maps team names to their specific Discord role names
-// Missing entries will only get the category role
-const TEAM_ROLE_MAPPING = {
-  'van 22': 'Vanguard 22',
-  'van 21': 'Vanguard 21',
-  'van 20': 'Vanguard 20',
-  'van 19': 'Vanguard 19',
-  'pro 18': 'Prospector 18',
-  'pro 17': 'Prospector 17',
-  'pro 15': 'Prospector 15',
-  'labor': 'Laborer', // Laborers only have one role in Discord
-};
+const ROLE_CHANNEL_MAPPING = getRoleChannelMapping();
+const TEAM_ROLE_MAPPING = getTeamRoleMapping();
 
 
 // Names to ignore in role checks (e.g., people not in Discord, or not in the war, or not in the club)
@@ -154,21 +132,7 @@ async function getSheetData() {
 }
 
 function getAllTeamRoles() {
-  const allTeamRoles = new Set();
-  // Add all roles from ROLE_CHANNEL_MAPPING
-  Object.keys(ROLE_CHANNEL_MAPPING).forEach(roleName => {
-    allTeamRoles.add(roleName);
-  });
-  // Add all specific team roles from TEAM_ROLE_MAPPING
-  Object.values(TEAM_ROLE_MAPPING).forEach(roleName => {
-    allTeamRoles.add(roleName);
-  });
-  // Add common category roles that might be used
-  const commonCategoryRoles = ['Vanguard', 'Prospector', 'Laborer'];
-  commonCategoryRoles.forEach(roleName => {
-    allTeamRoles.add(roleName);
-  });
-  return allTeamRoles;
+  return getAllTeamRoleNames();
 }
 
 async function applyRoleChange(member, role, isRemoving) {

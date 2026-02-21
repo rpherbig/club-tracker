@@ -1,4 +1,5 @@
 import { findChannel, findRole, validateCommandChannel, sendEphemeralReply, getRandomMessage, sendChannelMessage } from '../utils/discord-helpers.js';
+import { getDiscordRoleNameByTemplateKey } from '../config/roles.js';
 
 // Command history storage - key: "commandType:floor", value: timestamp
 const commandHistory = new Map();
@@ -83,21 +84,14 @@ async function handleKill(interaction) {
     
     if (!channel) return;
 
-    // Find all possible roles. Will return null if the role is not found.
-    const laborer = findRole(interaction.guild, 'laborer');
-    const prospector = findRole(interaction.guild, 'prospector');
-    const prospector15 = findRole(interaction.guild, 'prospector 15');
-    const prospector17 = findRole(interaction.guild, 'prospector 17');
-    //const prospector18 = findRole(interaction.guild, 'prospector 18');
-    const vanguard19 = findRole(interaction.guild, 'vanguard 19');
-    const vanguard20 = findRole(interaction.guild, 'vanguard 20');
-    const vanguard21 = findRole(interaction.guild, 'vanguard 21');
-    //const vanguard22 = findRole(interaction.guild, 'vanguard 22');
-    //const vanguard = findRole(interaction.guild, 'vanguard');
-    const shellShock = findRole(interaction.guild, 'shellshock');
+    const guild = interaction.guild;
+    const resolveRole = (templateKeyOrLiteralName) => {
+      const name = getDiscordRoleNameByTemplateKey(templateKeyOrLiteralName) ?? templateKeyOrLiteralName;
+      return findRole(guild, name);
+    };
 
-    // Get roles for this floor
-    let roles;
+    // Floor → template keys (from config) or literal Discord role names for category/ShellShock
+    let roleSpecs;
     switch (floor) {
         case 11:
         case 12:
@@ -105,31 +99,33 @@ async function handleKill(interaction) {
         case 14:
         case 15:
         case 16:
-            roles = [laborer, prospector15];
+            roleSpecs = ['laborer', 'prospector15'];
             break;
         case 17:
-            roles = [laborer, prospector15, prospector17];
+            roleSpecs = ['laborer', 'prospector15', 'prospector17'];
             break;
         case 18:
-            roles = [laborer, prospector];
+            roleSpecs = ['laborer', 'Prospector'];
             break;
         case 19:
-            roles = [laborer, prospector, vanguard19];
+            roleSpecs = ['laborer', 'Prospector', 'vanguard19'];
             break;
         case 20:
-            roles = [laborer, prospector, vanguard19, vanguard20];
+            roleSpecs = ['laborer', 'Prospector', 'vanguard19', 'vanguard20'];
             break;
         case 21:
-            roles = [laborer, prospector, vanguard19, vanguard20, vanguard21];
+            roleSpecs = ['laborer', 'Prospector', 'vanguard19', 'vanguard20', 'vanguard21'];
             break;
         case 22:
         case 23:
-            roles = [shellShock];
+            roleSpecs = ['ShellShock'];
             break;
         default:
             await sendEphemeralReply(interaction, `F${floor} is not supported yet!`);
             return;
     }
+
+    const roles = roleSpecs.map(resolveRole);
 
     // Check if all required roles exist
     const missingRoles = roles.filter(role => !role);

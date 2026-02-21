@@ -2,6 +2,7 @@ import { google } from 'googleapis';
 import dotenv from 'dotenv';
 import { findChannel, findRole, sendEphemeralReply, validateCommandChannel, sendChannelMessage, sendChannelMessageAsCodeBlock } from '../utils/discord-helpers.js';
 import { generateWarMessage } from '../war-message-templates.js';
+import { TEAM_ROLES } from '../config/roles.js';
 
 dotenv.config();
 
@@ -68,27 +69,11 @@ export async function sendWarDraftMessage(guild) {
     return;
   }
 
-  // Find the specific team roles to mention
-  const laborerRole = findRole(guild, 'Laborer');
-  const prospector15Role = findRole(guild, 'Prospector 15');
-  const prospector17Role = findRole(guild, 'Prospector 17');
-  const prospector18Role = findRole(guild, 'Prospector 18');
-  const vanguard19Role = findRole(guild, 'Vanguard 19');
-  const vanguard20Role = findRole(guild, 'Vanguard 20');
-  const vanguard21Role = findRole(guild, 'Vanguard 21');
-  const vanguard22Role = findRole(guild, 'Vanguard 22');
-
-  // Build roles object with specific team roles
-  const roles = {
-    laborer: laborerRole,
-    prospector15: prospector15Role,
-    prospector17: prospector17Role,
-    prospector18: prospector18Role,
-    vanguard19: vanguard19Role,
-    vanguard20: vanguard20Role,
-    vanguard21: vanguard21Role,
-    vanguard22: vanguard22Role,
-  };
+  // Build roles object from config (templateKey → Role)
+  const roles = {};
+  for (const { discordRoleName, templateKey } of TEAM_ROLES) {
+    roles[templateKey] = findRole(guild, discordRoleName);
+  }
 
   console.log(`[Cron Job] Fetching species war info from Google Sheets...`);
   
