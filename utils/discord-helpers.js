@@ -227,43 +227,44 @@ export function logCommandUsage(interaction, commandName) {
 const DISCORD_MAX_MESSAGE_LENGTH = 2000;
 
 /**
- * Private helper function that handles message splitting and sending
- * @param {TextChannel} channel - The channel to send the message to
+ * Splits content into chunks that fit within maxLength, breaking at newlines when possible.
+ * @param {string} content - The full content
+ * @param {number} maxLength - Maximum length per chunk
+ * @returns {string[]} Array of chunks
+ */
+function _chunkContent(content, maxLength) {
+    if (content.length <= maxLength) {
+        return [content];
+    }
+    const chunks = [];
+    let remaining = content;
+    while (remaining.length > 0) {
+        let chunk = remaining.substring(0, maxLength);
+        if (chunk.length < remaining.length) {
+            const lastNewline = chunk.lastIndexOf('\n');
+            if (lastNewline > 0) {
+                chunk = chunk.substring(0, lastNewline);
+            }
+        }
+        chunks.push(chunk);
+        remaining = remaining.substring(chunk.length);
+    }
+    return chunks;
+}
+
+/**
+ * Sends content to the channel, splitting into multiple messages if needed.
+ * @param {TextChannel} channel - The channel to send to
  * @param {string} content - The message content
  * @returns {Promise<Message>} The first message sent
  */
 async function _sendMessageWithSplitting(channel, content) {
-    if (content.length <= DISCORD_MAX_MESSAGE_LENGTH) {
-        // If content fits in one message, send it as is
-        return await channel.send(content);
-    }
-    
-    // Split content into multiple messages
-    let remainingContent = content;
+    const chunks = _chunkContent(content, DISCORD_MAX_MESSAGE_LENGTH);
     let firstMessage = null;
-    
-    while (remainingContent.length > 0) {
-        let contentToSend = remainingContent.substring(0, DISCORD_MAX_MESSAGE_LENGTH);
-        
-        // Try to break at a newline if possible to avoid cutting words
-        if (contentToSend.length < remainingContent.length) {
-            const lastNewline = contentToSend.lastIndexOf('\n');
-            if (lastNewline > 0) {
-                contentToSend = contentToSend.substring(0, lastNewline);
-            }
-        }
-        
-        const message = await channel.send(contentToSend);
-        
-        // Store the first message
-        if (firstMessage === null) {
-            firstMessage = message;
-        }
-        
-        // Remove the sent content from remaining content
-        remainingContent = remainingContent.substring(contentToSend.length);
+    for (const chunk of chunks) {
+        const message = await channel.send(chunk);
+        if (firstMessage === null) firstMessage = message;
     }
-    
     return firstMessage;
 }
 
@@ -297,6 +298,31 @@ export async function sendChannelMessage(channel, content) {
             return null;
         }
     }
+}
+
+/** Overhead for wrapping a chunk in a code block: "```x\n" + "\n```" */
+const CODE_BLOCK_OVERHEAD = '```x\n'.length + '\n```'.length;
+
+/**
+ * Sends content as one or more markdown code blocks so copy/paste preserves Discord formatting.
+ * Splits content when needed so each block stays under the Discord message limit.
+ * Delegates to sendChannelMessage for each block so permission checks and error handling are shared.
+ * @param {TextChannel} channel - The channel to send to
+ * @param {string} content - The raw content (e.g. markdown)
+ * @param {string} [language='md'] - Code block language hint
+ * @returns {Promise<Message|null>} The first message sent, or null if failed
+ */
+export async function sendChannelMessageAsCodeBlock(channel, content, language = 'md') {
+    const maxChunkLength = DISCORD_MAX_MESSAGE_LENGTH - CODE_BLOCK_OVERHEAD;
+    const chunks = _chunkContent(content, maxChunkLength);
+    const prefix = `\`\`\`${language}\n`;
+    const suffix = '\n\`\`\`';
+    let firstMessage = null;
+    for (const chunk of chunks) {
+        const sent = await sendChannelMessage(channel, prefix + chunk + suffix);
+        if (sent && firstMessage === null) firstMessage = sent;
+    }
+    return firstMessage;
 }
 
 /**

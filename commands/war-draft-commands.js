@@ -1,6 +1,6 @@
 import { google } from 'googleapis';
 import dotenv from 'dotenv';
-import { findChannel, findRole, sendEphemeralReply, validateCommandChannel, sendChannelMessage } from '../utils/discord-helpers.js';
+import { findChannel, findRole, sendEphemeralReply, validateCommandChannel, sendChannelMessage, sendChannelMessageAsCodeBlock } from '../utils/discord-helpers.js';
 import { generateWarMessage } from '../war-message-templates.js';
 
 dotenv.config();
@@ -116,11 +116,11 @@ export async function sendWarDraftMessage(guild) {
     return;
   }
 
-  console.log(`[Cron Job] Sending war draft message...`);
+  console.log(`[Cron Job] Sending war draft message (copy-paste friendly)...`);
 
-  // Send the combined message (will be automatically split if needed)
-  const message = await sendChannelMessage(channel, warMessage);
-  
+  await sendChannelMessage(channel, '📋 *Copy the block(s) below and paste in the other channel. Remove the ```md and ``` lines after pasting if they were included.*');
+  const message = await sendChannelMessageAsCodeBlock(channel, warMessage);
+
   if (message) {
     console.log(`[Cron Job] Successfully sent war draft message to #war-drafts in guild ${guild.name}.`);
   } else {
