@@ -131,10 +131,9 @@ const commands = [
       {
         name: 'floor',
         type: 4,
-        description: 'Floor number to dig to (11-22)',
+        description: 'Floor number to dig to',
         required: true,
-        min_value: 11,
-        max_value: 22
+        min_value: 1
       },
       {
         name: 'message',
@@ -151,10 +150,9 @@ const commands = [
       {
         name: 'floor',
         type: 4,
-        description: 'Floor number to kill (11-22)',
+        description: 'Floor number to kill',
         required: true,
-        min_value: 11,
-        max_value: 22
+        min_value: 1
       },
       {
         name: 'message',

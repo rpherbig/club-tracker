@@ -92,37 +92,20 @@ async function handleKill(interaction) {
 
     // Floor → template keys (from config) or literal Discord role names for category/ShellShock
     let roleSpecs;
-    switch (floor) {
-        case 11:
-        case 12:
-        case 13:
-        case 14:
-        case 15:
-        case 16:
-            roleSpecs = ['laborer', 'prospector15'];
-            break;
-        case 17:
-            roleSpecs = ['laborer', 'prospector15', 'prospector17'];
-            break;
-        case 18:
-            roleSpecs = ['laborer', 'Prospector'];
-            break;
-        case 19:
-            roleSpecs = ['laborer', 'Prospector', 'vanguard19'];
-            break;
-        case 20:
-            roleSpecs = ['laborer', 'Prospector', 'vanguard19', 'vanguard20'];
-            break;
-        case 21:
-            roleSpecs = ['laborer', 'Prospector', 'vanguard19', 'vanguard20', 'vanguard21'];
-            break;
-        case 22:
-        case 23:
-            roleSpecs = ['ShellShock'];
-            break;
-        default:
-            await sendEphemeralReply(interaction, `F${floor} is not supported yet!`);
-            return;
+    if (floor >= 11 && floor <= 16) {
+      roleSpecs = ['laborer', 'prospector15'];
+    } else if (floor === 17) {
+      roleSpecs = ['laborer', 'prospector15', 'prospector17'];
+    } else if (floor === 18) {
+      roleSpecs = ['laborer', 'Prospector'];
+    } else if (floor === 19) {
+      roleSpecs = ['laborer', 'Prospector', 'vanguard19'];
+    } else if (floor === 20) {
+      roleSpecs = ['laborer', 'Prospector', 'vanguard19', 'vanguard20'];
+    } else if (floor === 21) {
+      roleSpecs = ['laborer', 'Prospector', 'vanguard19', 'vanguard20', 'vanguard21'];
+    } else {
+      roleSpecs = ['ShellShock'];
     }
 
     const roles = roleSpecs.map(resolveRole);
