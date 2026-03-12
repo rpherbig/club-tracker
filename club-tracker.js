@@ -6,7 +6,7 @@ import { handleSetResource, handleShowResource, handleOverdueResource, handleTot
 import { handlePostForgetfulMessage, handleTriggerDailyCheckin, sendDailyReminder, sendPromotionReminder, handleTriggerPromotionReminder, sendManhuntReminder, handleTriggerManhuntReminder, shouldSendManhuntReminder } from './commands/reminder-commands.js';
 import { handleShowRoleChanges, handleSyncRoles, handleAnnounceRoles } from './commands/role-commands.js';
 import { sendWarDraftMessage, handleTriggerWarDraft } from './commands/war-draft-commands.js';
-import { sendEphemeralReply, logCommandUsage } from './utils/discord-helpers.js';
+import { sendEphemeralReply, logCommandUsage, findChannel, sendChannelMessage } from './utils/discord-helpers.js';
 import { handleForgetfulReaction } from './events/role-events.js';
 import dotenv from 'dotenv';
 
@@ -72,6 +72,14 @@ client.once('ready', async () => {
   console.log(`Logged in as ${client.user.tag}`);
   data = await loadData(DATA_FILE);
   forgetfulMessageStore = await loadData(FORGETFUL_MESSAGES_FILE);
+
+  // Announce bot restart in #club-chat for each guild
+  client.guilds.cache.forEach(async (guild) => {
+    const channel = findChannel(guild, 'club-chat', 'Skipping startup message.');
+    if (channel) {
+      await sendChannelMessage(channel, "I'm back, baby!");
+    }
+  });
 
   // Schedule the daily check-in message
   if (cron.validate('0 10 * * *')) {
