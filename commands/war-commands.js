@@ -92,7 +92,7 @@ async function handleKill(interaction) {
 
     // Floor → template keys (from config) or literal Discord role names for category/ShellShock
     let roleSpecs;
-    if (floor >= 11 && floor <= 16) {
+    if (floor <= 16) {
       roleSpecs = ['laborer', 'prospector15'];
     } else if (floor === 17) {
       roleSpecs = ['laborer', 'prospector15', 'prospector17'];
@@ -128,4 +128,47 @@ async function handleKill(interaction) {
     }
 }
 
-export { handleFind, handleKill }; 
+// Post-shadow order: value at index 0→2, 1→0, 2→1 (rotate: out = [in[1], in[2], in[0]]).
+// In-game verified: 123→231, 132→321, 321→213, 213→132.
+const MANTIS_DIGITS = new Set(['1', '2', '3']);
+
+function parseMantisOrder(raw) {
+    const order = raw.trim();
+    if (order.length !== 3) return null;
+    for (const ch of order) {
+        if (!MANTIS_DIGITS.has(ch)) return null;
+    }
+    return order;
+}
+
+function mantisCounterSequence(order) {
+    const [a, b, c] = order;
+    return `${b}-${c}-${a}`;
+}
+
+async function handleMantis(interaction) {
+    if (!await validateCommandChannel(interaction, 'species-war')) {
+        return;
+    }
+
+    const raw = interaction.options.getString('order') ?? '';
+    const order = parseMantisOrder(raw);
+    if (!order) {
+        await sendEphemeralReply(interaction, 'Provide exactly three digits, each 1, 2, or 3 (e.g. 321).');
+        return;
+    }
+
+    const channel = await getWarOrdersChannel(interaction);
+    if (!channel) return;
+
+    const counter = mantisCounterSequence(order);
+    const message = `The post-shadow move order is: ***${counter}***`;
+    const sentMessage = await sendChannelMessage(channel, message);
+    if (sentMessage) {
+        await sendEphemeralReply(interaction, `Sent the Mantis counter to #war-orders!`);
+    } else {
+        await sendEphemeralReply(interaction, `Failed to send the Mantis counter. I may not have permission to send messages in #war-orders.`);
+    }
+}
+
+export { handleFind, handleKill, handleMantis };

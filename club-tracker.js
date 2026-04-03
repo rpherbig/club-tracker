@@ -1,7 +1,7 @@
 import { Client, GatewayIntentBits } from 'discord.js';
 import { promises as fs } from 'fs';
 import cron from 'node-cron';
-import { handleFind, handleKill } from './commands/war-commands.js';
+import { handleFind, handleKill, handleMantis } from './commands/war-commands.js';
 import { handleSetResource, handleShowResource, handleOverdueResource, handleTotalResource, handleRemovePlayer } from './commands/resource-commands.js';
 import { handlePostForgetfulMessage, handleTriggerDailyCheckin, sendDailyReminder, sendPromotionReminder, handleTriggerPromotionReminder, sendManhuntReminder, handleTriggerManhuntReminder, shouldSendManhuntReminder } from './commands/reminder-commands.js';
 import { handleShowRoleChanges, handleSyncRoles, handleAnnounceRoles } from './commands/role-commands.js';
@@ -218,6 +218,9 @@ client.on('interactionCreate', async interaction => {
 
     case 'kill':
       await handleKill(interaction);
+      break;
+    case 'mantis':
+      await handleMantis(interaction);
       break;
 
     case 'post-forgetful-message':

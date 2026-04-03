@@ -163,6 +163,20 @@ const commands = [
     ]
   },
   {
+    name: 'mantis',
+    description: 'Post the Mantis war move order that beats an opponent who stayed with the default move order',
+    options: [
+      {
+        name: 'order',
+        type: 3,
+        description: 'Default move order (e.g. 321)',
+        required: true,
+        min_length: 3,
+        max_length: 3
+      }
+    ]
+  },
+  {
     name: 'post-forgetful-message',
     description: 'Posts the message for users to react to for the Forgetful role.'
   },
