@@ -22,7 +22,8 @@ export const mantis = `# Mantis fighter cultivation guide
 ✔️ If your power is lower than the strongest Shellshock member in the node, place inside a blue node instead to maximize your % win rate.  % of fights won = more points
 
 ## Change skill order after completing the daily Shadow Fight!
-➤ Optimal order is different each war!  keep an eye out for instructions once we know what the order will be this`;
+➤ Optimal order is different each war!  keep an eye out for instructions once we know what the order will be this war.
+➤ 🚨 ***new feature!*** 🚨 Use ``/mantis`` in #species-war and give it the move order you were auto-adjusted to fight the Shadow (e.g. ``/mantis 321``). The bot will post the counter move order to #war-orders.`;
 
 // BEETLE
 export const beetle = `## Chronicle Requirements
