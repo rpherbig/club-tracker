@@ -111,9 +111,8 @@ export const generateWarMessage = (speciesWarInfo, roles, warStartDate) => {
 
 # Boss Strategy:
 * F5, F15+: ${roles.laborer} ${roles.prospector15} :arrow_right: Start with F5, then full hit F15+ as casualties allow. Push up to F18 if possible; otherwise, clean up.
-* F17+: ${roles.prospector17} :arrow_right: Hold tokens until F17 is located. Full hit F17+ as casualties allow.
 * F18+: ${roles.prospector18} :arrow_right: Hold tokens until F18 is located. Full hit F18+ as casualties allow.
-* F19+: ${roles.vanguard19} :arrow_right: Hold tokens until F19 is located. Full hit F19+ as casualties allow.
+* F19+: ${roles.vanguard19} ${roles.prospector19} :arrow_right: Hold tokens until F19 is located. Full hit F19+ as casualties allow.
 * F20+: ${roles.vanguard20} :arrow_right: Hold tokens until F20 is located. Full hit F20+ as casualties allow.
 * F21+: ${roles.vanguard21} :arrow_right: Hold tokens until F21 is located. Full hit F21+ as casualties allow.
 * F22+: ${roles.vanguard22} :arrow_right: Hold tokens until F22 is located. Full hit F22+ as casualties allow.

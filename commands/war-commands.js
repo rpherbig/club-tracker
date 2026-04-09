@@ -92,12 +92,10 @@ async function handleKill(interaction) {
 
     // Floor → template keys (from config) or literal Discord role names for category/ShellShock
     let roleSpecs;
-    if (floor <= 16) {
+    if (floor <= 17) {
       roleSpecs = ['laborer', 'prospector15'];
-    } else if (floor === 17) {
-      roleSpecs = ['laborer', 'prospector15', 'prospector17'];
     } else if (floor === 18) {
-      roleSpecs = ['laborer', 'Prospector'];
+      roleSpecs = ['prospector18', 'prospector15', 'laborer'];
     } else if (floor === 19) {
       roleSpecs = ['laborer', 'Prospector', 'vanguard19'];
     } else if (floor === 20) {

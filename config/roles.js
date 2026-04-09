@@ -12,8 +12,8 @@ export const TEAM_ROLES = [
   { teamKey: 'van 21', channelName: 'van-21', discordRoleName: 'Vanguard 21', templateKey: 'vanguard21' },
   { teamKey: 'van 20', channelName: 'van-20', discordRoleName: 'Vanguard 20', templateKey: 'vanguard20' },
   { teamKey: 'van 19', channelName: 'van-19', discordRoleName: 'Vanguard 19', templateKey: 'vanguard19' },
+  { teamKey: 'pro 19', channelName: 'pro-19', discordRoleName: 'Prospector 19', templateKey: 'prospector19' },
   { teamKey: 'pro 18', channelName: 'pro-18', discordRoleName: 'Prospector 18', templateKey: 'prospector18' },
-  { teamKey: 'pro 17', channelName: 'pro-17', discordRoleName: 'Prospector 17', templateKey: 'prospector17' },
   { teamKey: 'pro 15', channelName: 'pro-15', discordRoleName: 'Prospector 15', templateKey: 'prospector15' },
   { teamKey: 'labor', channelName: 'laborers', discordRoleName: 'Laborer', templateKey: 'laborer' },
 ];
