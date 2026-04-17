@@ -116,6 +116,7 @@ export const generateWarMessage = (speciesWarInfo, roles, warStartDate) => {
 * F20+: ${roles.vanguard20} :arrow_right: Hold tokens until F20 is located. Full hit F20+ as casualties allow.
 * F21+: ${roles.vanguard21} :arrow_right: Hold tokens until F21 is located. Full hit F21+ as casualties allow.
 * F22+: ${roles.vanguard22} :arrow_right: Hold tokens until F22 is located. Full hit F22+ as casualties allow.
+* F23+: ${roles.vanguard23} :arrow_right: Hold tokens until F23 is located. Full hit F23+ as casualties allow.
 
 📌 Spreadsheet for tracking (updated every Friday):
 🔗 [Team Front-End Spreadsheet](https://docs.google.com/spreadsheets/d/1JQ3Atkgv1APC6kXawTIR2HjeWVCvBYepQqtZnygWSUU/edit?gid=903491486#gid=903491486) (Pinned in this channel!)`;

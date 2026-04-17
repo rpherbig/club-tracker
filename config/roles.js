@@ -8,6 +8,7 @@
 
 /** Team role definitions: sheet team key → channel, Discord role name, and template key for war message */
 export const TEAM_ROLES = [
+  { teamKey: 'van 23', channelName: 'van-23', discordRoleName: 'Vanguard 23', templateKey: 'vanguard23' },
   { teamKey: 'van 22', channelName: 'van-22', discordRoleName: 'Vanguard 22', templateKey: 'vanguard22' },
   { teamKey: 'van 21', channelName: 'van-21', discordRoleName: 'Vanguard 21', templateKey: 'vanguard21' },
   { teamKey: 'van 20', channelName: 'van-20', discordRoleName: 'Vanguard 20', templateKey: 'vanguard20' },

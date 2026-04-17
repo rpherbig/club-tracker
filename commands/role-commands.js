@@ -1,6 +1,6 @@
 import { google } from 'googleapis';
 import dotenv from 'dotenv';
-import { findChannel, findRole, findMemberByName, sendChannelMessage, sendEphemeralReply, validateCommandChannel, getRandomMessage } from '../utils/discord-helpers.js';
+import { findChannel, findRole, sendChannelMessage, sendEphemeralReply, validateCommandChannel, getRandomMessage } from '../utils/discord-helpers.js';
 import { getRoleChannelMapping, getTeamRoleMapping, getAllTeamRoleNames } from '../config/roles.js';
 
 dotenv.config();
