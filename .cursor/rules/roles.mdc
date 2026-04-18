@@ -1,6 +1,6 @@
 ---
 description: When changing Discord roles, consult and update the roles reference
-globs: config/roles.js,commands/role-commands.js,commands/war-commands.js,commands/war-draft-commands.js,commands/reminder-commands.js,war-message-templates.js,events/role-events.js
+globs: config/roles.js,commands/role-commands.js,commands/war-commands.js,commands/war-orders-commands.js,commands/reminder-commands.js,war-message-templates.js,events/role-events.js
 alwaysApply: false
 ---
 

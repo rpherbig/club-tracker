@@ -82,7 +82,7 @@ Chronicle Bidding: React upon placement.
 ⚠️ LAST DAY to use ALL war resources!! ⚠️
 🎲 Good luck with your red dice! 🍀`;
 
-// WAR MESSAGE GENERATOR - Returns general war info and species-specific content separately for flexible sending (e.g. two code blocks)
+// WAR MESSAGE GENERATOR - Returns general war info and species-specific content separately (sent as two messages in #war-orders)
 export const generateWarMessage = (speciesWarInfo, roles, warStartDate) => {
   const info = speciesWarInfo.toLowerCase();
 

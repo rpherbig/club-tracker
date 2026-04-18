@@ -1,6 +1,6 @@
 import { google } from 'googleapis';
 import dotenv from 'dotenv';
-import { findChannel, findRole, sendEphemeralReply, validateCommandChannel, sendChannelMessage, sendChannelMessageAsCodeBlock } from '../utils/discord-helpers.js';
+import { findChannel, findRole, sendEphemeralReply, validateCommandChannel, sendChannelMessage } from '../utils/discord-helpers.js';
 import { generateWarMessage } from '../war-message-templates.js';
 import { TEAM_ROLES } from '../config/roles.js';
 
@@ -56,16 +56,15 @@ async function getSpeciesWarInfo() {
 
 
 /**
- * Posts the war draft message to the war-drafts channel
+ * Posts the weekly war orders message to #war-orders
  * @param {Guild} guild - The Discord guild to post in
  */
-export async function sendWarDraftMessage(guild) {
-  console.log(`[Cron Job] Processing war draft message for guild: ${guild.name} (${guild.id})`);
+export async function sendWarOrdersMessage(guild) {
+  console.log(`[Cron Job] Processing war orders message for guild: ${guild.name} (${guild.id})`);
   
-  // Find the war-drafts channel
-  const channel = findChannel(guild, 'war-drafts');
+  const channel = findChannel(guild, 'war-orders');
   if (!channel) {
-    console.log(`[Cron Job] Could not find #war-drafts channel in guild ${guild.name}. Skipping.`);
+    console.log(`[Cron Job] Could not find #war-orders channel in guild ${guild.name}. Skipping.`);
     return;
   }
 
@@ -77,7 +76,6 @@ export async function sendWarDraftMessage(guild) {
 
   console.log(`[Cron Job] Fetching species war info from Google Sheets...`);
   
-  // Get species war info from Google Sheet
   const speciesWarInfo = await getSpeciesWarInfo();
   if (!speciesWarInfo) {
     console.log(`[Cron Job] Could not retrieve species war info for guild ${guild.name}. Skipping.`);
@@ -86,7 +84,6 @@ export async function sendWarDraftMessage(guild) {
 
   console.log(`[Cron Job] Retrieved species war info: ${speciesWarInfo}`);
 
-  // Calculate the Friday war start date (next Friday after today)
   const today = new Date();
   const daysUntilFriday = (5 - today.getDay() + 7) % 7; // 5 = Friday
   const warStartDate = new Date(today);
@@ -100,38 +97,34 @@ export async function sendWarDraftMessage(guild) {
     return;
   }
 
-  console.log(`[Cron Job] Sending war draft message (copy-paste friendly)...`);
+  console.log(`[Cron Job] Sending war orders message...`);
 
-  await sendChannelMessage(channel, '📋 *Copy the block(s) below and paste in the other channel. Remove the ```md and ``` lines after pasting if they were included.*');
-  const first = await sendChannelMessageAsCodeBlock(channel, generalInfo);
-  const second = await sendChannelMessageAsCodeBlock(channel, speciesContent);
+  const first = await sendChannelMessage(channel, generalInfo);
+  const second = await sendChannelMessage(channel, speciesContent);
 
   if (first && second) {
-    console.log(`[Cron Job] Successfully sent war draft message to #war-drafts in guild ${guild.name}.`);
+    console.log(`[Cron Job] Successfully sent war orders message to #war-orders in guild ${guild.name}.`);
   } else {
-    console.error(`[Cron Job] Failed to send war draft message for guild ${guild.name}`);
+    console.error(`[Cron Job] Failed to send war orders message for guild ${guild.name}`);
   }
 }
 
 /**
- * Manual trigger for the war draft message
+ * Manual trigger for the war orders message
  * @param {CommandInteraction} interaction - The Discord interaction
  */
-export async function handleTriggerWarDraft(interaction) {
+export async function handleTriggerWarOrders(interaction) {
   try {
-    // Check if the command is used in the allowed channel
     if (!await validateCommandChannel(interaction, '🤖┃bot-commands')) {
       return;
     }
 
-    await sendWarDraftMessage(interaction.guild);
+    await sendWarOrdersMessage(interaction.guild);
     
-    // Send success response
-    await sendEphemeralReply(interaction, 'War draft message sent successfully!');
+    await sendEphemeralReply(interaction, 'War orders message sent successfully!');
 
   } catch (error) {
-    console.error(`[Manual Trigger] Failed to handle war draft trigger for guild ${interaction.guild.name}:`, error);
-    // Send error response using the wrapper
-    await sendEphemeralReply(interaction, 'Failed to send war draft message. Check the logs for details.');
+    console.error(`[Manual Trigger] Failed to handle war orders trigger for guild ${interaction.guild.name}:`, error);
+    await sendEphemeralReply(interaction, 'Failed to send war orders message. Check the logs for details.');
   }
 }

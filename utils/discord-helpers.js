@@ -304,7 +304,7 @@ export async function sendChannelMessage(channel, content) {
 const CODE_BLOCK_OVERHEAD = '```x\n'.length + '\n```'.length;
 
 /**
- * Sends content as one or more markdown code blocks so copy/paste preserves Discord formatting.
+ * Sends content as one or more markdown code blocks (literal display; splits to stay under the limit).
  * Splits content when needed so each block stays under the Discord message limit.
  * Delegates to sendChannelMessage for each block so permission checks and error handling are shared.
  * @param {TextChannel} channel - The channel to send to

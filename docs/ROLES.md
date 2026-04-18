@@ -21,7 +21,7 @@ When you **add, rename, or remove** a team role:
 
 1. **Edit `config/roles.js`** – update the `TEAM_ROLES` array. That alone updates:
    - `commands/role-commands.js` (role sync + announcements)
-   - `commands/war-draft-commands.js` (draft message role mentions)
+   - `commands/war-orders-commands.js` (war orders message role mentions)
 2. **Edit `war-message-templates.js`** – add or remove the strategy line for the tier (e.g. `* F23+: ${roles.vanguard23} ...`). The `roles` object keys must match `templateKey` in config.
 3. **Edit `commands/war-commands.js`** – if the new tier affects which roles are pinged for a floor, update the `switch(floor)` `roleSpecs` (use `templateKey` for team roles, or literal `'Prospector'` / `'ShellShock'` for category/ShellShock).
 

@@ -5,7 +5,7 @@ import { handleFind, handleKill, handleMantis } from './commands/war-commands.js
 import { handleSetResource, handleShowResource, handleOverdueResource, handleTotalResource, handleRemovePlayer } from './commands/resource-commands.js';
 import { handlePostForgetfulMessage, handleTriggerDailyCheckin, sendDailyReminder, sendPromotionReminder, handleTriggerPromotionReminder, sendManhuntReminder, handleTriggerManhuntReminder, shouldSendManhuntReminder } from './commands/reminder-commands.js';
 import { handleShowRoleChanges, handleSyncRoles, handleAnnounceRoles } from './commands/role-commands.js';
-import { sendWarDraftMessage, handleTriggerWarDraft } from './commands/war-draft-commands.js';
+import { sendWarOrdersMessage, handleTriggerWarOrders } from './commands/war-orders-commands.js';
 import { sendEphemeralReply, logCommandUsage, findChannel, sendChannelMessage } from './utils/discord-helpers.js';
 import { handleForgetfulReaction } from './events/role-events.js';
 import dotenv from 'dotenv';
@@ -113,20 +113,20 @@ client.once('ready', async () => {
     console.error('Invalid cron pattern for weekly role check.');
   }
 
-  // Schedule the war draft message for Friday at 6pm
+  // Schedule the war orders message for Friday at 6pm
   if (cron.validate('0 18 * * 5')) {
     cron.schedule('0 18 * * 5', async () => {
       client.guilds.cache.forEach(async (guild) => {
-        console.log(`[Cron Job] Processing war draft message for guild: ${guild.name}`);
-        await sendWarDraftMessage(guild);
+        console.log(`[Cron Job] Processing war orders message for guild: ${guild.name}`);
+        await sendWarOrdersMessage(guild);
       });
     }, {
       scheduled: true,
       timezone: "America/New_York"
     });
-    console.log('Scheduled war draft message for Friday 6:00 PM America/New_York.');
+    console.log('Scheduled war orders message for Friday 6:00 PM America/New_York.');
   } else {
-    console.error('Invalid cron pattern for war draft message.');
+    console.error('Invalid cron pattern for war orders message.');
   }
 
   // Schedule the promotion reminder for Thursday at noon
@@ -251,8 +251,8 @@ client.on('interactionCreate', async interaction => {
       await handleSyncRoles(interaction);
       break;
 
-    case 'trigger-war-draft':
-      await handleTriggerWarDraft(interaction);
+    case 'trigger-war-orders':
+      await handleTriggerWarOrders(interaction);
       break;
 
     case 'trigger-announce-roles':

@@ -201,8 +201,8 @@ const commands = [
     description: 'Manually announce team roles in their channels.'
   },
   {
-    name: 'trigger-war-draft',
-    description: 'Manually trigger the war draft message',
+    name: 'trigger-war-orders',
+    description: 'Manually post the weekly war orders message',
   }
 ];
 
