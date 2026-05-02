@@ -6,12 +6,13 @@ const DAILY_CHECKIN_CHANNEL_NAME = 'daily-discord-checkin';
 const FORGETFUL_ROLE_NAME = 'Forgetful';
 const MESSAGE_LINK = 'https://discord.com/channels/1036712913727143998/1364121623283896360/1364129089572700190';
 
-// Manhunt cadence: event ends every 28 days, send reminder 1 day before end (Thursday).
+// Manhunt cadence: event ends every 28 days on Thursday (ET), send reminder Wednesday (1 day before).
+// Anchor must be a Thursday; Jan 9 2026 is Friday and shifted the whole cycle to the wrong weekday.
 const MANHUNT_CYCLE_DAYS = 28;
 const MANHUNT_REMINDER_LEAD_DAYS = 1;
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 const MANHUNT_CYCLE_MS = MANHUNT_CYCLE_DAYS * MS_PER_DAY;
-const MANHUNT_FIRST_END_DATE = new Date('2026-01-09T12:00:00-05:00');
+const MANHUNT_FIRST_END_DATE = new Date('2026-01-08T12:00:00-05:00');
 
 /**
  * Calculate the next Manhunt end date based on a known anchor date.
@@ -19,10 +20,10 @@ const MANHUNT_FIRST_END_DATE = new Date('2026-01-09T12:00:00-05:00');
  * The event repeats on a fixed 28-day cycle. Given any point in time,
  * we figure out which cycle we're currently in and return when it ends.
  * 
- * Example timeline (with anchor Jan 9):
- *   Jan 1  -> next end is Jan 9  (cycle 0, haven't reached first end yet)
- *   Jan 10 -> next end is Feb 8  (cycle 0 completed, now in cycle 1)
- *   Feb 9  -> next end is Mar 10 (cycle 1 completed, now in cycle 2)
+ * Example timeline (with anchor Thursday Jan 8):
+ *   Jan 1  -> next end is Jan 8  (cycle 0, haven't reached first end yet)
+ *   Jan 10 -> next end is Feb 5  (cycle 0 completed, now in cycle 1)
+ *   Feb 10 -> next end is Mar 5 (cycle 1 completed, now in cycle 2)
  */
 function getNextManhuntEndDate(now = new Date()) {
     // Before the first known end date, just return that date
@@ -33,17 +34,26 @@ function getNextManhuntEndDate(now = new Date()) {
     // How much time has passed since the anchor end date?
     const elapsedMs = now.getTime() - MANHUNT_FIRST_END_DATE.getTime();
 
-    // How many full 30-day cycles have completed?
+    // How many full 28-day cycles have completed?
     const cyclesCompleted = Math.floor(elapsedMs / MANHUNT_CYCLE_MS);
 
     // The next end is one cycle after the last completed one
     return new Date(MANHUNT_FIRST_END_DATE.getTime() + (cyclesCompleted + 1) * MANHUNT_CYCLE_MS);
 }
 
+/** Whole calendar days from `now` to `end` in America/New_York (ignores clock time; avoids DST breaking ms/864e5). */
+function calendarDaysUntilEt(endDate, now = new Date()) {
+    const ymdEt = (d) => d.toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
+    const parseYmdUtc = (ymd) => {
+        const [y, m, day] = ymd.split('-').map(Number);
+        return Date.UTC(y, m - 1, day);
+    };
+    return Math.round((parseYmdUtc(ymdEt(endDate)) - parseYmdUtc(ymdEt(now))) / MS_PER_DAY);
+}
+
 export function shouldSendManhuntReminder(now = new Date()) {
     const nextEndDate = getNextManhuntEndDate(now);
-    const daysUntilEnd = Math.ceil((nextEndDate.getTime() - now.getTime()) / MS_PER_DAY);
-    return daysUntilEnd === MANHUNT_REMINDER_LEAD_DAYS;
+    return calendarDaysUntilEt(nextEndDate, now) === MANHUNT_REMINDER_LEAD_DAYS;
 }
 
 export async function sendDailyReminder(guild) {

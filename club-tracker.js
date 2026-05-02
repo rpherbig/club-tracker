@@ -145,7 +145,7 @@ client.once('ready', async () => {
     console.error('Invalid cron pattern for promotion reminder.');
   }
 
-  // Schedule the manhunt reminder check daily at noon ET; sends only when 2 days before the next end date.
+  // Schedule the manhunt reminder check daily at noon ET; sends only when 1 day before the next end date.
   if (cron.validate('0 12 * * *')) {
     cron.schedule('0 12 * * *', async () => {
       if (!shouldSendManhuntReminder()) return;
