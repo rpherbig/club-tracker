@@ -90,7 +90,10 @@ async function handleKill(interaction) {
       return findRole(guild, name);
     };
 
-    // Floor → template keys (from config) or literal Discord role names for category/ShellShock
+    // Floor → template keys (from config) or literal Discord role names for category/ShellShock.
+    // Prefer explicit tiers (laborer / Prospector / vanguard19..N) per floor. Do not use ShellShock
+    // for a floor that still maps to a dedicated vanguard band: ShellShock includes higher tiers
+    // (e.g. van-23 on F22) and future tiers added to that role would be pinged too early.
     let roleSpecs;
     if (floor <= 17) {
       roleSpecs = ['laborer', 'prospector15'];
@@ -102,6 +105,8 @@ async function handleKill(interaction) {
       roleSpecs = ['laborer', 'Prospector', 'vanguard19', 'vanguard20'];
     } else if (floor === 21) {
       roleSpecs = ['laborer', 'Prospector', 'vanguard19', 'vanguard20', 'vanguard21'];
+    } else if (floor === 22) {
+      roleSpecs = ['laborer', 'Prospector', 'vanguard19', 'vanguard20', 'vanguard21', 'vanguard22'];
     } else {
       roleSpecs = ['ShellShock'];
     }
