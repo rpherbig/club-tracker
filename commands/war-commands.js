@@ -1,5 +1,5 @@
 import { findChannel, findRole, validateCommandChannel, sendEphemeralReply, getRandomMessage, sendChannelMessage } from '../utils/discord-helpers.js';
-import { getDiscordRoleNameByTemplateKey } from '../config/roles.js';
+import { getDiscordRoleNameByTemplateKey, getKillPingRoleSpecs } from '../config/roles.js';
 
 // Command history storage - key: "commandType:floor", value: timestamp
 const commandHistory = new Map();
@@ -90,26 +90,8 @@ async function handleKill(interaction) {
       return findRole(guild, name);
     };
 
-    // Floor → template keys (from config) or literal Discord role names for category/ShellShock.
-    // Prefer explicit tiers (laborer / Prospector / vanguard19..N) per floor. Do not use ShellShock
-    // for a floor that still maps to a dedicated vanguard band: ShellShock includes higher tiers
-    // (e.g. van-23 on F22) and future tiers added to that role would be pinged too early.
-    let roleSpecs;
-    if (floor <= 17) {
-      roleSpecs = ['laborer', 'prospector15'];
-    } else if (floor === 18) {
-      roleSpecs = ['prospector18', 'prospector15', 'laborer'];
-    } else if (floor === 19) {
-      roleSpecs = ['laborer', 'Prospector', 'vanguard19'];
-    } else if (floor === 20) {
-      roleSpecs = ['laborer', 'Prospector', 'vanguard19', 'vanguard20'];
-    } else if (floor === 21) {
-      roleSpecs = ['laborer', 'Prospector', 'vanguard19', 'vanguard20', 'vanguard21'];
-    } else if (floor === 22) {
-      roleSpecs = ['laborer', 'Prospector', 'vanguard19', 'vanguard20', 'vanguard21', 'vanguard22'];
-    } else {
-      roleSpecs = ['ShellShock'];
-    }
+    // Role list from config; see `getKillPingRoleSpecs` in `config/roles.js`.
+    const roleSpecs = getKillPingRoleSpecs(floor);
 
     const roles = roleSpecs.map(resolveRole);
 

@@ -9,7 +9,7 @@ alwaysApply: false
 When **adding, renaming, or removing** any Discord role:
 
 1. **Read `docs/ROLES.md` first.** It describes the single source of truth and touchpoints.
-2. **Team roles:** Edit `config/roles.js` (TEAM_ROLES). Then update `war-message-templates.js` (strategy lines) and `commands/war-commands.js` (floor → roleSpecs) only if the tier affects those behaviors.
+2. **Team roles:** Edit `config/roles.js` (`TEAM_ROLES`, `killPingMinFloor` for `/kill`). Then update `war-message-templates.js` (strategy lines) and `commands/war-commands.js` only if `/kill` behavior outside `getKillPingRoleSpecs` must change.
 3. **Other roles (Forgetful, ShellShock):** Update the files listed in `docs/ROLES.md` for that role.
 4. **Update `docs/ROLES.md`** if you add a new kind of role or change structure.
 
