@@ -17,23 +17,145 @@ function getLastUpdated(playerData, dateKey) {
   return toRelativeDate(lastUpdated);
 }
 
+function stripMentionPrefix(name) {
+  return name.replace(/^@+/, '').trim();
+}
+
+function parseDiscordUserId(key) {
+  if (/^\d{17,19}$/.test(key)) {
+    return key;
+  }
+  const mentionMatch = key.match(/^<@!?(\d{17,19})>$/);
+  return mentionMatch ? mentionMatch[1] : null;
+}
+
+function normalizeNameForMatch(name) {
+  return stripMentionPrefix(name).toLowerCase();
+}
+
+function findMemberInGuild(guild, name) {
+  const target = normalizeNameForMatch(name);
+  return guild.members.cache.find(m =>
+    normalizeNameForMatch(m.displayName) === target ||
+    m.user.username.toLowerCase() === target
+  ) ?? null;
+}
+
+/**
+ * Resolves any data key (user ID, legacy nickname, etc.) to a canonical storage key.
+ */
+function resolveCanonicalUserId(userId, playerData, guild) {
+  if (playerData?.get('external')) {
+    return userId.toLowerCase();
+  }
+  const parsedId = parseDiscordUserId(userId);
+  if (parsedId) {
+    return parsedId;
+  }
+  if (!guild) {
+    return userId;
+  }
+  const member = findMemberInGuild(guild, userId)
+    ?? findMemberByName(guild, stripMentionPrefix(userId));
+  return member ? member.user.id : userId;
+}
+
+function mergePlayerDataRecords(primary, secondary) {
+  const merged = new Map(primary);
+  for (const resourceKey of ['essence', 'gold']) {
+    const dateKey = `${resourceKey}-date`;
+    const primaryDate = merged.get(dateKey);
+    const secondaryDate = secondary.get(dateKey);
+    if (!secondaryDate) {
+      continue;
+    }
+    if (!primaryDate || moment(secondaryDate).isAfter(primaryDate)) {
+      merged.set(resourceKey, secondary.get(resourceKey));
+      merged.set(dateKey, secondaryDate);
+    }
+  }
+  if (secondary.get('external')) {
+    merged.set('external', true);
+  }
+  return merged;
+}
+
+function getMergedPlayerData(guildData, canonicalId, guild) {
+  let merged = guildData.get(canonicalId) || new Map();
+  for (const [key, pData] of guildData.entries()) {
+    if (key === canonicalId) {
+      continue;
+    }
+    if (resolveCanonicalUserId(key, pData, guild) === canonicalId) {
+      merged = mergePlayerDataRecords(merged, pData);
+    }
+  }
+  return merged;
+}
+
+function collectUniquePlayers(guildData, guild) {
+  const byCanonical = new Map();
+  for (const [userId, pData] of guildData.entries()) {
+    const canonicalId = resolveCanonicalUserId(userId, pData, guild);
+    const existing = byCanonical.get(canonicalId);
+    byCanonical.set(
+      canonicalId,
+      existing ? mergePlayerDataRecords(existing, pData) : new Map(pData)
+    );
+  }
+  return byCanonical;
+}
+
+function dedupeGuildData(guildData, guild) {
+  const unique = collectUniquePlayers(guildData, guild);
+  guildData.clear();
+  for (const [canonicalId, pData] of unique.entries()) {
+    guildData.set(canonicalId, pData);
+  }
+  return guildData;
+}
+
+function consolidatePlayerAliases(guildData, canonicalId, guild) {
+  let merged = guildData.get(canonicalId) || new Map();
+  for (const [key, pData] of [...guildData.entries()]) {
+    if (key === canonicalId) {
+      continue;
+    }
+    if (resolveCanonicalUserId(key, pData, guild) === canonicalId) {
+      merged = mergePlayerDataRecords(merged, pData);
+      guildData.delete(key);
+    }
+  }
+  guildData.set(canonicalId, merged);
+  return merged;
+}
+
 /**
  * Converts a display name to a user ID for data storage
  * For Discord users: returns their actual User ID
  * For external users: returns the display name (which is their ID in the data)
  */
 function displayNameToUserId(displayName, guild, guildData) {
+  const parsedId = parseDiscordUserId(displayName);
+  if (parsedId) {
+    return parsedId;
+  }
+
+  const normalized = stripMentionPrefix(displayName);
+  const lower = normalized.toLowerCase();
+
   // Check if this is an external user by looking in the data
   // For external users, their "user ID" is just their display name
-  const userData = guildData.get(displayName.toLowerCase());
+  const userData = guildData.get(lower);
   if (userData && userData.get('external')) {
-    return displayName.toLowerCase();
+    return lower;
   }
   
   // For Discord users, try to find them in the guild
   // This handles both display names and usernames
   if (guild) {
-    const foundMember = findMemberByName(guild, displayName);
+    const foundMember = findMemberInGuild(guild, normalized)
+      ?? findMemberByName(guild, normalized);
     if (foundMember) {
       return foundMember.user.id;
     }
@@ -53,11 +175,14 @@ function userIdToDisplayName(userId, playerData, guild) {
   if (playerData.get('external')) {
     // For external users, use the userId as display name (it's already the name like 'grantg')
     return userId;
-  } else {
-    // For Discord users, try to get display name from guild
-    const member = guild.members.cache.get(userId);
+  }
+  const lookupId = parseDiscordUserId(userId);
+  if (lookupId) {
+    const member = guild.members.cache.get(lookupId);
     return member ? member.displayName : userId;
   }
+  const member = findMemberInGuild(guild, userId);
+  return member ? member.displayName : userId;
 }
 
 export async function handleSetResource(interaction, guildData) {
@@ -75,7 +200,7 @@ export async function handleSetResource(interaction, guildData) {
     displayName = interaction.member.displayName;
   }
 
-  const playerData = guildData.get(userId) || new Map();
+  const playerData = consolidatePlayerAliases(guildData, userId, interaction.guild);
   playerData.set(key, amount);
   playerData.set(dateKey, moment());
   guildData.set(userId, playerData);
@@ -90,13 +215,14 @@ export async function handleShowResource(interaction, guildData) {
   const displayName = interaction.member.displayName;
   const userId = interaction.member.user.id;
   
-  const targetPlayerData = guildData.get(userId) || new Map();
+  const targetPlayerData = getMergedPlayerData(guildData, userId, interaction.guild);
   const val = targetPlayerData.get(key) || 0;
   const lastUpdated = getLastUpdated(targetPlayerData, dateKey);
   await sendEphemeralReply(interaction, `${displayName} has ${val} ${key} (last updated ${lastUpdated})`);
 }
 
 export async function handleOverdueResource(interaction, guildData) {
+  guildData = dedupeGuildData(guildData, interaction.guild);
   const key = interaction.commandName.includes("essence") || interaction.commandName === "se" ? 'essence' : 'gold';
   const dateKey = `${key}-date`;
   const days = key === "essence" ? ESSENCE_OVERDUE_DAYS : GOLD_OVERDUE_DAYS;
@@ -124,9 +250,11 @@ export async function handleOverdueResource(interaction, guildData) {
   } else {
     await sendEphemeralReply(interaction, "Failed to post overdue resource information. I may not have permission to send messages in this channel.");
   }
+  return guildData;
 }
 
 export async function handleTotalResource(interaction, guildData) {
+  guildData = dedupeGuildData(guildData, interaction.guild);
   const key = interaction.commandName.includes("essence") || interaction.commandName === "se" ? 'essence' : 'gold';
   const dateKey = `${key}-date`;
   
@@ -152,6 +280,7 @@ export async function handleTotalResource(interaction, guildData) {
   } else {
     await sendEphemeralReply(interaction, "Failed to post resource information. I may not have permission to send messages in this channel.");
   }
+  return guildData;
 }
 
 export async function handleRemovePlayer(interaction, guildData) {
@@ -161,14 +290,21 @@ export async function handleRemovePlayer(interaction, guildData) {
 
   const displayName = interaction.options.getString('player');
   const userId = displayNameToUserId(displayName, interaction.guild, guildData);
-  
-  if (!guildData.has(userId)) {
+  const canonicalId = resolveCanonicalUserId(userId, guildData.get(userId), interaction.guild);
+
+  const hasPlayer = [...guildData.entries()].some(
+    ([key, pData]) => resolveCanonicalUserId(key, pData, interaction.guild) === canonicalId
+  );
+  if (!hasPlayer) {
     await sendEphemeralReply(interaction, `❌ Player '${displayName}' not found in the data.`);
     return guildData;
   }
 
-  // Remove the player from the data
-  guildData.delete(userId);
+  for (const [key, pData] of [...guildData.entries()]) {
+    if (resolveCanonicalUserId(key, pData, interaction.guild) === canonicalId) {
+      guildData.delete(key);
+    }
+  }
   await sendEphemeralReply(interaction, `✅ Successfully removed player '${displayName}' from the data.`);
   return guildData;
 } 

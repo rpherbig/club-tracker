@@ -204,12 +204,16 @@ client.on('interactionCreate', async interaction => {
 
     case 'overdue-essence':
     case 'overdue-gold':
-      await handleOverdueResource(interaction, guildData);
+      guildData = await handleOverdueResource(interaction, guildData);
+      data.set(guildId, guildData);
+      await saveData(data, DATA_FILE);
       break;
 
     case 'total-essence':
     case 'total-gold':
-      await handleTotalResource(interaction, guildData);
+      guildData = await handleTotalResource(interaction, guildData);
+      data.set(guildId, guildData);
+      await saveData(data, DATA_FILE);
       break;
 
     case 'remove-player':
