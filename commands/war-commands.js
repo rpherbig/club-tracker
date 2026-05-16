@@ -1,5 +1,6 @@
-import { findChannel, findRole, validateCommandChannel, sendEphemeralReply, getRandomMessage, sendChannelMessage } from '../utils/discord-helpers.js';
+import { findChannel, findRole, validateCommandChannel, sendEphemeralReply, getRandomMessage, sendChannelMessage, formatChannelTag } from '../utils/discord-helpers.js';
 import { getDiscordRoleNameByTemplateKey, getKillPingRoleSpecs } from '../config/roles.js';
+import { WAR_COMMANDS_CHANNEL_NAME, WAR_ORDERS_CHANNEL_NAME } from '../config/channels.js';
 
 // Command history storage - key: "commandType:floor", value: timestamp
 const commandHistory = new Map();
@@ -19,69 +20,74 @@ function isDuplicateCommand(commandType, floor) {
     return false;
 }
 
-// Helper function to get the war-orders channel
 async function getWarOrdersChannel(interaction) {
-    const channel = findChannel(interaction.guild, 'war-orders');
+    const channel = findChannel(interaction.guild, WAR_ORDERS_CHANNEL_NAME);
     if (!channel) {
-        await sendEphemeralReply(interaction, 'Could not find #war-orders! Please check the channel name and bot permissions.');
+        await sendEphemeralReply(
+            interaction,
+            `Could not find ${formatChannelTag(WAR_ORDERS_CHANNEL_NAME)}! Please check the channel name and bot permissions.`
+        );
         return null;
     }
     return channel;
 }
 
+async function replyWarOrdersSendResult(interaction, commandLabel, channel, floor = null) {
+    const tag = formatChannelTag(channel);
+    const floorSuffix = floor != null ? ` for floor ${floor}` : '';
+    const sentMessage = await sendChannelMessage(channel, commandLabel.message);
+    if (sentMessage) {
+        await sendEphemeralReply(interaction, `Sent the '${commandLabel.name}' message in ${tag}${floorSuffix}!`);
+    } else {
+        await sendEphemeralReply(
+            interaction,
+            `Failed to send the '${commandLabel.name}' message. I may not have permission to send messages in ${tag}.`
+        );
+    }
+}
+
 // 'Find' command implementation
 async function handleFind(interaction) {
-    // Check if the command is being used in #species-war
-    if (!await validateCommandChannel(interaction, 'species-war')) {
+    if (!await validateCommandChannel(interaction, WAR_COMMANDS_CHANNEL_NAME)) {
         return;
     }
 
     const floor = interaction.options.getInteger('floor');
     const additionalMessage = interaction.options.getString('message') || '';
     
-    // Check for duplicate command
     if (isDuplicateCommand('find', floor)) {
         await sendEphemeralReply(interaction, `A /find command for floor ${floor} was recently executed. Please wait before trying again.`);
         return;
     }
     
     const channel = await getWarOrdersChannel(interaction);
-    
     if (!channel) return;
 
-    // Find the ShellShock role
     const shellShockRole = findRole(interaction.guild, 'shellshock');
     if (!shellShockRole) {
         await sendEphemeralReply(interaction, 'Could not find the ShellShock role!');
+        return;
     }
 
     const message = getRandomMessage(shellShockRole, `It's time to find F${floor}! ${additionalMessage}`);
-    const sentMessage = await sendChannelMessage(channel, message);
-    if (sentMessage) {
-        await sendEphemeralReply(interaction, `Sent the 'find' message in #species-war to find floor ${floor}!`);
-    } else {
-        await sendEphemeralReply(interaction, `Failed to send the 'find' message. I may not have permission to send messages in #species-war.`);
-    }
+    await replyWarOrdersSendResult(interaction, { name: 'find', message }, channel, floor);
 }
 
 // 'Kill' command implementation
 async function handleKill(interaction) {
-    // Check if the command is being used in #species-war
-    if (!await validateCommandChannel(interaction, 'species-war')) {
+    if (!await validateCommandChannel(interaction, WAR_COMMANDS_CHANNEL_NAME)) {
         return;
     }
 
     const floor = interaction.options.getInteger('floor');
     const additionalMessage = interaction.options.getString('message') || '';
     
-    // Check for duplicate command
     if (isDuplicateCommand('kill', floor)) {
         await sendEphemeralReply(interaction, `A /kill command for floor ${floor} was recently executed. Please wait before trying again.`);
         return;
     }
     
     const channel = await getWarOrdersChannel(interaction);
-    
     if (!channel) return;
 
     const guild = interaction.guild;
@@ -90,27 +96,18 @@ async function handleKill(interaction) {
       return findRole(guild, name);
     };
 
-    // Role list from config; see `getKillPingRoleSpecs` in `config/roles.js`.
     const roleSpecs = getKillPingRoleSpecs(floor);
-
     const roles = roleSpecs.map(resolveRole);
 
-    // Check if all required roles exist
     const missingRoles = roles.filter(role => !role);
     if (missingRoles.length > 0) {
         await sendEphemeralReply(interaction, 'One or more required roles are missing! Please check that all roles exist.');
+        return;
     }
 
-    // Format the message with the roles
-    const roleMentions = roles.map(role => `<@&${role?.id}>`).join(' ');
+    const roleMentions = roles.map(role => `<@&${role.id}>`).join(' ');
     const message = getRandomMessage(roleMentions, `Go kill the boss of F${floor}! ${additionalMessage}`);
-
-    const sentMessage = await sendChannelMessage(channel, message);
-    if (sentMessage) {
-        await sendEphemeralReply(interaction, `Sent the 'kill' message in #species-war to kill floor ${floor}!`);
-    } else {
-        await sendEphemeralReply(interaction, `Failed to send the 'kill' message. I may not have permission to send messages in #species-war.`);
-    }
+    await replyWarOrdersSendResult(interaction, { name: 'kill', message }, channel, floor);
 }
 
 // Post-shadow order: value at index 0→2, 1→0, 2→1 (rotate: out = [in[1], in[2], in[0]]).
@@ -132,7 +129,7 @@ function mantisCounterSequence(order) {
 }
 
 async function handleMantis(interaction) {
-    if (!await validateCommandChannel(interaction, 'species-war')) {
+    if (!await validateCommandChannel(interaction, WAR_COMMANDS_CHANNEL_NAME)) {
         return;
     }
 
@@ -149,10 +146,11 @@ async function handleMantis(interaction) {
     const counter = mantisCounterSequence(order);
     const message = `The post-shadow move order is: ***${counter}***`;
     const sentMessage = await sendChannelMessage(channel, message);
+    const tag = formatChannelTag(channel);
     if (sentMessage) {
-        await sendEphemeralReply(interaction, `Sent the Mantis counter to #war-orders!`);
+        await sendEphemeralReply(interaction, `Sent the Mantis counter to ${tag}!`);
     } else {
-        await sendEphemeralReply(interaction, `Failed to send the Mantis counter. I may not have permission to send messages in #war-orders.`);
+        await sendEphemeralReply(interaction, `Failed to send the Mantis counter. I may not have permission to send messages in ${tag}.`);
     }
 }
 

@@ -1,7 +1,8 @@
 import { google } from 'googleapis';
 import dotenv from 'dotenv';
-import { findChannel, findRole, sendChannelMessage, sendEphemeralReply, validateCommandChannel, getRandomMessage } from '../utils/discord-helpers.js';
+import { findChannel, findRole, sendChannelMessage, sendEphemeralReply, validateCommandChannel, getRandomMessage, formatChannelTag } from '../utils/discord-helpers.js';
 import { getRoleChannelMapping, getTeamRoleMapping, getAllTeamRoleNames } from '../config/roles.js';
+import { BOT_COMMANDS_CHANNEL_NAME, WAR_PLANNING_CHANNEL_NAME } from '../config/channels.js';
 
 dotenv.config();
 
@@ -330,7 +331,7 @@ async function sendRoleAnnouncements(guild) {
 
     const channel = findChannel(guild, channelName);
     if (!channel) {
-      console.warn(`⚠️  MISSING CHANNEL: Could not find channel #${channelName} for team ${teamKey} in guild ${guild.name}`);
+      console.warn(`⚠️  MISSING CHANNEL: Could not find channel ${formatChannelTag(channelName)} for team ${teamKey} in guild ${guild.name}`);
       continue;
     }
 
@@ -342,7 +343,7 @@ async function sendRoleAnnouncements(guild) {
 
     const message = await sendChannelMessage(channel, getRandomMessage(role, `You are ${roleName} for this week's species war!`));
     if (!message) {
-      console.error(`❌ FAILED ANNOUNCEMENT: Failed to post announcement in #${channelName} for guild ${guild.name}: Missing permissions or channel access`);
+      console.error(`❌ FAILED ANNOUNCEMENT: Failed to post announcement in ${formatChannelTag(channelName)} for guild ${guild.name}: Missing permissions or channel access`);
     }
 
     announcedRoles.add(roleKey);
@@ -351,9 +352,9 @@ async function sendRoleAnnouncements(guild) {
 
 export async function handleShowRoleChanges(guild) {
   // Find the war-planning channel
-  const warPlanningChannel = findChannel(guild, '🦹┃war-planning');
+  const warPlanningChannel = findChannel(guild, WAR_PLANNING_CHANNEL_NAME);
   if (!warPlanningChannel) {
-    console.error(`Could not find the war-planning channel in guild ${guild.name}`);
+    console.error(`Could not find ${formatChannelTag(WAR_PLANNING_CHANNEL_NAME)} in guild ${guild.name}`);
     return;
   }
   
@@ -368,25 +369,24 @@ export async function handleShowRoleChanges(guild) {
   }
 }
 
-const ALLOWED_COMMAND_CHANNEL_NAME = '🤖┃bot-commands';
-
 export async function handleSyncRoles(interaction) {
   try {
-    // Check if the command is used in the allowed channel
-    if (!await validateCommandChannel(interaction, ALLOWED_COMMAND_CHANNEL_NAME)) {
+    if (!await validateCommandChannel(interaction, BOT_COMMANDS_CHANNEL_NAME)) {
       return;
     }
 
-    // Find the war-planning channel
-    const warPlanningChannel = findChannel(interaction.guild, '🦹┃war-planning');
+    const warPlanningChannel = findChannel(interaction.guild, WAR_PLANNING_CHANNEL_NAME);
     if (!warPlanningChannel) {
-      await sendEphemeralReply(interaction, 'Could not find the war-planning channel. Please ensure it exists and the bot can see it.');
+      await sendEphemeralReply(
+        interaction,
+        `Could not find ${formatChannelTag(WAR_PLANNING_CHANNEL_NAME)}. Please ensure it exists and the bot can see it.`
+      );
       return;
     }
 
     await sendEphemeralReply(interaction, 'Starting role sync...');
     await syncRoles(interaction.guild, warPlanningChannel);
-    await sendEphemeralReply(interaction, 'Role sync complete! Check the war-planning channel for details.');
+    await sendEphemeralReply(interaction, `Role sync complete! Check ${formatChannelTag(warPlanningChannel)} for details.`);
   } catch (error) {
     console.error('Error in handleSyncRoles:', error);
     await sendEphemeralReply(interaction, 'An error occurred while syncing roles. Check the logs for details.');
@@ -396,7 +396,7 @@ export async function handleSyncRoles(interaction) {
 export async function handleAnnounceRoles(interaction) {
   try {
     // Check if the command is used in the allowed channel
-    if (!await validateCommandChannel(interaction, ALLOWED_COMMAND_CHANNEL_NAME)) {
+    if (!await validateCommandChannel(interaction, BOT_COMMANDS_CHANNEL_NAME)) {
       return;
     }
 

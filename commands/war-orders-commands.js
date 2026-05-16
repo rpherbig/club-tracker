@@ -1,8 +1,9 @@
 import { google } from 'googleapis';
 import dotenv from 'dotenv';
-import { findChannel, findRole, sendEphemeralReply, validateCommandChannel, sendChannelMessage } from '../utils/discord-helpers.js';
+import { findChannel, findRole, sendEphemeralReply, validateCommandChannel, sendChannelMessage, formatChannelTag } from '../utils/discord-helpers.js';
 import { generateWarMessage } from '../war-message-templates.js';
 import { TEAM_ROLES } from '../config/roles.js';
+import { BOT_COMMANDS_CHANNEL_NAME, WAR_ORDERS_CHANNEL_NAME } from '../config/channels.js';
 
 dotenv.config();
 
@@ -62,9 +63,9 @@ async function getSpeciesWarInfo() {
 export async function sendWarOrdersMessage(guild) {
   console.log(`[Cron Job] Processing war orders message for guild: ${guild.name} (${guild.id})`);
   
-  const channel = findChannel(guild, 'war-orders');
+  const channel = findChannel(guild, WAR_ORDERS_CHANNEL_NAME);
   if (!channel) {
-    console.log(`[Cron Job] Could not find #war-orders channel in guild ${guild.name}. Skipping.`);
+    console.log(`[Cron Job] Could not find ${formatChannelTag(WAR_ORDERS_CHANNEL_NAME)} channel in guild ${guild.name}. Skipping.`);
     return;
   }
 
@@ -103,7 +104,7 @@ export async function sendWarOrdersMessage(guild) {
   const second = await sendChannelMessage(channel, speciesContent);
 
   if (first && second) {
-    console.log(`[Cron Job] Successfully sent war orders message to #war-orders in guild ${guild.name}.`);
+    console.log(`[Cron Job] Successfully sent war orders message to ${formatChannelTag(channel)} in guild ${guild.name}.`);
   } else {
     console.error(`[Cron Job] Failed to send war orders message for guild ${guild.name}`);
   }
@@ -115,7 +116,7 @@ export async function sendWarOrdersMessage(guild) {
  */
 export async function handleTriggerWarOrders(interaction) {
   try {
-    if (!await validateCommandChannel(interaction, '🤖┃bot-commands')) {
+    if (!await validateCommandChannel(interaction, BOT_COMMANDS_CHANNEL_NAME)) {
       return;
     }
 

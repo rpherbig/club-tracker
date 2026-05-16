@@ -7,10 +7,16 @@ import { handlePostForgetfulMessage, handleTriggerDailyCheckin, sendDailyReminde
 import { handleShowRoleChanges, handleSyncRoles, handleAnnounceRoles } from './commands/role-commands.js';
 import { sendWarOrdersMessage, handleTriggerWarOrders } from './commands/war-orders-commands.js';
 import { sendEphemeralReply, logCommandUsage, findChannel, sendChannelMessage } from './utils/discord-helpers.js';
+import { CLUB_CHAT_CHANNEL_NAME } from './config/channels.js';
 import { handleForgetfulReaction } from './events/role-events.js';
 import dotenv from 'dotenv';
 
 dotenv.config();
+
+if (!process.env.TOKEN?.trim()) {
+  console.error('Missing TOKEN in environment. Copy .env.sample to .env and set your bot token.');
+  process.exit(1);
+}
 
 const DATA_FILE = 'data.json';
 const FORGETFUL_MESSAGES_FILE = 'forgetful_messages.json';
@@ -74,12 +80,12 @@ client.once('ready', async () => {
   forgetfulMessageStore = await loadData(FORGETFUL_MESSAGES_FILE);
 
   // Announce bot restart in #club-chat for each guild
-  client.guilds.cache.forEach(async (guild) => {
-    const channel = findChannel(guild, 'club-chat', 'Skipping startup message.');
+  for (const guild of client.guilds.cache.values()) {
+    const channel = findChannel(guild, CLUB_CHAT_CHANNEL_NAME, 'Skipping startup message.');
     if (channel) {
       await sendChannelMessage(channel, "I'm back, baby!");
     }
-  });
+  }
 
   // Schedule the daily check-in message
   if (cron.validate('0 10 * * *')) {

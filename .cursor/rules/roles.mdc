@@ -1,6 +1,6 @@
 ---
 description: When changing Discord roles, consult and update the roles reference
-globs: config/roles.js,commands/role-commands.js,commands/war-commands.js,commands/war-orders-commands.js,commands/reminder-commands.js,war-message-templates.js,events/role-events.js
+globs: config/roles.js,config/channels.js,commands/role-commands.js,commands/war-commands.js,commands/war-orders-commands.js,commands/reminder-commands.js,commands/resource-commands.js,club-tracker.js,war-message-templates.js,events/role-events.js
 alwaysApply: false
 ---
 
@@ -14,3 +14,5 @@ When **adding, renaming, or removing** any Discord role:
 4. **Update `docs/ROLES.md`** if you add a new kind of role or change structure.
 
 Use the checklists in `docs/ROLES.md` before finishing.
+
+When **renaming Discord channels** (not team tiers): update `config/channels.js`. Team announcement channels stay on `TEAM_ROLES[].channelName` in `config/roles.js`.

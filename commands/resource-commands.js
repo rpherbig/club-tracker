@@ -1,5 +1,6 @@
 import moment from 'moment';
 import { validateCommandChannel, sendEphemeralReply, sendChannelMessage, findMemberByName } from '../utils/discord-helpers.js';
+import { BOT_COMMANDS_CHANNEL_NAME } from '../config/channels.js';
 
 const ESSENCE_OVERDUE_DAYS = 14;
 const GOLD_OVERDUE_DAYS = 42;
@@ -154,10 +155,7 @@ export async function handleTotalResource(interaction, guildData) {
 }
 
 export async function handleRemovePlayer(interaction, guildData) {
-  const ALLOWED_COMMAND_CHANNEL_NAME = '🤖┃bot-commands';
-  
-  // Check if the command is used in the allowed channel
-  if (!await validateCommandChannel(interaction, ALLOWED_COMMAND_CHANNEL_NAME)) {
+  if (!await validateCommandChannel(interaction, BOT_COMMANDS_CHANNEL_NAME)) {
     return guildData;
   }
 

@@ -1,8 +1,9 @@
-import { findChannel, findRole, validateCommandChannel, sendEphemeralReply, getRandomMessage, sendChannelMessage } from '../utils/discord-helpers.js';
-
-const TARGET_CHANNEL_NAME = 'friends-of-ss-chat';
-const ALLOWED_COMMAND_CHANNEL_NAME = '🤖┃bot-commands';
-const DAILY_CHECKIN_CHANNEL_NAME = 'daily-discord-checkin';
+import { findChannel, findRole, validateCommandChannel, sendEphemeralReply, getRandomMessage, sendChannelMessage, formatChannelTag } from '../utils/discord-helpers.js';
+import {
+  BOT_COMMANDS_CHANNEL_NAME,
+  DAILY_CHECKIN_CHANNEL_NAME,
+  FORGETFUL_TARGET_CHANNEL_NAME,
+} from '../config/channels.js';
 const FORGETFUL_ROLE_NAME = 'Forgetful';
 const MESSAGE_LINK = 'https://discord.com/channels/1036712913727143998/1364121623283896360/1364129089572700190';
 
@@ -74,15 +75,15 @@ export async function sendDailyReminder(guild) {
     const messageContent = getRandomMessage(role, `Check the daily post: ${MESSAGE_LINK}`);
     const message = await sendChannelMessage(channel, messageContent);
     if (message) {
-        console.log(`[Cron Job] Successfully sent daily check-in message to #${DAILY_CHECKIN_CHANNEL_NAME} for guild ${guild.name}.`);
+        console.log(`[Cron Job] Successfully sent daily check-in message to ${formatChannelTag(channel)} for guild ${guild.name}.`);
     } else {
-      console.error(`[Cron Job] Failed to send daily check-in message to #${DAILY_CHECKIN_CHANNEL_NAME} for guild ${guild.name}`);
+      console.error(`[Cron Job] Failed to send daily check-in message to ${formatChannelTag(DAILY_CHECKIN_CHANNEL_NAME)} for guild ${guild.name}`);
     }
 }
 
 export async function handleTriggerDailyCheckin(interaction) {
   // 1. Check if the command is used in the allowed channel
-  if (!await validateCommandChannel(interaction, ALLOWED_COMMAND_CHANNEL_NAME)) {
+  if (!await validateCommandChannel(interaction, BOT_COMMANDS_CHANNEL_NAME)) {
     return;
   }
 
@@ -108,15 +109,15 @@ export async function sendPromotionReminder(guild) {
     const messageContent = `${role}\n\n# ⚔️ PROMOTION REMINDER ⚔️\n\n🏆 Arena promotion, minion sims, and stock purchases are about to end, don't miss out! 🏆`;
     const message = await sendChannelMessage(channel, messageContent);
     if (message) {
-        console.log(`[Cron Job] Successfully sent promotion reminder to #${DAILY_CHECKIN_CHANNEL_NAME} in guild ${guild.name}.`);
+        console.log(`[Cron Job] Successfully sent promotion reminder to ${formatChannelTag(channel)} in guild ${guild.name}.`);
     } else {
-      console.error(`[Cron Job] Failed to send promotion reminder to #${DAILY_CHECKIN_CHANNEL_NAME} for guild ${guild.name}`);
+      console.error(`[Cron Job] Failed to send promotion reminder to ${formatChannelTag(DAILY_CHECKIN_CHANNEL_NAME)} for guild ${guild.name}`);
     }
 }
 
 export async function handleTriggerPromotionReminder(interaction) {
   // 1. Check if the command is used in the allowed channel
-  if (!await validateCommandChannel(interaction, ALLOWED_COMMAND_CHANNEL_NAME)) {
+  if (!await validateCommandChannel(interaction, BOT_COMMANDS_CHANNEL_NAME)) {
     return;
   }
 
@@ -137,14 +138,14 @@ export async function sendManhuntReminder(guild) {
     const messageContent = `# 🏹 MANHUNT / SPACE SEAM REMINDER 🏹\n\nManhunt Act and Space Seam end soon (every ${MANHUNT_CYCLE_DAYS} days). Finish your runs and spend your banquet tickets before ${endDateText}!`;
     const message = await sendChannelMessage(channel, messageContent);
     if (message) {
-        console.log(`[Cron Job] Successfully sent manhunt reminder to #${DAILY_CHECKIN_CHANNEL_NAME} in guild ${guild.name}.`);
+        console.log(`[Cron Job] Successfully sent manhunt reminder to ${formatChannelTag(channel)} in guild ${guild.name}.`);
     } else {
-      console.error(`[Cron Job] Failed to send manhunt reminder to #${DAILY_CHECKIN_CHANNEL_NAME} for guild ${guild.name}`);
+      console.error(`[Cron Job] Failed to send manhunt reminder to ${formatChannelTag(DAILY_CHECKIN_CHANNEL_NAME)} for guild ${guild.name}`);
     }
 }
 
 export async function handleTriggerManhuntReminder(interaction) {
-  if (!await validateCommandChannel(interaction, ALLOWED_COMMAND_CHANNEL_NAME)) {
+  if (!await validateCommandChannel(interaction, BOT_COMMANDS_CHANNEL_NAME)) {
     return;
   }
 
@@ -155,14 +156,17 @@ export async function handleTriggerManhuntReminder(interaction) {
 // Returns the new message ID (string) on success, or null on failure.
 export async function handlePostForgetfulMessage(interaction) {
   // 1. Check if the command is used in the allowed channel
-  if (!await validateCommandChannel(interaction, ALLOWED_COMMAND_CHANNEL_NAME)) {
+  if (!await validateCommandChannel(interaction, BOT_COMMANDS_CHANNEL_NAME)) {
     return null;
   }
 
   // 2. Find the target channel
-  const targetChannel = findChannel(interaction.guild, TARGET_CHANNEL_NAME);
+  const targetChannel = findChannel(interaction.guild, FORGETFUL_TARGET_CHANNEL_NAME);
   if (!targetChannel) {
-    await sendEphemeralReply(interaction, `Could not find the #${TARGET_CHANNEL_NAME} channel. Please ensure it exists and the bot can see it.`);
+    await sendEphemeralReply(
+      interaction,
+      `Could not find ${formatChannelTag(FORGETFUL_TARGET_CHANNEL_NAME)}. Please ensure it exists and the bot can see it.`
+    );
     return null;
   }
 
@@ -172,7 +176,7 @@ export async function handlePostForgetfulMessage(interaction) {
   );
 
   if (!message) {
-      await sendEphemeralReply(interaction, `I don't have permission to send messages in #${TARGET_CHANNEL_NAME}.`);
+      await sendEphemeralReply(interaction, `I don't have permission to send messages in ${formatChannelTag(targetChannel)}.`);
       return null;
   }
 
@@ -185,7 +189,10 @@ export async function handlePostForgetfulMessage(interaction) {
   }
 
   // 5. Confirm to the user
-  await sendEphemeralReply(interaction, `Successfully posted the role assignment message in #${TARGET_CHANNEL_NAME}. Its ID is ${message.id}. I will listen for reactions on this message.`);
+  await sendEphemeralReply(
+    interaction,
+    `Successfully posted the role assignment message in ${formatChannelTag(targetChannel)}. Its ID is ${message.id}. I will listen for reactions on this message.`
+  );
 
   return message.id;
 }

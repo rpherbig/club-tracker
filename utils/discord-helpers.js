@@ -89,9 +89,26 @@ const FARNESWORTH_TEMPLATES = [
 export function findChannel(guild, channelName, errorMessage = null) {
     const channel = guild.channels.cache.find(ch => ch.name === channelName);
     if (!channel && errorMessage) {
-        console.log(`[Channel] Channel #${channelName} not found in guild ${guild.name}. ${errorMessage}`);
+        console.log(`[Channel] Channel ${formatChannelTag(channelName)} not found in guild ${guild.name}. ${errorMessage}`);
     }
     return channel;
+}
+
+/**
+ * Formats a channel for user-facing text (#name).
+ * @param {import('discord.js').GuildBasedChannel | { name: string } | string} channelOrName
+ * @returns {string}
+ */
+export function formatChannelTag(channelOrName) {
+    if (channelOrName == null) return '#unknown';
+    if (typeof channelOrName === 'string') {
+        const name = channelOrName.replace(/^#/, '');
+        return `#${name}`;
+    }
+    if (typeof channelOrName.name === 'string') {
+        return `#${channelOrName.name}`;
+    }
+    return '#unknown';
 }
 
 /**
@@ -115,6 +132,10 @@ export function findRole(guild, roleName) {
  * @param {Channel} channel - The Discord channel to check permissions in
  * @returns {boolean} True if bot has Send Messages permission, false otherwise
  */
+function _isClientLoggedIn(channel) {
+    return Boolean(channel?.client?.token);
+}
+
 function _checkBotPermissions(channel) {
     const botPermissions = channel.permissionsFor(channel.guild.members.me);
     if (!botPermissions) {
@@ -136,7 +157,7 @@ function _checkBotPermissions(channel) {
  */
 export async function validateCommandChannel(interaction, allowedChannelName) {
     if (interaction.channel.name !== allowedChannelName) {
-        await sendEphemeralReply(interaction, `This command can only be used in #${allowedChannelName}!`);
+        await sendEphemeralReply(interaction, `This command can only be used in ${formatChannelTag(allowedChannelName)}!`);
         return false;
     }
     return true;
@@ -275,6 +296,15 @@ async function _sendMessageWithSplitting(channel, content) {
  * @returns {Promise<Message|null>} The first message sent, or null if failed
  */
 export async function sendChannelMessage(channel, content) {
+    if (!channel?.guild) {
+        console.error('[sendChannelMessage] Invalid channel (missing guild)');
+        return null;
+    }
+    if (!_isClientLoggedIn(channel)) {
+        console.error(`[sendChannelMessage] Discord client is not logged in (no token); cannot send to #${channel.name} in guild ${channel.guild.name}`);
+        return null;
+    }
+
     // Check bot permissions first
     if (!_checkBotPermissions(channel)) {
         console.error(`[sendChannelMessage] Missing Send Messages permission in #${channel.name} for guild ${channel.guild.name}`);
@@ -292,6 +322,9 @@ export async function sendChannelMessage(channel, content) {
             return null;
         } else if (error.code === 50013) { // Missing Permissions
             console.error(`[sendChannelMessage] Bot missing required permissions in #${channel.name} for guild ${channel.guild.name}`);
+            return null;
+        } else if (error.message?.includes('Expected token to be set')) {
+            console.error(`[sendChannelMessage] Discord client lost its token (bot shutting down or restarting?); cannot send to #${channel.name} in guild ${channel.guild.name}`);
             return null;
         } else {
             console.error(`[sendChannelMessage] Failed to send message to #${channel.name} in guild ${channel.guild.name}:`, error);
