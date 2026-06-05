@@ -74,6 +74,44 @@ async function saveData(dataToSave, filePath) {
 
 let data;
 
+async function runCronForAllGuilds(label, handler) {
+  for (const guild of client.guilds.cache.values()) {
+    try {
+      console.log(`[Cron Job] Processing ${label} for guild: ${guild.name}`);
+      await handler(guild);
+    } catch (error) {
+      console.error(`[Cron Job] ${label} failed for guild ${guild.name}:`, error);
+    }
+  }
+}
+
+function attachMissedExecutionRecovery(task, name) {
+  task.on('execution:missed', () => {
+    console.warn(`[Cron Job] Recovering missed ${name} execution`);
+    task.execute().catch((error) => {
+      console.error(`[Cron Job] Failed to recover missed ${name} execution:`, error);
+    });
+  });
+
+  task.on('execution:failed', (ctx) => {
+    console.error(`[Cron Job] ${name} execution failed:`, ctx.execution?.error);
+  });
+}
+
+function scheduleCronJob(expression, name, handler, { shouldRun = () => true, noOverlap = true } = {}) {
+  const task = cron.schedule(expression, async () => {
+    if (!shouldRun()) return;
+    await runCronForAllGuilds(name, handler);
+  }, {
+    timezone: 'America/New_York',
+    name,
+    noOverlap,
+  });
+
+  attachMissedExecutionRecovery(task, name);
+  return task;
+}
+
 client.once('ready', async () => {
   console.log(`Logged in as ${client.user.tag}`);
   data = await loadData(DATA_FILE);
@@ -87,86 +125,26 @@ client.once('ready', async () => {
     }
   }
 
-  // Schedule the daily check-in message
-  if (cron.validate('0 10 * * *')) {
-    cron.schedule('0 10 * * *', async () => {
-      client.guilds.cache.forEach(async (guild) => {
-        console.log(`[Cron Job] Processing daily check-in for guild: ${guild.name}`);
-        await sendDailyReminder(guild);
-      });
-    }, {
-      scheduled: true,
-      timezone: "America/New_York"
-    });
-    console.log('Scheduled daily check-in message for 10:00 AM America/New_York.');
-  } else {
-    console.error('Invalid cron pattern for daily check-in.');
-  }
+  const cronJobs = [
+    { expression: '0 10 * * *', name: 'daily check-in', handler: sendDailyReminder },
+    { expression: '0 9 * * 5', name: 'weekly role check', handler: handleShowRoleChanges },
+    { expression: '0 18 * * 5', name: 'war orders message', handler: sendWarOrdersMessage },
+    { expression: '0 12 * * 4', name: 'promotion reminder', handler: sendPromotionReminder },
+    {
+      expression: '0 12 * * *',
+      name: 'manhunt reminder',
+      handler: sendManhuntReminder,
+      shouldRun: shouldSendManhuntReminder,
+    },
+  ];
 
-  // Schedule the weekly role check for Friday at 9am
-  if (cron.validate('0 9 * * 5')) {
-    cron.schedule('0 9 * * 5', async () => {
-      client.guilds.cache.forEach(async (guild) => {
-        console.log(`[Cron Job] Processing weekly role check for guild: ${guild.name}`);
-        await handleShowRoleChanges(guild);
-      });
-    }, {
-      scheduled: true,
-      timezone: "America/New_York"
-    });
-    console.log('Scheduled weekly role check for Friday 9:00 AM America/New_York.');
-  } else {
-    console.error('Invalid cron pattern for weekly role check.');
-  }
-
-  // Schedule the war orders message for Friday at 6pm
-  if (cron.validate('0 18 * * 5')) {
-    cron.schedule('0 18 * * 5', async () => {
-      client.guilds.cache.forEach(async (guild) => {
-        console.log(`[Cron Job] Processing war orders message for guild: ${guild.name}`);
-        await sendWarOrdersMessage(guild);
-      });
-    }, {
-      scheduled: true,
-      timezone: "America/New_York"
-    });
-    console.log('Scheduled war orders message for Friday 6:00 PM America/New_York.');
-  } else {
-    console.error('Invalid cron pattern for war orders message.');
-  }
-
-  // Schedule the promotion reminder for Thursday at noon
-  if (cron.validate('0 12 * * 4')) {
-    cron.schedule('0 12 * * 4', async () => {
-      client.guilds.cache.forEach(async (guild) => {
-        console.log(`[Cron Job] Processing promotion reminder for guild: ${guild.name}`);
-        await sendPromotionReminder(guild);
-      });
-    }, {
-      scheduled: true,
-      timezone: "America/New_York"
-    });
-    console.log('Scheduled promotion reminder for Thursday 12:00 PM America/New_York.');
-  } else {
-    console.error('Invalid cron pattern for promotion reminder.');
-  }
-
-  // Schedule the manhunt reminder check daily at noon ET; sends only when 1 day before the next end date.
-  if (cron.validate('0 12 * * *')) {
-    cron.schedule('0 12 * * *', async () => {
-      if (!shouldSendManhuntReminder()) return;
-
-      client.guilds.cache.forEach(async (guild) => {
-        console.log(`[Cron Job] Processing manhunt reminder for guild: ${guild.name}`);
-        await sendManhuntReminder(guild);
-      });
-    }, {
-      scheduled: true,
-      timezone: "America/New_York"
-    });
-    console.log('Scheduled manhunt reminder check daily at 12:00 PM America/New_York.');
-  } else {
-    console.error('Invalid cron pattern for manhunt reminder check.');
+  for (const { expression, name, handler, shouldRun } of cronJobs) {
+    if (cron.validate(expression)) {
+      scheduleCronJob(expression, name, handler, { shouldRun });
+      console.log(`Scheduled ${name} (${expression}, America/New_York).`);
+    } else {
+      console.error(`Invalid cron pattern for ${name}: ${expression}`);
+    }
   }
 });
 
