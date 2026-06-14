@@ -97,12 +97,13 @@ async function handleKill(interaction) {
     };
 
     const roleSpecs = getKillPingRoleSpecs(floor);
-    const roles = roleSpecs.map(resolveRole);
+    let roles = roleSpecs.map(resolveRole).filter(Boolean);
 
-    const missingRoles = roles.filter(role => !role);
-    if (missingRoles.length > 0) {
-        await sendEphemeralReply(interaction, 'One or more required roles are missing! Please check that all roles exist.');
-        return;
+    if (roles.length === 0) {
+        const shellShockRole = findRole(guild, 'ShellShock');
+        if (shellShockRole) {
+            roles = [shellShockRole];
+        }
     }
 
     const roleMentions = roles.map(role => `<@&${role.id}>`).join(' ');
