@@ -111,14 +111,14 @@ export const generateWarMessage = (speciesWarInfo, roles, warStartDate) => {
     year: '2-digit'
   });
 
-  /** Aligned with "F18" in the opener below; auto tier lines use rows with killPingMinFloor >= this. */
-  const bossStrategyTierLineMinFloor = 18;
+  /** Opener covers F18+; auto tier lines start at F19 (killPingMinFloor >= this). */
+  const bossStrategyTierLineMinFloor = 19;
   const bossStrategyTiers = buildBossStrategyTierLines(roles, bossStrategyTierLineMinFloor);
 
   const generalInfo = `# ${speciesWarInfo} - ${formattedDate}
 
 # Boss Strategy:
-* F5, F15+: ${roles.laborer} :arrow_right: Start with F5, then full hit F15+ as casualties allow. Push up to F${bossStrategyTierLineMinFloor} if possible; otherwise, clean up.
+* F5, F18+: ${roles.laborer} ${roles.prospector18} :arrow_right: Start with F5 then full hit F18+ as casualties allow. Push as far as possible, otherwise clean up (starting with F17).
 ${bossStrategyTiers}
 
 📌 Spreadsheet for tracking (updated every Friday):
