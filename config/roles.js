@@ -15,7 +15,6 @@ export const TEAM_ROLES = [
   { teamKey: 'van 20', channelName: 'van-20', discordRoleName: 'Vanguard 20', templateKey: 'vanguard20', killPingMinFloor: 20 },
   { teamKey: 'pro 19', channelName: 'pro-19', discordRoleName: 'Prospector 19', templateKey: 'prospector19', killPingMinFloor: 19 },
   { teamKey: 'pro 18', channelName: 'pro-18', discordRoleName: 'Prospector 18', templateKey: 'prospector18', killPingMinFloor: 18 },
-  { teamKey: 'pro 15', channelName: 'pro-15', discordRoleName: 'Prospector 15', templateKey: 'prospector15', killPingMinFloor: 1 },
   { teamKey: 'labor', channelName: 'laborers', discordRoleName: 'Laborer', templateKey: 'laborer', killPingMinFloor: 1 },
 ];
 
@@ -50,7 +49,7 @@ function maxKillPingMinFloor() {
 
 /**
  * Which roles to @ for `/kill` on a boss floor.
- * - Rows with `killPingMinFloor <= floor` are included (sorted). E.g. F≤17 yields only labor + pro-15 because other tiers have higher mins.
+ * - Rows with `killPingMinFloor <= floor` are included (sorted). E.g. F≤17 yields only labor because other tiers have higher mins.
  * - If `floor` is above `max(killPingMinFloor)` over `TEAM_ROLES`, ShellShock only (extend the ladder by adding a row with a higher `killPingMinFloor`).
  * - If no rows match (misconfiguration): ShellShock only.
  *

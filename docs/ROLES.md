@@ -12,7 +12,7 @@ Use this file when **adding, renaming, or removing** any Discord role so the bot
 
 The array `TEAM_ROLES` defines each team role with:
 
-- `teamKey` – sheet team name (e.g. `'van 22'`, `'pro 15'`, `'labor'`)
+- `teamKey` – sheet team name (e.g. `'van 22'`, `'pro 18'`, `'labor'`)
 - `channelName` – Discord channel for announcements (e.g. `'van-22'`, `'laborers'`)
 - `discordRoleName` – exact Discord role name (e.g. `'Vanguard 22'`, `'Laborer'`)
 - `templateKey` – key used in war message template (e.g. `'vanguard22'`, `'laborer'`)

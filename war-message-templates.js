@@ -118,7 +118,7 @@ export const generateWarMessage = (speciesWarInfo, roles, warStartDate) => {
   const generalInfo = `# ${speciesWarInfo} - ${formattedDate}
 
 # Boss Strategy:
-* F5, F15+: ${roles.laborer} ${roles.prospector15} :arrow_right: Start with F5, then full hit F15+ as casualties allow. Push up to F${bossStrategyTierLineMinFloor} if possible; otherwise, clean up.
+* F5, F15+: ${roles.laborer} :arrow_right: Start with F5, then full hit F15+ as casualties allow. Push up to F${bossStrategyTierLineMinFloor} if possible; otherwise, clean up.
 ${bossStrategyTiers}
 
 📌 Spreadsheet for tracking (updated every Friday):
