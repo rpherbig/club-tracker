@@ -8,11 +8,13 @@
 
 /** Team role definitions: sheet team key → channel, Discord role name, and template key for war message */
 export const TEAM_ROLES = [
+  { teamKey: 'van 25', channelName: 'van-25', discordRoleName: 'Vanguard 25', templateKey: 'vanguard25', killPingMinFloor: 25 },
   { teamKey: 'van 24', channelName: 'van-24', discordRoleName: 'Vanguard 24', templateKey: 'vanguard24', killPingMinFloor: 24 },
   { teamKey: 'van 23', channelName: 'van-23', discordRoleName: 'Vanguard 23', templateKey: 'vanguard23', killPingMinFloor: 23 },
   { teamKey: 'van 22', channelName: 'van-22', discordRoleName: 'Vanguard 22', templateKey: 'vanguard22', killPingMinFloor: 22 },
   { teamKey: 'van 21', channelName: 'van-21', discordRoleName: 'Vanguard 21', templateKey: 'vanguard21', killPingMinFloor: 21 },
   { teamKey: 'van 20', channelName: 'van-20', discordRoleName: 'Vanguard 20', templateKey: 'vanguard20', killPingMinFloor: 20 },
+  { teamKey: 'pro 20', channelName: 'pro-20', discordRoleName: 'Prospector 20', templateKey: 'prospector20', killPingMinFloor: 20 },
   { teamKey: 'pro 19', channelName: 'pro-19', discordRoleName: 'Prospector 19', templateKey: 'prospector19', killPingMinFloor: 19 },
   { teamKey: 'pro 18', channelName: 'pro-18', discordRoleName: 'Prospector 18', templateKey: 'prospector18', killPingMinFloor: 18 },
   { teamKey: 'labor', channelName: 'laborers', discordRoleName: 'Laborer', templateKey: 'laborer', killPingMinFloor: 1 },
