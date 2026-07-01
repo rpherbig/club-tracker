@@ -1,5 +1,5 @@
 import moment from 'moment';
-import { validateCommandChannel, sendEphemeralReply, sendChannelMessage, findMemberByName } from '../utils/discord-helpers.js';
+import { validateCommandChannel, sendEphemeralReply, sendChannelMessage } from '../utils/discord-helpers.js';
 import { BOT_COMMANDS_CHANNEL_NAME } from '../config/channels.js';
 
 const ESSENCE_OVERDUE_DAYS = 14;
@@ -55,8 +55,7 @@ function resolveCanonicalUserId(userId, playerData, guild) {
   if (!guild) {
     return userId;
   }
-  const member = findMemberInGuild(guild, userId)
-    ?? findMemberByName(guild, stripMentionPrefix(userId));
+  const member = findMemberInGuild(guild, userId);
   return member ? member.user.id : userId;
 }
 
@@ -154,8 +153,7 @@ function displayNameToUserId(displayName, guild, guildData) {
   // For Discord users, try to find them in the guild
   // This handles both display names and usernames
   if (guild) {
-    const foundMember = findMemberInGuild(guild, normalized)
-      ?? findMemberByName(guild, normalized);
+    const foundMember = findMemberInGuild(guild, normalized);
     if (foundMember) {
       return foundMember.user.id;
     }
