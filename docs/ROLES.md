@@ -12,7 +12,7 @@ Use this file when **adding, renaming, or removing** any Discord role so the bot
 
 The array `TEAM_ROLES` defines each team role with:
 
-- `teamKey` – sheet team name (e.g. `'van 22'`, `'pro 19'`, `'labor'`)
+- `teamKey` – sheet team name (e.g. `'van 22'`, `'sap 19'`, `'labor'`)
 - `channelName` – Discord channel for announcements (e.g. `'van-22'`, `'laborers'`)
 - `discordRoleName` – exact Discord role name (e.g. `'Vanguard 22'`, `'Laborer'`)
 - `templateKey` – key used in war message template (e.g. `'vanguard22'`, `'laborer'`)
@@ -27,7 +27,7 @@ When you **add, rename, or remove** a team role:
 2. **Edit `war-message-templates.js`** – only the bespoke **F5, F19+** opener line if that copy changes; F20+ bullets are generated from config.
 3. **Edit `commands/war-commands.js`** – only if `/kill` behavior outside `getKillPingRoleSpecs` changes.
 
-Category-only roles (Vanguard, Prospector, Laborer) are still in `config/roles.js` as `CATEGORY_ROLE_NAMES` and are used only for role sync.
+Category-only roles (Vanguard, Sapper, Laborer) are still in `config/roles.js` as `CATEGORY_ROLE_NAMES` and are used only for role sync.
 
 ---
 

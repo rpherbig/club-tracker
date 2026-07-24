@@ -13,8 +13,8 @@ export const TEAM_ROLES = [
   { teamKey: 'van 23', channelName: 'van-23', discordRoleName: 'Vanguard 23', templateKey: 'vanguard23', killPingMinFloor: 23 },
   { teamKey: 'van 22', channelName: 'van-22', discordRoleName: 'Vanguard 22', templateKey: 'vanguard22', killPingMinFloor: 22 },
   { teamKey: 'van 21', channelName: 'van-21', discordRoleName: 'Vanguard 21', templateKey: 'vanguard21', killPingMinFloor: 21 },
-  { teamKey: 'pro 20', channelName: 'pro-20', discordRoleName: 'Prospector 20', templateKey: 'prospector20', killPingMinFloor: 20 },
-  { teamKey: 'pro 19', channelName: 'pro-19', discordRoleName: 'Prospector 19', templateKey: 'prospector19', killPingMinFloor: 19 },
+  { teamKey: 'sap 20', channelName: 'sap-20', discordRoleName: 'Sapper 20', templateKey: 'sapper20', killPingMinFloor: 20 },
+  { teamKey: 'sap 19', channelName: 'sap-19', discordRoleName: 'Sapper 19', templateKey: 'sapper19', killPingMinFloor: 19 },
   { teamKey: 'labor', channelName: 'laborers', discordRoleName: 'Laborer', templateKey: 'laborer', killPingMinFloor: 1 },
 ];
 
@@ -68,7 +68,7 @@ export function getKillPingRoleSpecs(floor) {
 }
 
 /** Category-only role names (no specific team; used in role sync) */
-const CATEGORY_ROLE_NAMES = ['Vanguard', 'Prospector', 'Laborer'];
+const CATEGORY_ROLE_NAMES = ['Vanguard', 'Sapper', 'Laborer'];
 
 /** Map sheet team key → Discord channel name for role announcements */
 export function getRoleChannelMapping() {
