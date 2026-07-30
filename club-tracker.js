@@ -126,7 +126,7 @@ client.once('ready', async () => {
   }
 
   const cronJobs = [
-    { expression: '0 10 * * *', name: 'daily check-in', handler: sendDailyReminder },
+    { expression: '30 10 * * *', name: 'daily check-in', handler: sendDailyReminder },
     { expression: '0 9 * * 5', name: 'weekly role check', handler: handleShowRoleChanges },
     { expression: '0 18 * * 5', name: 'war orders message', handler: sendWarOrdersMessage },
     { expression: '0 12 * * 4', name: 'promotion reminder', handler: sendPromotionReminder },
