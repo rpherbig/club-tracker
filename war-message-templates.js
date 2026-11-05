@@ -111,14 +111,14 @@ export const generateWarMessage = (speciesWarInfo, roles, warStartDate) => {
     year: '2-digit'
   });
 
-  /** Opener covers F19+; auto tier lines start at F20 (killPingMinFloor >= this). */
-  const bossStrategyTierLineMinFloor = 20;
+  /** Sapper and Laborer have no target floor; generate the dedicated Vanguard tiers. */
+  const bossStrategyTierLineMinFloor = 26;
   const bossStrategyTiers = buildBossStrategyTierLines(roles, bossStrategyTierLineMinFloor);
 
   const generalInfo = `# ${speciesWarInfo} - ${formattedDate}
 
 # Boss Strategy:
-* F5, F19+: ${roles.laborer} :arrow_right: Start with F5 then full hit F19+ as casualties allow. Push as far as possible, otherwise clean up (starting with F18).
+* ${roles.sapper} ${roles.laborer} :arrow_right: Hit the highest boss you can safely hit.
 ${bossStrategyTiers}
 
 📌 Spreadsheet for tracking (updated every Friday):

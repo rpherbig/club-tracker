@@ -1,6 +1,6 @@
 /**
  * Discord channel names used for lookups (must match server channel names exactly).
- * Team tier channels (van-24, sap-20, etc.) live on `TEAM_ROLES[].channelName` in `config/roles.js`.
+ * Team channels (van-28, sapper, laborer, etc.) live on `TEAM_ROLES[].channelName` in `config/roles.js`.
  */
 
 export const CLUB_CHAT_CHANNEL_NAME = 'club-chat';

@@ -36,8 +36,11 @@ function getRolesFromSheetData(sheetTeam, sheetCategoryRole) {
     console.warn(`⚠️  MISSING CHANNEL MAPPING: Team "${team}" not found in ROLE_CHANNEL_MAPPING. No announcement will be sent for this team.`);
   }
   
-  // If we have a specific team role, return both category and specific
+  // Sapper and Laborer use the same role for their category and team.
   if (specificTeamRole) {
+    if (categoryRole.toLowerCase() === specificTeamRole.toLowerCase()) {
+      return [specificTeamRole];
+    }
     return [categoryRole, specificTeamRole];
   }
   
@@ -158,8 +161,9 @@ async function applyRoleChanges(member, targetRoleNames, allTeamRoles) {
   const errors = [];
 
   // Get all current team roles the user has
+  const allTeamRoleNamesLower = new Set([...allTeamRoles].map(name => name.toLowerCase()));
   const currentTeamRoles = Array.from(member.roles.cache.values())
-    .filter(role => allTeamRoles.has(role.name));
+    .filter(role => allTeamRoleNamesLower.has(role.name.toLowerCase()));
 
   // Get target role objects
   const targetRoles = targetRoleNames.map(roleName => 
