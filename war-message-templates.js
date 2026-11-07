@@ -117,9 +117,21 @@ export const generateWarMessage = (speciesWarInfo, roles, warStartDate) => {
 
   const generalInfo = `# ${speciesWarInfo} - ${formattedDate}
 
-# Boss Strategy:
-* ${roles.sapper} ${roles.laborer} :arrow_right: Hit the highest boss you can safely hit.
+**Boss 26 is our first boss.**
+
+## ${roles.vanguard ?? 'Vanguard'} — Boss priorities
 ${bossStrategyTiers}
+* Charge buff is optional if it causes too many casualties.
+
+## ${roles.sapper ?? 'Sapper'} ${roles.laborer ?? 'Laborer'} — Boss priorities
+* Hit the **highest boss you can safely hit**, with no assigned boss.
+* Watch for calls to deploy several mobile armor barriers so more members can hit F26 and F27.
+
+## ${roles.shellshock ?? 'ShellShock'} — All members
+* Everyone can (and many should) use defensive Biozilla to help complete full attacks.
+* Use mobile defense barriers or rockets at your discretion.
+* **Mines are harder to uncover:** the relevant bosses will not die early enough to reveal them.
+* **Day-one drilling:** Reach boss 26 first, then **drill columns in areas 19, 20, 21, and 25** until we have **5 tier VII mines and 2 tier IX mines**.
 
 📌 Spreadsheet for tracking (updated every Friday):
 🔗 [Team Front-End Spreadsheet](https://docs.google.com/spreadsheets/d/1JQ3Atkgv1APC6kXawTIR2HjeWVCvBYepQqtZnygWSUU/edit?gid=903491486#gid=903491486) (Pinned in this channel!)`;

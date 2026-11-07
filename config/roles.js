@@ -16,7 +16,7 @@ export const TEAM_ROLES = [
 ];
 
 /**
- * Build `* F{n}+: @roles ...` lines for the war orders boss strategy from `killPingMinFloor`.
+ * Build `* F{n}: @roles ...` lines for the war orders boss strategy from `killPingMinFloor`.
  * @param {Record<string, { toString(): string } | null | undefined>} roles templateKey → Discord Role (or null)
  * @param {number} minFloor include only `TEAM_ROLES` rows with `killPingMinFloor >= minFloor` (caller chooses, e.g. next to bespoke opener in `war-message-templates.js`)
  * @returns {string} newline-separated bullets (no trailing newline)
@@ -34,7 +34,7 @@ export function buildBossStrategyTierLines(roles, minFloor) {
     const keys = [...byFloor.get(f)].sort();
     const mentions = keys.map((k) => roles[k]).filter(Boolean).join(' ');
     if (!mentions) continue;
-    lines.push(`* F${f}+: ${mentions} :arrow_right: Hold tokens until F${f} is located. Prioritize F${f}, then hit the highest boss you can safely hit.`);
+    lines.push(`* F${f}: ${mentions} :arrow_right: Hold tokens until F${f} is located. Prioritize F${f}; when out of assigned targets, hit the highest boss you can safely hit.`);
   }
   return lines.join('\n');
 }

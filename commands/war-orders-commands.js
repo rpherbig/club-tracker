@@ -74,6 +74,8 @@ export async function sendWarOrdersMessage(guild) {
   for (const { discordRoleName, templateKey } of TEAM_ROLES) {
     roles[templateKey] = findRole(guild, discordRoleName);
   }
+  roles.vanguard = findRole(guild, 'Vanguard');
+  roles.shellshock = findRole(guild, 'ShellShock');
 
   console.log(`[Cron Job] Fetching species war info from Google Sheets...`);
   
