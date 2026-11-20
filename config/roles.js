@@ -11,12 +11,16 @@ export const TEAM_ROLES = [
   { teamKey: 'van 28', channelName: 'van-28', discordRoleName: 'Vanguard 28', templateKey: 'vanguard28', killPingMinFloor: 28 },
   { teamKey: 'van 27', channelName: 'van-27', discordRoleName: 'Vanguard 27', templateKey: 'vanguard27', killPingMinFloor: 27 },
   { teamKey: 'van 26', channelName: 'van-26', discordRoleName: 'Vanguard 26', templateKey: 'vanguard26', killPingMinFloor: 26 },
+  { teamKey: 'van 25', channelName: 'van-25', discordRoleName: 'Vanguard 25', templateKey: 'vanguard25', killPingMinFloor: 25 },
+  { teamKey: 'van 24', channelName: 'van-24', discordRoleName: 'Vanguard 24', templateKey: 'vanguard24', killPingMinFloor: 24 },
+  { teamKey: 'van 23', channelName: 'van-23', discordRoleName: 'Vanguard 23', templateKey: 'vanguard23', killPingMinFloor: 23 },
+  { teamKey: 'van 22', channelName: 'van-22', discordRoleName: 'Vanguard 22', templateKey: 'vanguard22', killPingMinFloor: 22 },
   { teamKey: 'sapper', channelName: 'sapper', discordRoleName: 'Sapper', templateKey: 'sapper', killPingMinFloor: 1 },
   { teamKey: 'labor', channelName: 'laborer', discordRoleName: 'Laborer', templateKey: 'laborer', killPingMinFloor: 1 },
 ];
 
 /**
- * Build `* F{n}: @roles ...` lines for the war orders boss strategy from `killPingMinFloor`.
+ * Build `* F{n}+: @roles ...` lines for the war orders boss strategy from `killPingMinFloor`.
  * @param {Record<string, { toString(): string } | null | undefined>} roles templateKey → Discord Role (or null)
  * @param {number} minFloor include only `TEAM_ROLES` rows with `killPingMinFloor >= minFloor` (caller chooses, e.g. next to bespoke opener in `war-message-templates.js`)
  * @returns {string} newline-separated bullets (no trailing newline)
@@ -34,7 +38,7 @@ export function buildBossStrategyTierLines(roles, minFloor) {
     const keys = [...byFloor.get(f)].sort();
     const mentions = keys.map((k) => roles[k]).filter(Boolean).join(' ');
     if (!mentions) continue;
-    lines.push(`* F${f}: ${mentions} :arrow_right: Hold tokens until F${f} is located. Prioritize F${f}; when out of assigned targets, hit the highest boss you can safely hit.`);
+    lines.push(`* F${f}+: ${mentions} :arrow_right: Hold tokens until F${f} is located. Prioritize F${f}, then hit the highest boss you can safely hit.`);
   }
   return lines.join('\n');
 }
@@ -46,7 +50,7 @@ function maxKillPingMinFloor() {
 
 /**
  * Which roles to @ for `/kill` on a boss floor.
- * - Rows with `killPingMinFloor <= floor` are included (sorted). F1–25 yields Laborer and Sapper; Vanguard tiers join at F26, F27, and F28.
+ * - Rows with `killPingMinFloor <= floor` are included (sorted). F1–21 yields Laborer and Sapper; Vanguard tiers join at each floor from F22 through F28.
  * - If `floor` is above `max(killPingMinFloor)` over `TEAM_ROLES`, ShellShock only (extend the ladder by adding a row with a higher `killPingMinFloor`).
  * - If no rows match (misconfiguration): ShellShock only.
  *
